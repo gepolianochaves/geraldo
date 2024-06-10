@@ -1,0 +1,17 @@
+name: "geraldo"
+navbar:
+  title: "GERALDO: Gerenciamento Genômico e Algorítmico de Fenótipos, Riscos, Diagnósticos e Prognósticos em Dados de Doenças em Brasileiros"
+  type: "inverse"
+  left:
+  
+    - text: "Home"
+      icon: "fa-home"
+      href: index.html
+      
+    - text: "Sobre nós"  
+      icon: "fa-solid fa-circle-info"
+      href: "about.html"
+
+output:
+  html_document:
+    theme: cerulean
