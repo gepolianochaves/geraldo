@@ -4,9 +4,13 @@
   
 ### Epigenética de cânceres pediátricos
 
-Tumores adultos e tumores de crianças não apresentam mecanismos iguais de malignidade e progressão. Enquanto há consenso de que progressão tumoral em adultos é conduzida por mutações que acumularam-se durante a vida do paciente, tumores pediátricos parecem ser dirigidos por mecanismos diferentes. 
+Tumores adultos e tumores de crianças não apresentam mecanismos iguais de malignidade e progressão. Enquanto há consenso de que progressão tumoral em adultos é conduzida por mutações que acumularam-se durante a vida do paciente, tumores pediátricos parecem ser dirigidos por mecanismos diferentes. Em neuroblastoma, o prognóstico por grupos é composto pelo grupo de alto risco e grupo de baixo risco (*high risk*; *low risk*). A figura abaixo mostra análise de sobrevivência comparando o grupo de risco alto e baixo.
 
-![A survival curve.](../../ReComBio Book English/recombio bookdown/figures/survival_os.jpeg){width=100%}
+
+
+![Curva de sobrevivência de neuroblastoma. A máxima classificação atual consiste no grupo de alto risco e baixo risco.](./figures/os_survival_figure.png){width=40%}
+
+
 
 Modificações epigenéticas são modificações quimicamente adicionadas ao nucleotídeo de DNA, como a metilação, que não afetam a sequência de DNA em si, em contraste com as mutações genéticas dos tumores adultos. O grupo de pesquisa ao qual está ligado o Dr. Gepoliano Chaves, na Universidade de Chicago, desenvolveu e patenteou um método para identificação de perfis epigenéticos de 5-hmC em neuroblastoma, um câncer pediátrico do sistema nervoso periférico. Trata-se do marcador 5-hidroxi-metil-citosina (5-hmC), que pode ser isolado a partir de DNA circulante no sangue de crianças portadoras ou sob investigação de serem acometidas pelo neuroblastoma.
 
