@@ -1,6 +1,15 @@
 ---
   title: "Gerenciamento Genômico e Algorítmico de Fenótipos, Riscos, Diagnósticos e Prognósticos em Dados de Doenças de Brasileiros"
+  bibliography: references.bib
 ---
+
+\
+
+No Brasil, a Constituição de 1988 garante o acesso universal e integral à saúde como uma obrigação do Estado. No entanto, diversos fatores contribuem para acesso problemático a este direito constitucional, como discutido em @Brito-Silva2012.
+
+Quando se trata do acesso à informação genética e genômica, mais dificuldades adicionam-se ao acesso dos cidadãos brasileiros a conhecimento e uso da pesquisa genômica e genética. Dados publicos, no entanto, tornam possível a integração da informação genética e genômica de brasileiros ao Sistema Único de Saúde. 
+
+Afim de usar dados públicos para melhor gerenciamento da saúde dos cidadãos, desenvolvemos o Gerenciamento Genômico e Algorítmico de Fenótipos, Riscos, Diagnósticos e Prognósticos em Dados de Doenças de Brasileiros (GERALDO). Disponibilizamos análises de oncologia, neurodegeneações e COVID-19.
 
 \
   
@@ -8,7 +17,9 @@
 
 \
 
-Tumores adultos e pediátricos não apresentam mecanismos iguais de malignidade e progressão. Enquanto há consenso de que progressão tumoral em adultos é conduzida por mutações que acumularam-se durante a vida do paciente, tumores pediátricos são dirigidos por mecanismos diferentes. Em neuroblastoma os diferentes fatores que compõem o prognóstico levam à classificação dos paciente como grupo de alto risco e grupo de baixo risco (*high risk*; *low risk*). A figura abaixo mostra a análise de sobrevivência comparando o grupo de risco alto e baixo em neuroblastoma.
+Tumores adultos e pediátricos não apresentam mecanismos iguais de malignidade e progressão. Enquanto há consenso de que progressão tumoral em adultos é conduzida por mutações que acumularam-se durante a vida do paciente, tumores pediátricos são dirigidos por mecanismos diferentes. 
+
+Em neuroblastoma os diferentes fatores que compõem o prognóstico levam à classificação dos paciente como grupo de alto risco e grupo de baixo risco (*high risk*; *low risk*). A figura abaixo mostra a análise de sobrevivência comparando o grupo de risco alto e baixo em neuroblastoma.
 
 \
 
@@ -20,7 +31,11 @@ Tumores adultos e pediátricos não apresentam mecanismos iguais de malignidade 
 
 \
 
-Dentre os fatores importantes para o desenvolvimento de tumores em crianças, foi proposto que a epigenética, mais que as mutações genéticas somáticas (de tumores em adultos), contribui com os mecanismos de agressividade tumoral e progressão de cânceres pediátricos. Modificações epigenéticas são modificações quimicamente adicionadas ao nucleotídeo de DNA, como a metilação, que não afetam a sequência de DNA em si, em contraste com as mutações genéticas dos tumores adultos. O grupo de pesquisa ao qual está ligado o Dr. Gepoliano Chaves, na Universidade de Chicago, desenvolveu e patenteou um método para identificação de perfis epigenéticos de 5-hmC em neuroblastoma, um câncer pediátrico do sistema nervoso periférico. Trata-se do marcador 5-hidroxi-metil-citosina (5-hmC), que pode ser isolado a partir de DNA circulante no sangue de crianças portadoras ou sob investigação de serem acometidas pelo neuroblastoma.
+Dentre os fatores importantes para o desenvolvimento de tumores em crianças, foi proposto que a epigenética, mais que as mutações genéticas somáticas (de tumores em adultos), contribui com os mecanismos de agressividade tumoral e progressão de cânceres pediátricos. 
+
+Modificações epigenéticas são modificações quimicamente adicionadas ao nucleotídeo de DNA, como a metilação, que não afetam a sequência de DNA em si, em contraste com as mutações genéticas dos tumores adultos. Nosso grupo na Universidade de Chicago, desenvolveu método para identificação de perfis epigenéticos de 5-hmC em neuroblastoma, um câncer pediátrico do sistema nervoso periférico. 
+
+Trata-se do marcador 5-hidroxi-metil-citosina (5-hmC), que pode ser isolado a partir de DNA circulante no sangue de crianças portadoras ou sob investigação de serem acometidas pelo neuroblastoma.
 
 \
 
@@ -50,3 +65,9 @@ Visando integrar dados genômicos a dados disponibilizados publicamente pelo sis
 
 * [Artigos](artigos.html)
 * [Código](codigo.html)
+
+\
+
+## References
+
+<div id="refs"></div>
