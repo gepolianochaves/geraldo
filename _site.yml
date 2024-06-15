@@ -1,6 +1,6 @@
 name: "geraldo"
 navbar:
-  title: "GERALDO: Gerenciamento Genômico e Algorítmico de Fenótipos, Riscos, Diagnósticos e Prognósticos em Dados de Doenças em Brasileiros"
+  title: "Gerenciamento Genômico e Algorítmico de Fenótipos, Riscos, Diagnósticos e Prognósticos em Dados de Doenças em Brasileiros"
   type: "inverse"
   left:
   
