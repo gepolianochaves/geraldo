@@ -12,7 +12,7 @@ Tumores adultos e pediátricos não apresentam mecanismos iguais de malignidade 
 
 \
 
-![Curva de sobrevivência de neuroblastoma. A classificação divide pacientes em dois grupos: alto risco e  risco baixo.](./figures/os_survival_figure.png){width=80%}
+![Curva de sobrevivência de neuroblastoma. A classificação divide pacientes em dois grupos: alto risco e  risco baixo.](./figures/os_survival_figure.png){width=60%}
 
 \
 
