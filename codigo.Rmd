@@ -1,13 +1,26 @@
 ---
-  title: "GERALDO: Gerenciamento Genômico e Algorítmico de Fenótipos, Riscos, Diagnósticos e Prognósticos em Dados de Doenças em Brasileiros"
+  title: "Códigos"
 ---
+
+\
 
 ### Envelhecimento e Bem-Estar
 
+\
+
+Estudamos a genômica de três das principais doenças mentais que afetam o envelhecimento: Doença de Huntington, Doença de Parkinson e Doença de Alzheimer. Nos seguintes notebooks, a análise computacional da sequência mitocondrial de brasileiros auto-declarados brancos é apresentada em detalhes:
+
 * [Variantes genéticas, envelhecimento e saúde mental da população brasileira](https://paei.netlify.app/07-Phylogenetic-Analyisis_mt_BR)
+* [Variant Call Pipeline](scripts/variant_call_pipeline.html)
 * [Acessando dados DATASUS para modelagem](https://paei.netlify.app/datasus_raca_cor)
 
+\
+
 ### Oncologia
+
+\
+
+Desenvolvemos uma *framework* para uso de biópsia líquida no diagnóstico e prognóstico de pacientes oncológicos.
 
 * [Conjuntos de dados de neuroblastoma](08-GSE62564.html)
 * [Algoritmo para classificação de tumores em python](15-shiny-boxplot.html)

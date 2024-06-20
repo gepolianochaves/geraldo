@@ -1,0 +1,51 @@
+---
+  title: "Pesquisa na Modalidade à Distância (PmD)"
+---
+
+\
+
+### Experiências prévias
+
+\
+
+Baseado nos trabalhos do Dr. Raja GuhaThakurta para estabelecer o Science Internship Program (SIP), e do Dr. Gepoliano Chaves como mentor do mesmo, buscamos desenvolver plataforma para benefício da Educação, Ciência e Tecnologia brasileiras por meio de permitir o acesso à pesquisa real na modalidade à distância às diversas camadas da sociedade brasileira. [Veja a discussão do Dr. GuhaThakurta sobre pesquisa real](https://www.youtube.com/watch?v=Z0WTzVNB2g4). Como pesquisa real, entendemos a pesquisa que visa contribuir para o avanço científico na fronteira do conhecimento. [Aqui há mais informações sobre práticas da educação à distância](https://www.viterbo.edu/online-teaching/expectations-and-best-practices-online-instructors#:~:text=Instructors%20should%20provide%20meaningful%20feedback,(and%20want)%20more%20specifics.).
+
+\
+
+### Epigenética de cânceres pediátricos
+
+\
+
+Dentre os fatores importantes para o desenvolvimento de tumores em crianças, foi proposto que a epigenética, mais que as mutações genéticas somáticas (de tumores em adultos), contribui com os mecanismos de agressividade tumoral e progressão de cânceres pediátricos. 
+
+Modificações epigenéticas são modificações quimicamente adicionadas ao nucleotídeo de DNA, como a metilação, que não afetam a sequência de DNA em si, em contraste com as mutações genéticas dos tumores adultos. Nosso grupo na Universidade de Chicago, desenvolveu método para identificação de perfis epigenéticos de 5-hmC em neuroblastoma, um câncer pediátrico do sistema nervoso periférico. 
+
+Trata-se do marcador 5-hidroxi-metil-citosina (5-hmC), que pode ser isolado a partir de DNA circulante no sangue de crianças portadoras ou sob investigação de serem acometidas pelo neuroblastoma.
+
+\
+\
+
+![O marcador epigenético de DNA 5-hidroxi-metil-citosina (5-hmC) pode ser isolado de amostras de biópsia líquida (sangue) de crianças para diagnóstico de neuroblastoma.](./figures/5-hmC.png){width=70%}
+
+\
+\
+
+### PmD para a educação genômica e CT&I brasileiras
+
+\
+
+A natureza do trabalho desenvolvido por pesquisadores e profissionais das ciências ômicas envolve o componente computacional. A interação entre pesquisadores e o desenvolvimento de algoritmos computacionais para investigação da atividade dos biomarcadores são procedimentos feitos remotamente. Pesquisadores das ciências ômicas utilizam a computação em nuvem e computação quântica para criar e entregar serviços como oportunidades na pesquisa à distância.
+
+\
+\
+
+![A análise bioinformática de marcadores isolados a partir da biópsia líquida do sangue é PmD por definição, pois dados genômicos são armazenados em bancos de dados públicos e disponibilizados para processamento em máquinas locais privadas.](./figures/PmD.png){width=60%}
+
+\
+\
+
+### Integração da pesquisa ômica ao sistema público de saúde brasileiro (SUS)
+
+\
+
+Dados genômicos disponibilizados publicamente podem ser integrados ao sistema público de saúde brasileiro (SUS). Através da revisão da literatura científica e linguagem computacional, a análise genética e genômica permitirão integração da informação genética e genômica da população brasileira ao Sistema Único de Saúde (SUS).

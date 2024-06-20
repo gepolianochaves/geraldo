@@ -12,6 +12,14 @@ navbar:
       icon: "fa-solid fa-circle-info"
       href: "about.html"
 
+    - text: "Códigos"
+      icon: "fa-solid fa-laptop-file"
+      href: codigo.html
+
+    - text: "PmD"
+      icon: "fa-solid fa-people-arrows"
+      href: "PmD.html"
+
 output:
   html_document:
     theme: cerulean
