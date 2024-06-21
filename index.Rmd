@@ -1,5 +1,5 @@
 ---
-title: "Gerenciamento Genômico e Algorítmico de Fenótipos, Riscos, Diagnósticos e Prognósticos em Dados de Doenças de Brasileiros"
+title: "Gerenciamento Genômico e Algorítmico de Doenças"
 bibliography: references.bib
 ---
 
