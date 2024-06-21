@@ -48,4 +48,12 @@ A natureza do trabalho desenvolvido por pesquisadores e profissionais das ciênc
 
 \
 
-Dados genômicos disponibilizados publicamente podem ser integrados ao sistema público de saúde brasileiro (SUS). Através da revisão da literatura científica e linguagem computacional, a análise genética e genômica permitirão integração da informação genética e genômica da população brasileira ao Sistema Único de Saúde (SUS).
+Dados genômicos disponibilizados publicamente podem ser integrados ao sistema público de saúde brasileiro (SUS)[^1]. Através da revisão da literatura científica e linguagem computacional, a análise genética e genômica permitirão integração da informação genética e genômica da população brasileira ao Sistema Único de Saúde (SUS)[^2]. 
+
+\
+
+[^1]: Tips for R Markdown. [Yan Holtz , (2018)](https://holtzy.github.io/Pimp-my-rmd/#).
+
+[^2]: R Markdown output with parallax. [Yan Holtz , (2018)](https://holtzy.github.io/R-Markdown-Parallax/).
+
+
