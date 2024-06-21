@@ -1,0 +1,225 @@
+---
+title: "Variant Call Pipeline"
+
+author: "Gepoliano Chaves"
+
+
+date: "June 11th, 2024"
+
+output:
+  html_document:
+    df_print: paged
+    toc: true
+---
+
+\
+
+## Summary
+
+\
+
+In this activity we process mitochondrial DNA FASTA sequences from self-declared white Brazilian individuals, downloaded from the GenBank. We process the FASTA sequences and then align them to the hg19 UCSC reference genome. The end result are VCF files that we need to do further processing to feed machine learning algorithms that will use the mitochondrial genetic variants to classify the individuals into their haplorgroups.
+
+\
+
+## 1. Process FASTA sequence
+
+\
+
+The mitochondrial sequences contained spaces in between as well as were lower case. In the first day of writing this notebook, I was not able to run those raw FASTA sequences into the first step of the variant call pipeline: alignment with BWA. This is one example of a fasta sequence that I started with:
+
+\
+
+```{bash, eval=F}
+>AF243780
+tattgactca cccatcaaca accgctatgt atttcgtaca ttactgccag ccaccatgaa
+tattgtacgg taccataaat acttgaccac ctgtagtaca taaaaaccca atccacatca
+aaaccccctc cccatgctta caagcaagta cagcaatcaa ccctcaacta tcacacatca
+actgcaactc caaagccacc cctcacccac taggatacca acaaacctac ccacccttaa
+cagcacatag tacataaagc catttaccgt acatagcaca ttacagtcaa atcccttctc
+gt
+```
+
+\
+
+To fix the sequences formatting, I searched for Bash commands to remove spaces and make the letters uppercase. These were satisfying solutions I came up with:
+
+\
+
+```{bash, eval=F}
+cd ~/Desktop
+string='tattgactca cccatcaaca accgctatgt atttcgtaca ttactgccag ccaccatgaa
+tattgtacgg taccataaat acttgaccac ctgtagtaca taaaaaccca atccacatca
+aaaccccctc cccatgctta caagcaagta cagcaatcaa ccctcaacta tcacacatca
+actgcaactc caaagccacc cctcacccac taggatacca acaaacctac ccacccttaa
+cagcacatag tacataaagc catttaccgt acatagcaca ttacagtcaa atcccttctc
+gt'
+## Remove spaces
+trimmed_string=$(echo $string | tr -d ' ')
+## Make uppercase
+echo  $trimmed_string| tr '[:lower:]' '[:upper:]' > AF243780.fasta
+## Print to the first line
+awk 'BEGIN { print ">AF243780" } { print }' AF243780.fasta > temp && mv temp AF243780.fasta
+```
+
+Reference for the AWK command:
+https://linuxconfig.org/how-to-insert-line-to-the-beginning-of-file-on-linux
+
+\
+
+### Multiple fasta with capital letters and spaces removed
+
+\
+
+Finally, this chunk allows us to transform the mitochondrial FASTA files downloaded from the GenBank using R. The paths are from my local machine but I transfer the capital fasta file to the appropriate folder in the hummingbird server:
+
+\
+
+```{bash, eval=F}
+## Change directory to the folder in my local machine, where I stored the GenBank mitochondrial sequences.
+cd ../../../../paei-website/data/
+## Open file, remove spaces and make letters uppercase
+cat mt_brazilian.fasta | tr -d ' ' |  tr '[:lower:]' '[:upper:]' > ../../ReComBio/ReComBio\ Scientific/geraldo/data/mt_brazilian_capital.fasta
+```
+
+\
+
+### Split and rename each fasta file
+
+\
+
+```{bash, eval=F}
+## Change directory to the fasta folder
+cd /hb/home/gchaves/results/geraldo/mitochondria/fasta
+## splitfasta breaks multi-fasta file
+/hb/home/gchaves/.local/bin/splitfasta mt_brazilian_capital.fasta 
+## Change directory to the folder containing all fasta files
+cd mt_brazilian_capital_split_files
+## for loop
+for file in mt_brazilian_capital_*; do 
+  echo $file; 
+  ## create variable fileName using the first line of fasta and removing the '>'
+  fileName=$(head -n 1 $file | sed 's/>//g')
+  ## change the splitfasta name to the header name
+  mv $file $fileName".fasta"
+  echo "this is the new file now:" $fileName".fasta"
+  ## move the file to the directory above.
+  mv $fileName".fasta" ../
+done
+## After everything is done, change directory to the directory above
+cd ..
+## Remove the filder that splitfasta created.
+rm -r mt_brazilian_capital_split_files
+```
+
+\
+
+## 2. Hummingbird Script
+
+\
+
+This variant call pipeline was recorded on document Lin2016/pipeline_192. In the second day of writing this notebook, I decided to run the multi-fasta file in the BWA alignment step. In the humminbird server, I store the mt_brazilian_capital.fasta in the ~/results/geraldo/mitochondria/fasta folder to run the variant call in the Scrip in Part 2: Hummingbird Script. I deleted mt_brazilian_capital.fasta in geraldo/data in my local machine because I did not want the mt_brazilian_capital.fasta to be uploaded to GitHub when publishing the geraldo website.
+
+In this chunk I will reuse the for loop from above to run the variant call for all fasta files.
+
+\
+
+```{bash, eval=F}
+#!/bin/bash
+#SBATCH --partition=128x24
+#SBATCH --job-name=align                   # Job name
+#SBATCH --mail-type=ALL                    # Mail events (NONE, BEGIN, END, FAIL, ALL)
+#SBATCH --mail-user=gchaves@ucsc.edu       # Where to send mail	
+#SBATCH --nodes=1                          # Use one node
+#SBATCH --ntasks=1                         # Run a single task	
+#SBATCH --cpus-per-task=4                  # Number of CPU cores per task
+#SBATCH --output=align.out                 # Standard output and error log
+# 
+# module load gcc/5.4.0
+
+SECONDS=0
+
+source ~/.bashrc
+echo "This is the task in the for loop"
+REFERENCE=~/references/hg19/GRCh37.p13.genome.fa
+cd /hb/home/gchaves/results/geraldo/mitochondria/fasta
+module load samtools
+module load bcftools
+
+
+## for loop specific to the individual fasta files
+for fastaFile in AF*.fasta; do
+  
+  ## Pick just the eight firt letters of the string
+  fastaFileName=${fastaFile:0:8}
+  echo "started sample $fastaFileName"
+  
+  ## Align
+  bwa mem -M -R '@RG\tID:sample_1\tLB:sample_1\tPL:ILLUMINA\tPM:HISEQ\tSM:sample_1' $REFERENCE $fastaFile > ~/results/geraldo/mitochondria/sam/$fastaFileName".sam"
+  echo "Just finished aligning sample $fastaFileName"
+  
+  ## SAM to BAM
+  samtools view -S -b ~/results/geraldo/mitochondria/sam/$fastaFileName".sam" > \
+  ~/results/geraldo/mitochondria/bam/$fastaFileName".bam"
+  echo "Finished SAM to BAM of sample $fastaFileName"
+  
+  ## Samtools uses reference FASTA to detect "piles" in the alignment
+  bcftools mpileup -f $REFERENCE ~/results/geraldo/mitochondria/bam/$fastaFileName".bam" > \
+  ~/results/geraldo/mitochondria/bcf/$fastaFileName".bcf"
+  
+  ## Bcftools extracts SNPs
+  echo "started Bcftools SNPs for sample $fastaFileName"
+  bcftools view -v snps ~/results/geraldo/mitochondria/bcf/$fastaFileName".bcf" > ~/results/geraldo/mitochondria/snps_vcf/$fastaFileName"_snps.vcf"
+
+  ## Bcftools extracts indels
+  echo "started Bcftools indels for sample $fastaFileName"
+  bcftools view -v indels ~/results/geraldo/mitochondria/bcf/$fastaFileName".bcf" > ~/results/geraldo/mitochondria/indels_vcf/$fastaFileName"_indels.vcf"
+  echo "Finished for sample $fastaFileName"
+
+done
+
+echo "Finished entire for loop"
+
+duration=$SECONDS
+
+echo "$((duration / 60)) minutes and $((duration % 60)) seconds elapsed."
+```
+
+\
+
+### Fix the bcftools error 
+
+\
+
+After a couple hours dealing with this error:
+
+Failed to read from /hb/home/gchaves/results/geraldo/mitochondria/bcf/AF243782.bcf: unknown file type
+
+I noticed this part in the error message:
+
+\
+
+```{bash, eval = F}
+Note that using "samtools mpileup" to generate BCF or VCF files has been
+removed.  To output these formats, please use "bcftools mpileup" instead.
+```
+
+\
+
+I then replaced the line in the code above, to 
+
+\
+
+```{bash, eval = F}
+bcftools mpileup -f ~/references/hg19/GRCh37.p13.genome.fa ~/results/geraldo/mitochondria/bam/AF243780.bam  >   ~/results/geraldo/mitochondria/bcf/AF243780.bcf
+```
+
+\
+
+## 3. References
+
+\
+
+https://stackoverflow.com/questions/2439579/how-to-get-the-first-line-of-a-file-in-a-bash-script
+https://unix.stackexchange.com/questions/104881/remove-particular-characters-from-a-variable-using-bash
+https://linuxsimply.com/bash-scripting-tutorial/string/substring/
