@@ -366,7 +366,6 @@ matrix</a></li>
 <div id="preparing-the-ml-model-to-then-evaluate"
 class="section level3">
 <h3>Preparing the ML model to then evaluate</h3>
-<pre class="r"><code>library(expss)</code></pre>
 <pre class="r"><code>library(caret)
 library(dplyr)
 library(mlbench)
@@ -382,12 +381,6 @@ table(iris$Species)</code></pre>
 <pre><code>## 
 ##     setosa versicolor  virginica 
 ##         50         50         50</code></pre>
-<pre class="r"><code>mt_features_df &lt;- read.table(&quot;./data/mt_dcast_2.txt&quot;, header = T)
-dim(mt_features_df)</code></pre>
-<pre><code>## [1] 17  5</code></pre>
-<p>Make origin factor</p>
-<pre class="r"><code>mt_features_df$origin &lt;- as.factor(mt_features_df$origin)
-mt_features_df &lt;- mt_features_df %&gt;% select(-c(&quot;GenBankID&quot;))</code></pre>
 <p>Splitting the data into train and test splits:</p>
 <pre class="r"><code>train_split_idx &lt;- caret::createDataPartition(df$Species, p = 0.75, list = FALSE)
 # Here we define a split index and we are now going to use a multiclass ML model to fit the data
@@ -395,81 +388,11 @@ train &lt;- df[train_split_idx, ]
 test &lt;- df[-train_split_idx, ]
 str(train)</code></pre>
 <pre><code>## &#39;data.frame&#39;:    114 obs. of  5 variables:
-##  $ Sepal.Length: num  5.1 4.7 4.6 5 5.4 4.4 4.9 5.4 4.8 4.3 ...
-##  $ Sepal.Width : num  3.5 3.2 3.1 3.6 3.9 2.9 3.1 3.7 3.4 3 ...
-##  $ Petal.Length: num  1.4 1.3 1.5 1.4 1.7 1.4 1.5 1.5 1.6 1.1 ...
-##  $ Petal.Width : num  0.2 0.2 0.2 0.2 0.4 0.2 0.1 0.2 0.2 0.1 ...
+##  $ Sepal.Length: num  5.1 4.9 4.6 5 5.4 4.6 5 4.4 4.9 5.4 ...
+##  $ Sepal.Width : num  3.5 3 3.1 3.6 3.9 3.4 3.4 2.9 3.1 3.7 ...
+##  $ Petal.Length: num  1.4 1.4 1.5 1.4 1.7 1.4 1.5 1.4 1.5 1.5 ...
+##  $ Petal.Width : num  0.2 0.2 0.2 0.2 0.4 0.3 0.2 0.2 0.1 0.2 ...
 ##  $ Species     : Factor w/ 3 levels &quot;setosa&quot;,&quot;versicolor&quot;,..: 1 1 1 1 1 1 1 1 1 1 ...</code></pre>
-<pre class="r"><code># Loading caret library
-require(caret)
-# Splitting the data into train and test
-index &lt;- createDataPartition(mt_features_df$origin, p = .60, list = FALSE)
-train_mt &lt;- mt_features_df[index, ]
-train_mt</code></pre>
-<pre><code>##     origin MT_16069_BP MT_16086_BP MT_16093_BP
-## 1  America           1           1           1
-## 2  America           1           1           1
-## 4  America           1           1           1
-## 6  America           1           1           1
-## 8  America           1           1           1
-## 9  America           1           1           1
-## 10  Africa           0           0           0
-## 12  Africa           0           0           0
-## 14  Africa           0           0           0
-## 15  Africa           0           0           0
-## 16  Africa           0           0           0</code></pre>
-<pre class="r"><code>cross_cases(train_mt, origin)</code></pre>
-<table class="gmisc_table" style="border-collapse: collapse; margin-top: 1em; margin-bottom: 1em;">
-<thead>
-<tr>
-<th style="border-bottom: 1px solid grey; font-weight: 900; border-top: 2px solid grey; text-align: center;">
-</th>
-<th style="font-weight: 900; border-bottom: 1px solid grey; border-top: 2px solid grey; text-align: center;">
- #Total 
-</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td colspan="2" style="font-weight: 900;">
- origin 
-</td>
-</tr>
-<tr>
-<td style="text-align: left;">
-   Africa 
-</td>
-<td style="text-align: right;">
-5
-</td>
-</tr>
-<tr>
-<td style="text-align: left;">
-   America 
-</td>
-<td style="text-align: right;">
-6
-</td>
-</tr>
-<tr>
-<td style="border-bottom: 2px solid grey; text-align: left;">
-   #Total cases 
-</td>
-<td style="border-bottom: 2px solid grey; text-align: right;">
-11
-</td>
-</tr>
-</tbody>
-</table>
-<pre class="r"><code>test_mt &lt;- mt_features_df[-index, ]
-test_mt</code></pre>
-<pre><code>##     origin MT_16069_BP MT_16086_BP MT_16093_BP
-## 3  America           1           1           1
-## 5  America           1           1           1
-## 7  America           1           1           1
-## 11  Africa           0           0           0
-## 13  Africa           0           0           0
-## 17  Africa           0           0           0</code></pre>
 <p>This now creates a 75% training set for training the ML model and we
 are going to use the remaining 25% as validation data to test the
 model.</p>
@@ -491,34 +414,9 @@ rf_model</code></pre>
 ## Resampling results across tuning parameters:
 ## 
 ##   mtry  Accuracy   Kappa    
-##   2     0.9615553  0.9412811
-##   3     0.9592774  0.9377922
-##   4     0.9607177  0.9400049
-## 
-## Accuracy was used to select the optimal model using the largest value.
-## The final value used for the model was mtry = 2.</code></pre>
-<pre class="r"><code>rf_model_mt &lt;- caret::train(origin ~ .,
-                         data = train_mt,
-                         method = &quot;rf&quot;,
-                         metric = &quot;Accuracy&quot;)</code></pre>
-<pre><code>## note: only 2 unique complexity parameters in default grid. Truncating the grid to 2 .</code></pre>
-<pre><code>## Warning in nominalTrainWorkflow(x = x, y = y, wts = weights, info = trainInfo,
-## : There were missing values in resampled performance measures.</code></pre>
-<pre class="r"><code>rf_model_mt</code></pre>
-<pre><code>## Random Forest 
-## 
-## 11 samples
-##  3 predictor
-##  2 classes: &#39;Africa&#39;, &#39;America&#39; 
-## 
-## No pre-processing
-## Resampling: Bootstrapped (25 reps) 
-## Summary of sample sizes: 11, 11, 11, 11, 11, 11, ... 
-## Resampling results across tuning parameters:
-## 
-##   mtry  Accuracy  Kappa
-##   2     1         1    
-##   3     1         1    
+##   2     0.9612994  0.9410293
+##   3     0.9597822  0.9386311
+##   4     0.9599905  0.9389380
 ## 
 ## Accuracy was used to select the optimal model using the largest value.
 ## The final value used for the model was mtry = 2.</code></pre>
@@ -583,39 +481,37 @@ cm</code></pre>
 ## Detection Rate              0.3333            0.3333           0.3333
 ## Detection Prevalence        0.3333            0.3333           0.3333
 ## Balanced Accuracy           1.0000            1.0000           1.0000</code></pre>
-<pre class="r"><code>rf_class_mt &lt;- predict(rf_model_mt, newdata = test_mt, type = &quot;raw&quot;) 
-predictions_mt &lt;- cbind(data.frame(train_preds=rf_class_mt, 
-                                test_mt$origin))
-# Create a confusion matrix object
-cm_mt &lt;- caret::confusionMatrix(predictions_mt$train_preds, predictions_mt$test_mt.origin)
-cm_mt</code></pre>
+<pre class="r"><code>print(cm)</code></pre>
 <pre><code>## Confusion Matrix and Statistics
 ## 
-##           Reference
-## Prediction Africa America
-##    Africa       3       0
-##    America      0       3
+##             Reference
+## Prediction   setosa versicolor virginica
+##   setosa         12          0         0
+##   versicolor      0         12         0
+##   virginica       0          0        12
+## 
+## Overall Statistics
 ##                                      
 ##                Accuracy : 1          
-##                  95% CI : (0.5407, 1)
-##     No Information Rate : 0.5        
-##     P-Value [Acc &gt; NIR] : 0.01563    
+##                  95% CI : (0.9026, 1)
+##     No Information Rate : 0.3333     
+##     P-Value [Acc &gt; NIR] : &lt; 2.2e-16  
 ##                                      
 ##                   Kappa : 1          
 ##                                      
 ##  Mcnemar&#39;s Test P-Value : NA         
-##                                      
-##             Sensitivity : 1.0        
-##             Specificity : 1.0        
-##          Pos Pred Value : 1.0        
-##          Neg Pred Value : 1.0        
-##              Prevalence : 0.5        
-##          Detection Rate : 0.5        
-##    Detection Prevalence : 0.5        
-##       Balanced Accuracy : 1.0        
-##                                      
-##        &#39;Positive&#39; Class : Africa     
-## </code></pre>
+## 
+## Statistics by Class:
+## 
+##                      Class: setosa Class: versicolor Class: virginica
+## Sensitivity                 1.0000            1.0000           1.0000
+## Specificity                 1.0000            1.0000           1.0000
+## Pos Pred Value              1.0000            1.0000           1.0000
+## Neg Pred Value              1.0000            1.0000           1.0000
+## Prevalence                  0.3333            0.3333           0.3333
+## Detection Rate              0.3333            0.3333           0.3333
+## Detection Prevalence        0.3333            0.3333           0.3333
+## Balanced Accuracy           1.0000            1.0000           1.0000</code></pre>
 </div>
 <div id="using-confusiontabler-to-collapse-this-data-into-a-data-frame"
 class="section level3">
@@ -659,7 +555,7 @@ print(mc_df$record_level_cm)</code></pre>
 ##   virginica : Detection Prevalence virginica : Balanced Accuracy
 ## 1                        0.3333333                             1
 ##                 cm_ts
-## 1 2024-07-01 11:09:52</code></pre>
+## 1 2024-07-01 10:57:40</code></pre>
 <pre class="r"><code>glimpse(mc_df$record_level_cm)</code></pre>
 <pre><code>## Rows: 1
 ## Columns: 50
@@ -712,7 +608,7 @@ print(mc_df$record_level_cm)</code></pre>
 ## $ `virginica : Detection Rate`        &lt;dbl&gt; 0.3333333
 ## $ `virginica : Detection Prevalence`  &lt;dbl&gt; 0.3333333
 ## $ `virginica : Balanced Accuracy`     &lt;dbl&gt; 1
-## $ cm_ts                               &lt;dttm&gt; 2024-07-01 11:09:52</code></pre>
+## $ cm_ts                               &lt;dttm&gt; 2024-07-01 10:57:40</code></pre>
 <p>This stores a list item. Here you can retrieve:</p>
 <p>the confusion matrix, as this is generated automatically and does not
 require one to be fit beforehand, as in the previous example the
@@ -763,56 +659,6 @@ get the original confusion matrix:</p>
 <p>This data frame can now be used to store analyse these records over
 time i.e. looking at the machine learning statistics and if they
 depreciate or reduce upon different training runs.</p>
-<p>The chunk below is evaluating to this error:</p>
-<pre class="r"><code>Error in unlist(cm$byClass)[col, ] : incorrect number of dimensions</code></pre>
-<pre class="r"><code># Implementing function to collapse data
-library(ConfusionTableR)
-mc_mt_df &lt;- ConfusionTableR::multi_class_cm(predictions_mt$train_preds, predictions_mt$test_mt.origin,
-                                         mode=&quot;everything&quot;)
-# Access the reduced data for storage in databases
-print(mc_df$record_level_cm)
-
-glimpse(mc_df$record_level_cm)</code></pre>
-<pre class="r"><code>mc_df$confusion_matrix</code></pre>
-<pre><code>## Confusion Matrix and Statistics
-## 
-##             Reference
-## Prediction   setosa versicolor virginica
-##   setosa         12          0         0
-##   versicolor      0         12         0
-##   virginica       0          0        12
-## 
-## Overall Statistics
-##                                      
-##                Accuracy : 1          
-##                  95% CI : (0.9026, 1)
-##     No Information Rate : 0.3333     
-##     P-Value [Acc &gt; NIR] : &lt; 2.2e-16  
-##                                      
-##                   Kappa : 1          
-##                                      
-##  Mcnemar&#39;s Test P-Value : NA         
-## 
-## Statistics by Class:
-## 
-##                      Class: setosa Class: versicolor Class: virginica
-## Sensitivity                 1.0000            1.0000           1.0000
-## Specificity                 1.0000            1.0000           1.0000
-## Pos Pred Value              1.0000            1.0000           1.0000
-## Neg Pred Value              1.0000            1.0000           1.0000
-## Precision                   1.0000            1.0000           1.0000
-## Recall                      1.0000            1.0000           1.0000
-## F1                          1.0000            1.0000           1.0000
-## Prevalence                  0.3333            0.3333           0.3333
-## Detection Rate              0.3333            0.3333           0.3333
-## Detection Prevalence        0.3333            0.3333           0.3333
-## Balanced Accuracy           1.0000            1.0000           1.0000</code></pre>
-<pre class="r"><code>mc_df$cm_tbl</code></pre>
-<pre><code>##             Reference
-## Prediction   setosa versicolor virginica
-##   setosa         12          0         0
-##   versicolor      0         12         0
-##   virginica       0          0        12</code></pre>
 </div>
 <div
 id="using-confusiontabler-to-collapse-binary-confusion-matrix-outputs"
@@ -870,41 +716,41 @@ a data frame.</p>
 <pre class="r"><code># Get the record level data
 bin_cm$record_level_cm</code></pre>
 <pre><code>##   Pred_benign_Ref_benign Pred_malignant_Ref_benign Pred_benign_Ref_malignant
-## 1                    109                         2                         1
+## 1                    109                         2                         2
 ##   Pred_malignant_Ref_malignant  Accuracy     Kappa AccuracyLower AccuracyUpper
-## 1                           58 0.9823529 0.9612167     0.9492962     0.9963459
+## 1                           57 0.9764706 0.9480837     0.9408536     0.9935527
 ##   AccuracyNull AccuracyPValue McnemarPValue Sensitivity Specificity
-## 1    0.6529412   4.220256e-27             1    0.981982   0.9830508
-##   Pos.Pred.Value Neg.Pred.Value Precision   Recall        F1 Prevalence
-## 1      0.9909091      0.9666667 0.9909091 0.981982 0.9864253  0.6529412
+## 1    0.6529412    9.47635e-26             1    0.981982   0.9661017
+##   Pos.Pred.Value Neg.Pred.Value Precision   Recall       F1 Prevalence
+## 1       0.981982      0.9661017  0.981982 0.981982 0.981982  0.6529412
 ##   Detection.Rate Detection.Prevalence Balanced.Accuracy               cm_ts
-## 1      0.6411765            0.6470588         0.9825164 2024-07-01 11:09:58</code></pre>
+## 1      0.6411765            0.6529412         0.9740418 2024-07-01 10:57:47</code></pre>
 <pre class="r"><code>glimpse(bin_cm$record_level_cm)</code></pre>
 <pre><code>## Rows: 1
 ## Columns: 23
 ## $ Pred_benign_Ref_benign       &lt;int&gt; 109
 ## $ Pred_malignant_Ref_benign    &lt;int&gt; 2
-## $ Pred_benign_Ref_malignant    &lt;int&gt; 1
-## $ Pred_malignant_Ref_malignant &lt;int&gt; 58
-## $ Accuracy                     &lt;dbl&gt; 0.9823529
-## $ Kappa                        &lt;dbl&gt; 0.9612167
-## $ AccuracyLower                &lt;dbl&gt; 0.9492962
-## $ AccuracyUpper                &lt;dbl&gt; 0.9963459
+## $ Pred_benign_Ref_malignant    &lt;int&gt; 2
+## $ Pred_malignant_Ref_malignant &lt;int&gt; 57
+## $ Accuracy                     &lt;dbl&gt; 0.9764706
+## $ Kappa                        &lt;dbl&gt; 0.9480837
+## $ AccuracyLower                &lt;dbl&gt; 0.9408536
+## $ AccuracyUpper                &lt;dbl&gt; 0.9935527
 ## $ AccuracyNull                 &lt;dbl&gt; 0.6529412
-## $ AccuracyPValue               &lt;dbl&gt; 4.220256e-27
+## $ AccuracyPValue               &lt;dbl&gt; 9.47635e-26
 ## $ McnemarPValue                &lt;dbl&gt; 1
 ## $ Sensitivity                  &lt;dbl&gt; 0.981982
-## $ Specificity                  &lt;dbl&gt; 0.9830508
-## $ Pos.Pred.Value               &lt;dbl&gt; 0.9909091
-## $ Neg.Pred.Value               &lt;dbl&gt; 0.9666667
-## $ Precision                    &lt;dbl&gt; 0.9909091
+## $ Specificity                  &lt;dbl&gt; 0.9661017
+## $ Pos.Pred.Value               &lt;dbl&gt; 0.981982
+## $ Neg.Pred.Value               &lt;dbl&gt; 0.9661017
+## $ Precision                    &lt;dbl&gt; 0.981982
 ## $ Recall                       &lt;dbl&gt; 0.981982
-## $ F1                           &lt;dbl&gt; 0.9864253
+## $ F1                           &lt;dbl&gt; 0.981982
 ## $ Prevalence                   &lt;dbl&gt; 0.6529412
 ## $ Detection.Rate               &lt;dbl&gt; 0.6411765
-## $ Detection.Prevalence         &lt;dbl&gt; 0.6470588
-## $ Balanced.Accuracy            &lt;dbl&gt; 0.9825164
-## $ cm_ts                        &lt;dttm&gt; 2024-07-01 11:09:58</code></pre>
+## $ Detection.Prevalence         &lt;dbl&gt; 0.6529412
+## $ Balanced.Accuracy            &lt;dbl&gt; 0.9740418
+## $ cm_ts                        &lt;dttm&gt; 2024-07-01 10:57:47</code></pre>
 <p>This is now in a data.frame class and can be used and saved as a
 single record to a database server to monitor confusion matrix
 performance over time.</p>
@@ -922,7 +768,7 @@ matrix and its associated summary statistics:</p>
                                    quadrant_col2 = &quot;#4397D2&quot;, 
                                    custom_title = &quot;Breast Cancer Confusion Matrix&quot;, 
                                    text_col= &quot;black&quot;)</code></pre>
-<p><img src="05-confusion-table-mt_files/figure-html/unnamed-chunk-22-1.png" width="672" /></p>
+<p><img src="05-confusion-table_files/figure-html/unnamed-chunk-12-1.png" width="672" /></p>
 </div>
 </div>
 </div>
@@ -997,7 +843,7 @@ href="https://cran.r-project.org/web/packages/ConfusionTableR/vignettes/Confusio
 ## [91] ipred_0.9-14</code></pre>
 <pre class="r"><code>end_time &lt;- Sys.time()
 end_time - start_time</code></pre>
-<pre><code>## Time difference of 8.995719 secs</code></pre>
+<pre><code>## Time difference of 8.63287 secs</code></pre>
 </div>
 
 

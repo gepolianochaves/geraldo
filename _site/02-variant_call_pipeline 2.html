@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+<meta name="author" content="Gepoliano Chaves" />
+
+
+<title>Variant Call Pipeline</title>
+
+<script src="site_libs/header-attrs-2.22/header-attrs.js"></script>
+<script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/lumen.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<style>h1 {font-size: 34px;}
+       h1.title {font-size: 38px;}
+       h2 {font-size: 30px;}
+       h3 {font-size: 24px;}
+       h4 {font-size: 18px;}
+       h5 {font-size: 16px;}
+       h6 {font-size: 12px;}
+       code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
+       pre:not([class]) { background-color: white }</style>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<link href="site_libs/highlightjs-9.12.0/default.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+<link href="site_libs/pagedtable-1.1/css/pagedtable.css" rel="stylesheet" />
+<script src="site_libs/pagedtable-1.1/js/pagedtable.js"></script>
+<link href="site_libs/font-awesome-6.4.2/css/all.min.css" rel="stylesheet" />
+<link href="site_libs/font-awesome-6.4.2/css/v4-shims.min.css" rel="stylesheet" />
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+<style type="text/css">code{white-space: pre;}</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+
+
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+details > summary > p:only-child {
+  display: inline;
+}
+pre code {
+  padding: 0;
+}
+</style>
+
+
+<style type="text/css">
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #adb5bd;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script type="text/javascript">
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark the anchor link active (and if it's in a dropdown, also mark that active)
+  var dropdown = menuAnchor.closest('li.dropdown');
+  if (window.bootstrap) { // Bootstrap 4+
+    menuAnchor.addClass('active');
+    dropdown.find('> .dropdown-toggle').addClass('active');
+  } else { // Bootstrap 3
+    menuAnchor.parent().addClass('active');
+    dropdown.addClass('active');
+  }
+
+  // Navbar adjustments
+  var navHeight = $(".navbar").first().height() + 15;
+  var style = document.createElement('style');
+  var pt = "padding-top: " + navHeight + "px; ";
+  var mt = "margin-top: -" + navHeight + "px; ";
+  var css = "";
+  // offset scroll position for anchor links (for fixed navbar)
+  for (var i = 1; i <= 6; i++) {
+    css += ".section h" + i + "{ " + pt + mt + "}\n";
+  }
+  style.innerHTML = "body {" + pt + "padding-bottom: 40px; }\n" + css;
+  document.head.appendChild(style);
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before, .tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "\e259";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "\e258";
+  font-family: 'Glyphicons Halflings';
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+
+
+<div class="navbar navbar-inverse  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-bs-toggle="collapse" data-target="#navbar" data-bs-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">Gerenciamento Genômico e Algorítmico de Fenótipos, Riscos, Diagnósticos e Prognósticos em Dados de Doenças em Brasileiros</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">
+    <span class="fa fa-home"></span>
+     
+    Home
+  </a>
+</li>
+<li>
+  <a href="about.html">
+    <span class="fa fa-solid fa-circle-info"></span>
+     
+    Sobre nós
+  </a>
+</li>
+<li>
+  <a href="codigo.html">
+    <span class="fa fa-solid fa-laptop-file"></span>
+     
+    Códigos
+  </a>
+</li>
+<li>
+  <a href="PmD.html">
+    <span class="fa fa-solid fa-people-arrows"></span>
+     
+    PmD
+  </a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div id="header">
+
+
+
+<h1 class="title toc-ignore">Variant Call Pipeline</h1>
+<h4 class="author">Gepoliano Chaves</h4>
+<h4 class="date">June 11th, 2024</h4>
+
+</div>
+
+<div id="TOC">
+<ul>
+<li><a href="#summary" id="toc-summary">Summary</a></li>
+<li><a href="#process-fasta-sequence" id="toc-process-fasta-sequence">1.
+Process FASTA sequence</a>
+<ul>
+<li><a href="#multiple-fasta-with-capital-letters-and-spaces-removed"
+id="toc-multiple-fasta-with-capital-letters-and-spaces-removed">Multiple
+fasta with capital letters and spaces removed</a></li>
+<li><a href="#split-and-rename-each-fasta-file"
+id="toc-split-and-rename-each-fasta-file">Split and rename each fasta
+file</a></li>
+</ul></li>
+<li><a href="#hummingbird-script" id="toc-hummingbird-script">2.
+Hummingbird Script</a>
+<ul>
+<li><a href="#fix-the-bcftools-error"
+id="toc-fix-the-bcftools-error">Fix the bcftools error</a></li>
+</ul></li>
+<li><a href="#references" id="toc-references">3. References</a></li>
+</ul>
+</div>
+
+<p><br />
+</p>
+<div id="summary" class="section level2">
+<h2>Summary</h2>
+<p><br />
+</p>
+<p>In this activity we process mitochondrial DNA FASTA sequences from
+self-declared white Brazilian individuals, downloaded from the GenBank.
+We process the FASTA sequences and then align them to the hg19 UCSC
+reference genome. The end result are VCF files that we need to do
+further processing to feed machine learning algorithms that will use the
+mitochondrial genetic variants to classify the individuals into their
+haplorgroups.</p>
+<p><br />
+</p>
+</div>
+<div id="process-fasta-sequence" class="section level2">
+<h2>1. Process FASTA sequence</h2>
+<p><br />
+</p>
+<p>The mitochondrial sequences contained spaces in between as well as
+were lower case. In the first day of writing this notebook, I was not
+able to run those raw FASTA sequences into the first step of the variant
+call pipeline: alignment with BWA. This is one example of a fasta
+sequence that I started with:</p>
+<p><br />
+</p>
+<pre class="bash"><code>&gt;AF243780
+tattgactca cccatcaaca accgctatgt atttcgtaca ttactgccag ccaccatgaa
+tattgtacgg taccataaat acttgaccac ctgtagtaca taaaaaccca atccacatca
+aaaccccctc cccatgctta caagcaagta cagcaatcaa ccctcaacta tcacacatca
+actgcaactc caaagccacc cctcacccac taggatacca acaaacctac ccacccttaa
+cagcacatag tacataaagc catttaccgt acatagcaca ttacagtcaa atcccttctc
+gt</code></pre>
+<p><br />
+</p>
+<p>To fix the sequences formatting, I searched for Bash commands to
+remove spaces and make the letters uppercase. These were satisfying
+solutions I came up with:</p>
+<p><br />
+</p>
+<pre class="bash"><code>cd ~/Desktop
+string=&#39;tattgactca cccatcaaca accgctatgt atttcgtaca ttactgccag ccaccatgaa
+tattgtacgg taccataaat acttgaccac ctgtagtaca taaaaaccca atccacatca
+aaaccccctc cccatgctta caagcaagta cagcaatcaa ccctcaacta tcacacatca
+actgcaactc caaagccacc cctcacccac taggatacca acaaacctac ccacccttaa
+cagcacatag tacataaagc catttaccgt acatagcaca ttacagtcaa atcccttctc
+gt&#39;
+## Remove spaces
+trimmed_string=$(echo $string | tr -d &#39; &#39;)
+## Make uppercase
+echo  $trimmed_string| tr &#39;[:lower:]&#39; &#39;[:upper:]&#39; &gt; AF243780.fasta
+## Print to the first line
+awk &#39;BEGIN { print &quot;&gt;AF243780&quot; } { print }&#39; AF243780.fasta &gt; temp &amp;&amp; mv temp AF243780.fasta</code></pre>
+<p>Reference for the AWK command: <a
+href="https://linuxconfig.org/how-to-insert-line-to-the-beginning-of-file-on-linux"
+class="uri">https://linuxconfig.org/how-to-insert-line-to-the-beginning-of-file-on-linux</a></p>
+<p><br />
+</p>
+<div id="multiple-fasta-with-capital-letters-and-spaces-removed"
+class="section level3">
+<h3>Multiple fasta with capital letters and spaces removed</h3>
+<p><br />
+</p>
+<p>Finally, this chunk allows us to transform the mitochondrial FASTA
+files downloaded from the GenBank using R. The paths are from my local
+machine but I transfer the capital fasta file to the appropriate folder
+in the hummingbird server:</p>
+<p><br />
+</p>
+<pre class="bash"><code>## Change directory to the folder in my local machine, where I stored the GenBank mitochondrial sequences.
+cd ../geraldo/data/
+## Open file, remove spaces and make letters uppercase
+cat mt_brazilian.fasta | tr -d &#39; &#39; |  tr &#39;[:lower:]&#39; &#39;[:upper:]&#39; &gt; mt_brazilian_capital.fasta</code></pre>
+<p><br />
+</p>
+</div>
+<div id="split-and-rename-each-fasta-file" class="section level3">
+<h3>Split and rename each fasta file</h3>
+<p><br />
+</p>
+<pre class="bash"><code>## Change directory to the fasta folder
+cd /hb/home/gchaves/results/geraldo/mitochondria/fasta
+## splitfasta breaks multi-fasta file
+/hb/home/gchaves/.local/bin/splitfasta mt_brazilian_capital.fasta 
+## Change directory to the folder containing all fasta files
+cd mt_brazilian_capital_split_files
+## for loop
+for file in mt_brazilian_capital_*; do 
+  echo $file; 
+  ## create variable fileName using the first line of fasta and removing the &#39;&gt;&#39;
+  fileName=$(head -n 1 $file | sed &#39;s/&gt;//g&#39;)
+  ## change the splitfasta name to the header name
+  mv $file $fileName&quot;.fasta&quot;
+  echo &quot;this is the new file now:&quot; $fileName&quot;.fasta&quot;
+  ## move the file to the directory above.
+  mv $fileName&quot;.fasta&quot; ../
+done
+## After everything is done, change directory to the directory above
+cd ..
+## Remove the filder that splitfasta created.
+rm -r mt_brazilian_capital_split_files</code></pre>
+<p><br />
+</p>
+</div>
+</div>
+<div id="hummingbird-script" class="section level2">
+<h2>2. Hummingbird Script</h2>
+<p><br />
+</p>
+<p>This variant call pipeline was recorded on document
+Lin2016/pipeline_192. In the second day of writing this notebook, I
+decided to run the multi-fasta file in the BWA alignment step. In the
+humminbird server, I store the mt_brazilian_capital.fasta in the
+~/results/geraldo/mitochondria/fasta folder to run the variant call in
+the Scrip in Part 2: Hummingbird Script. I deleted
+mt_brazilian_capital.fasta in geraldo/data in my local machine because I
+did not want the mt_brazilian_capital.fasta to be uploaded to GitHub
+when publishing the geraldo website.</p>
+<p>In this chunk I will reuse the for loop from above to run the variant
+call for all fasta files.</p>
+<p><br />
+</p>
+<pre class="bash"><code>#!/bin/bash
+#SBATCH --partition=128x24
+#SBATCH --job-name=align                   # Job name
+#SBATCH --mail-type=ALL                    # Mail events (NONE, BEGIN, END, FAIL, ALL)
+#SBATCH --mail-user=gchaves@ucsc.edu       # Where to send mail 
+#SBATCH --nodes=1                          # Use one node
+#SBATCH --ntasks=1                         # Run a single task  
+#SBATCH --cpus-per-task=4                  # Number of CPU cores per task
+#SBATCH --output=align.out                 # Standard output and error log
+# 
+# module load gcc/5.4.0
+
+SECONDS=0
+
+source ~/.bashrc
+echo &quot;This is the task in the for loop&quot;
+REFERENCE=~/references/hg19/GRCh37.p13.genome.fa
+cd /hb/home/gchaves/results/geraldo/mitochondria/fasta
+module load samtools
+module load bcftools
+
+
+## for loop specific to the individual fasta files
+for fastaFile in AF*.fasta; do
+  
+  ## Pick just the eight firt letters of the string
+  fastaFileName=${fastaFile:0:8}
+  echo &quot;started sample $fastaFileName&quot;
+  
+  ## Align
+  bwa mem -M -R &#39;@RG\tID:sample_1\tLB:sample_1\tPL:ILLUMINA\tPM:HISEQ\tSM:sample_1&#39; $REFERENCE $fastaFile &gt; ~/results/geraldo/mitochondria/sam/$fastaFileName&quot;.sam&quot;
+  echo &quot;Just finished aligning sample $fastaFileName&quot;
+  
+  ## SAM to BAM
+  samtools view -S -b ~/results/geraldo/mitochondria/sam/$fastaFileName&quot;.sam&quot; &gt; \
+  ~/results/geraldo/mitochondria/bam/$fastaFileName&quot;.bam&quot;
+  echo &quot;Finished SAM to BAM of sample $fastaFileName&quot;
+  
+  # Aligned as in Homer
+  #samtools view -S -b test/AF243780.sam &gt; test/AF243780.bam
+  
+  ## Samtools uses reference FASTA to detect &quot;piles&quot; in the alignment
+  bcftools mpileup -f $REFERENCE ~/results/geraldo/mitochondria/bam/$fastaFileName&quot;.bam&quot; &gt; \
+  ~/results/geraldo/mitochondria/bcf/$fastaFileName&quot;.bcf&quot;
+  
+  ## Bcftools extracts SNPs
+  echo &quot;started Bcftools SNPs for sample $fastaFileName&quot;
+  bcftools view -v snps ~/results/geraldo/mitochondria/bcf/$fastaFileName&quot;.bcf&quot; &gt; ~/results/geraldo/mitochondria/snps_vcf/$fastaFileName&quot;_snps.vcf&quot;
+
+  ## Bcftools extracts indels
+  echo &quot;started Bcftools indels for sample $fastaFileName&quot;
+  bcftools view -v indels ~/results/geraldo/mitochondria/bcf/$fastaFileName&quot;.bcf&quot; &gt; ~/results/geraldo/mitochondria/indels_vcf/$fastaFileName&quot;_indels.vcf&quot;
+  echo &quot;Finished for sample $fastaFileName&quot;
+
+done
+
+echo &quot;Finished entire for loop&quot;
+
+duration=$SECONDS
+
+echo &quot;$((duration / 60)) minutes and $((duration % 60)) seconds elapsed.&quot;</code></pre>
+<p><br />
+</p>
+<div id="fix-the-bcftools-error" class="section level3">
+<h3>Fix the bcftools error</h3>
+<p><br />
+</p>
+<p>After a couple hours dealing with this error:</p>
+<p>Failed to read from
+/hb/home/gchaves/results/geraldo/mitochondria/bcf/AF243782.bcf: unknown
+file type</p>
+<p>I noticed this part in the error message:</p>
+<p><br />
+</p>
+<pre class="bash"><code>Note that using &quot;samtools mpileup&quot; to generate BCF or VCF files has been
+removed.  To output these formats, please use &quot;bcftools mpileup&quot; instead.</code></pre>
+<p><br />
+</p>
+<p>I then replaced the line in the code above, to</p>
+<p><br />
+</p>
+<pre class="bash"><code>bcftools mpileup -f ~/references/hg19/GRCh37.p13.genome.fa ~/results/geraldo/mitochondria/bam/AF243780.bam  &gt;   ~/results/geraldo/mitochondria/bcf/AF243780.bcf</code></pre>
+<p><br />
+</p>
+</div>
+</div>
+<div id="references" class="section level2">
+<h2>3. References</h2>
+<p><br />
+</p>
+<p><a
+href="https://stackoverflow.com/questions/2439579/how-to-get-the-first-line-of-a-file-in-a-bash-script"
+class="uri">https://stackoverflow.com/questions/2439579/how-to-get-the-first-line-of-a-file-in-a-bash-script</a>
+<a
+href="https://unix.stackexchange.com/questions/104881/remove-particular-characters-from-a-variable-using-bash"
+class="uri">https://unix.stackexchange.com/questions/104881/remove-particular-characters-from-a-variable-using-bash</a>
+<a
+href="https://linuxsimply.com/bash-scripting-tutorial/string/substring/"
+class="uri">https://linuxsimply.com/bash-scripting-tutorial/string/substring/</a></p>
+</div>
+
+
+
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open');
+  });
+});
+</script>
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

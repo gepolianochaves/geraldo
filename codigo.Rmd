@@ -11,8 +11,8 @@
 Estudamos a genômica de três das principais doenças mentais que afetam o envelhecimento: Doença de Huntington, Doença de Parkinson e Doença de Alzheimer. Nos seguintes notebooks, a análise computacional da sequência mitocondrial de brasileiros auto-declarados brancos é apresentada em detalhes:
 
 * [Variantes genéticas, envelhecimento e saúde mental da população brasileira](07-Phylogenetic-Analyisis_mt_BR.html)
-* [Variant Call Pipeline](variant_call_pipeline.html)
-* [Acessando dados DATASUS para modelagem](datasus_raca_cor.html)
+* [Variant Call Pipeline](02-variant_call_pipeline.html)
+* [Acessando dados DATASUS para modelagem](04-datasus_raca_cor.html)
 
 \
 

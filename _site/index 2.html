@@ -11,7 +11,7 @@
 
 
 
-<title>Códigos</title>
+<title>Gerenciamento Genômico e Algorítmico de Doenças</title>
 
 <script src="site_libs/header-attrs-2.22/header-attrs.js"></script>
 <script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
@@ -59,6 +59,28 @@ if (window.hljs) {
 
 
 
+<style type="text/css">
+/* for pandoc --citeproc since 2.11 */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+}
+.hanging div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}
+</style>
 
 
 
@@ -284,47 +306,78 @@ $(document).ready(function () {
 
 
 
-<h1 class="title toc-ignore">Códigos</h1>
+<h1 class="title toc-ignore">Gerenciamento Genômico e Algorítmico de
+Doenças</h1>
 
 </div>
 
 
 <p><br />
 </p>
-<div id="envelhecimento-e-bem-estar" class="section level3">
-<h3>Envelhecimento e Bem-Estar</h3>
+<p>No Brasil, a Constituição de 1988 garante o direito ao acesso
+universal e integral à saúde como uma obrigação do Estado. No entanto,
+diversos fatores contribuem para acesso problemático a este direito
+constitucional, como discutido em <span class="citation">Brito-Silva,
+Bezerra, and Tanaka (2012)</span>.</p>
+<p>Quando se trata do acesso à informação genética e genômica, mais
+dificuldades adicionam-se ao acesso dos cidadãos brasileiros a
+conhecimento e uso da pesquisa genômica e genética. Dados publicos, no
+entanto, tornam possível a integração da informação genética e genômica
+de brasileiros ao Sistema Único de Saúde.</p>
+<p>Afim de usar dados públicos para melhor gerenciamento da saúde dos
+cidadãos, desenvolvemos o Gerenciamento Genômico e Algorítmico de
+Fenótipos, Riscos, Diagnósticos e Prognósticos em Dados de Doenças de
+Brasileiros (GERALDO). Disponibilizamos análises de oncologia,
+neurodegeneações e COVID-19.</p>
 <p><br />
 </p>
-<p>Estudamos a genômica de três das principais doenças mentais que
-afetam o envelhecimento: Doença de Huntington, Doença de Parkinson e
-Doença de Alzheimer. Nos seguintes notebooks, a análise computacional da
-sequência mitocondrial de brasileiros auto-declarados brancos é
-apresentada em detalhes:</p>
-<ul>
-<li><a href="07-Phylogenetic-Analyisis_mt_BR.html">Variantes genéticas,
-envelhecimento e saúde mental da população brasileira</a></li>
-<li><a href="02-variant_call_pipeline.html">Variant Call
-Pipeline</a></li>
-<li><a href="04-datasus_raca_cor.html">Acessando dados DATASUS para
-modelagem</a></li>
-</ul>
+<div
+id="análise-de-sobrevivência-e-prognóstica-de-pacientes-oncológicos"
+class="section level3">
+<h3>Análise de sobrevivência e prognóstica de pacientes oncológicos</h3>
+<p><br />
+</p>
+<p>Tumores adultos e pediátricos não apresentam mecanismos iguais de
+malignidade e progressão. Enquanto há consenso de que progressão tumoral
+em adultos é conduzida por mutações que acumularam-se durante a vida do
+paciente, tumores pediátricos são dirigidos por mecanismos
+diferentes.</p>
+<p>Em neuroblastoma os diferentes fatores que compõem o prognóstico
+levam à classificação dos paciente como grupo de alto risco e grupo de
+baixo risco (<em>high risk</em>; <em>low risk</em>). A figura abaixo
+mostra a análise de sobrevivência comparando o grupo de risco alto e
+baixo em neuroblastoma.</p>
+<p>Observe que o grupo de alto risco apresenta muito menor probabilidade
+de sobrevivência que o grupo de baixo risco. Um dos objetivos do
+presente trabalho é entender os fatores genéticos responsáveis pela
+menor sobrevivência do grupo e alto risco.</p>
+<p><br />
+</p>
+<div class="float">
+<img src="../figures/os_survival_figure.png" style="width:60.0%"
+alt="Curva de sobrevivência de pacientes de neuroblastoma. A classificação divide pacientes em dois grupos: alto risco e risco baixo. Devido ao progresso nas tecnologias de sequenciamento de DNA, observou-se que modificações epigenéticas estão relacionadas à progressão da doença." />
+<div class="figcaption">Curva de sobrevivência de pacientes de
+neuroblastoma. A classificação divide pacientes em dois grupos: alto
+risco e risco baixo. Devido ao progresso nas tecnologias de
+sequenciamento de DNA, observou-se que modificações epigenéticas estão
+relacionadas à progressão da doença.</div>
+</div>
 <p><br />
 </p>
 </div>
-<div id="oncologia" class="section level3">
-<h3>Oncologia</h3>
+<div id="referências" class="section level2">
+<h2>Referências</h2>
 <p><br />
 </p>
-<p>Desenvolvemos uma <em>framework</em> para uso de biópsia líquida no
-diagnóstico e prognóstico de pacientes oncológicos.</p>
-<ul>
-<li><a href="08-GSE62564.html">Conjuntos de dados de
-neuroblastoma</a></li>
-<li><a href="15-shiny-boxplot.html">Algoritmo para classificação de
-tumores em python</a></li>
-<li><a href="16-shiny-tumor-classification.html">Algoritmo para
-classificação de tumores em R com aplicativo Shiny</a></li>
-</ul>
+<div id="refs" class="references csl-bib-body hanging-indent">
+<div id="ref-Brito-Silva2012" class="csl-entry">
+Brito-Silva, Keila, Adriana Falangola Benjamin Bezerra, and Oswaldo
+Yoshimi Tanaka. 2012. <em>Direito à Saúde e Integralidade: Uma Discussão
+Sobre Os Desafios e Caminhos Para Sua Efetivação</em>. <em>Interface –
+Comunicacao, Saude, Educacao</em>. <a
+href="https://www.scielo.br/j/icse/a/WC7GKD4py6Cq7cLdRvDZx3H/?lang=pt">https://www.scielo.br/j/icse/a/WC7GKD4py6Cq7cLdRvDZx3H/?lang=pt</a>.
+</div>
+</div>
 </div>
 
 
