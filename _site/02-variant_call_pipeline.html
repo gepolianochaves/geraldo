@@ -387,9 +387,9 @@ in the hummingbird server:</p>
 <p><br />
 </p>
 <pre class="bash"><code>## Change directory to the folder in my local machine, where I stored the GenBank mitochondrial sequences.
-cd ../../../../paei-website/data/
+cd ../geraldo/data/
 ## Open file, remove spaces and make letters uppercase
-cat mt_brazilian.fasta | tr -d &#39; &#39; |  tr &#39;[:lower:]&#39; &#39;[:upper:]&#39; &gt; ../../ReComBio/ReComBio\ Scientific/geraldo/data/mt_brazilian_capital.fasta</code></pre>
+cat mt_brazilian.fasta | tr -d &#39; &#39; |  tr &#39;[:lower:]&#39; &#39;[:upper:]&#39; &gt; mt_brazilian_capital.fasta</code></pre>
 <p><br />
 </p>
 </div>
@@ -476,6 +476,9 @@ for fastaFile in AF*.fasta; do
   samtools view -S -b ~/results/geraldo/mitochondria/sam/$fastaFileName&quot;.sam&quot; &gt; \
   ~/results/geraldo/mitochondria/bam/$fastaFileName&quot;.bam&quot;
   echo &quot;Finished SAM to BAM of sample $fastaFileName&quot;
+  
+  # Aligned as in Homer
+  #samtools view -S -b test/AF243780.sam &gt; test/AF243780.bam
   
   ## Samtools uses reference FASTA to detect &quot;piles&quot; in the alignment
   bcftools mpileup -f $REFERENCE ~/results/geraldo/mitochondria/bam/$fastaFileName&quot;.bam&quot; &gt; \

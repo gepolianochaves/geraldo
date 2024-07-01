@@ -519,7 +519,7 @@ in a database, a genetic model can be created or imputed. Figure from
 <p>Load multi-fasta mtDNA from Brazil.</p>
 <pre class="r"><code>mt_brazilian &lt;- readDNAStringSet(file=&quot;data/mt_brazilian.fasta&quot;)</code></pre>
 <pre><code>## Warning in .Call2(&quot;fasta_index&quot;, filexp_list, nrec, skip, seek.first.rec, :
-## reading FASTA file data/mt_brazilian.fasta: ignored 425 invalid one-letter
+## reading FASTA file data/mt_brazilian.fasta: ignored 850 invalid one-letter
 ## sequence codes</code></pre>
 <p><br />
 </p>
@@ -536,19 +536,19 @@ class="citation">(<strong>Gatto4?</strong>)</span>.</p>
 </p>
 <p>Print sequence</p>
 <pre class="r"><code>print(seq_start_to_end)</code></pre>
-<pre><code>## DNAStringSet object of length 17:
+<pre><code>## DNAStringSet object of length 34:
 ##      width seq                                              names               
-##  [1]   101 ATAAAAACCCAATCCACATCAAA...CAACTGCAACTCCAAAGCCACC AF243780
-##  [2]   101 ATGAAAACCCAATCCACATCAAA...CAACTGCAACTCCAAAGCCACC AF243781
-##  [3]   101 ATAAAAACCCAATCCACATCAAA...CAACTGCAACTCCAAAGCCACC AF243782
-##  [4]   101 ATAAAAACCCAATCCACATCAAA...CAACTGCAACTCCAAAGCCACC AF243783
-##  [5]   101 ATAAAAACCCAATCCACATCAAA...CAACTGCAACTCCAAAGCCACC AF243784
+##  [1]   101 ATAAAAACCCAATCCACATCAAA...CAACTGCAACTCCAAAGCCATC AF243627
+##  [2]   101 ATAAAAACCCAATCCACATCAAA...CAACTGCAACTCCAAAGCCACC AF243628
+##  [3]   101 ATAAAAACCCAATCCACATCAAA...CAACTGCAACTCCAAAGCCACC AF243629
+##  [4]   101 ATAAAAACCCAATCCACATCAAA...CAACTGCAACCCCAAAGCCACC AF243630
+##  [5]   101 ATAAAAACCCAATCCACATCAAA...CAACTGCAACTCCAAAGCCACC AF243631
 ##  ...   ... ...
-## [13]   101 ATAAAAACCCAATCCACATCAAA...CAACTGCAACTCCAAAGCCACC AF243792
-## [14]   101 ATAAAAACCCAATCCACATCAAA...CAACTGCAACTCCAAAGCCACC AF243793
-## [15]   101 ATAAAAACCCAATCCACATCAAA...CAACTGCAACTCCAAAGCCACC AF243794
-## [16]   101 ATAAAAACCCAATCCACATCAAA...CAACTGCAACTCCAAAGCCACC AF243795
-## [17]   101 ATAAAAACCCAATCCACATCAAA...CAACTGCAACTCCAAAGCCACC AF243796</code></pre>
+## [30]   101 ATAAAAACCCAATCCACATCAAA...CAACTGCAACTCCAAAGCCACC AF243792
+## [31]   101 ATAAAAACCCAATCCACATCAAA...CAACTGCAACTCCAAAGCCACC AF243793
+## [32]   101 ATAAAAACCCAATCCACATCAAA...CAACTGCAACTCCAAAGCCACC AF243794
+## [33]   101 ATAAAAACCCAATCCACATCAAA...CAACTGCAACTCCAAAGCCACC AF243795
+## [34]   101 ATAAAAACCCAATCCACATCAAA...CAACTGCAACTCCAAAGCCACC AF243796</code></pre>
 <p><br />
 </p>
 <p>Align sequences</p>
@@ -557,32 +557,33 @@ alignment_start_to_end &lt;- msa(seq_start_to_end)</code></pre>
 <pre><code>## use default substitution matrix</code></pre>
 <pre class="r"><code>end_time &lt;- Sys.time()
 end_time - start_time</code></pre>
-<pre><code>## Time difference of 0.07121801 secs</code></pre>
+<pre><code>## Time difference of 0.134402 secs</code></pre>
 <pre class="r"><code>alignment_start_to_end</code></pre>
 <pre><code>## CLUSTAL 2.1  
 ## 
 ## Call:
 ##    msa(seq_start_to_end)
 ## 
-## MsaDNAMultipleAlignment with 17 rows and 102 columns
+## MsaDNAMultipleAlignment with 34 rows and 102 columns
 ##      aln                                                   names
-##  [1] ATAAAAACCCAATCCACATCAAAAC...ATCAACTGCAACTCCAAAGCCACC- AF243780
-##  [2] ATGAAAACCCAATCCACATCAAAAC...ATCAACTGCAACTCCAAAGCCACC- AF243781
-##  [3] ATAAAAACCCAATCCACATCAAAAC...ATCAACTGCAACTCCAAAGCCACC- AF243789
-##  [4] ATAAAAACCCAATCCACATCAAAAC...ATCAACTGCAACTCCAAAGCCACC- AF243786
-##  [5] ATAAAAACCCAATCCACATCAAAAC...ATCAACTGCAACTCCAAAGCCACC- AF243795
-##  [6] ATAAAAACCCAATCCACATCAAAAC...ATCAACTGCAACTCCAAAGCCACC- AF243796
-##  [7] ATAAAAACCCAATCCACATCAAAAC...ATCAACTGCAACTCCAAAGCCACC- AF243785
-##  [8] ATAAAAACCCAATCCACATCAAAAC...ATCAACTGCAACTCCAAAGCCACC- AF243787
-##  [9] ATAAAAACCCAATCCACATCAAAAC...ATCAACTGCAACTCCAAAGCCACC- AF243794
-## [10] ATAAAAACCCAATCCACATCAAAAC...ATCAACTGCAACTCCAAAGCCACC- AF243783
-## [11] ATAAAAACCCAATCCACATCAAAAC...ATCAACTGCAACTCCAAAGCCACC- AF243784
-## [12] ATAAAAACCCAATCCACATCAAAAC...ATCAACTGCAACTCCAAAGCCACC- AF243791
-## [13] ATAAAAACCCAATCCACATCAAAAC...ATCAACTGCAACTC-AAAGCCACCC AF243788
-## [14] ATAAAAACCCAATCCACATCAAAAC...ATCAACTGCAACTCCAAAGCCACC- AF243793
-## [15] ATAAAAACCCAATCCACATCAAAAC...ATCAACTGCAACTCCAAAGCCACC- AF243782
-## [16] ATAAAAACCCAATCCACATCAAAAC...ATCAACTGCAACTCCAAAGCCACC- AF243792
-## [17] ATAAAAACCCAATCCACATCAAAAC...ATCAACTGCAATTCCAAAGCCACC- AF243790
+##  [1] ATAAAAACCCAATCCACATCAAAAC...ATCAACTGCAACTCCAAAGCCATC- AF243627
+##  [2] ATAAAAACCCAATCCACATCAAAAC...ATCAACTGCAACTCCAAAGCCACC- AF243628
+##  [3] ATAAAAACCCAATCCACATCAAAAC...ATCAACTGCAACTCCAAAGCCACC- AF243631
+##  [4] ATAAAAACCCAATCCACATCAAAAC...ATCAACTGCAACTCCAAAGCCACC- AF243704
+##  [5] ATAAAAACCCAATCCACATCAAAAC...ATCAACTGCAACTCCAAAGCCACC- AF243632
+##  [6] ATAAAAACCCAATCCACATCAAAAC...ATCAACTGCAACTCCAAAGCCACC- AF243633
+##  [7] ATAAAAACCCAATCCACATCAAAAC...ATCAACTGCAACTCCAAAGCCACC- AF243705
+##  [8] ATAAAAACCCAATCCACATCAAAAC...ATCAACTGCAACTCCAAAGCCACC- AF243706
+##  [9] ATAAAAACCCAATCCACATCAAAAC...ATCAACTGCAACTCCAAAGCCACC- AF243708 
+##  ... ...
+## [27] ATAAAAACCCAATCCACATCAAAAC...ATCAACTGCAACTCCAAAGCCACC- AF243629
+## [28] ATAAAAACCCAATCCACATCAAAAC...ATCAACTGCAACCCCAAAGCCACC- AF243630
+## [29] ATAAAAACCCAATCCACATCAAAAC...ATCAACTGCAACTCCAAAGCCACC- AF243703
+## [30] ATAAAAACCCAATCCACATCAAAAC...ATCAACTGCAACTCCAAAGCCACC- AF243707
+## [31] ATAAAAACCCAATCCACATCAAAAC...ATCAACTGCAACTC-AAAGCCACCC AF243709
+## [32] ATAAAAACCCAACCCACATCAAAAC...ATCAATTGCAACTCCAAAGCCACC- AF243702
+## [33] ATAAAAACCCAATCCACATCAAAAC...ATCAACTGCAACTCCAAAGCCACC- AF243782
+## [34] ATAAAAACCCAATCCACATCAAAAC...ATCAACTGCAACTCCAAAGCCACC- AF243792
 ##  Con ATAAAAACCCAATCCACATCAAAAC...ATCAACTGCAACTCCAAAGCCACC- Consensus</code></pre>
 <p><br />
 </p>
@@ -632,9 +633,10 @@ N501Y</li>
       char_width = 0.5, 
       seq_name = T) + geom_seqlogo() + geom_msaBar()</code></pre>
 <pre><code>## Warning in rbind(c(&quot;T&quot;, &quot;A&quot;, &quot;T&quot;, &quot;T&quot;, &quot;G&quot;, &quot;A&quot;, &quot;C&quot;, &quot;T&quot;, &quot;C&quot;, &quot;A&quot;, &quot;C&quot;, :
-## number of columns of result is not a multiple of vector length (arg 9)</code></pre>
-<pre><code>## Coordinate system already present. Adding new coordinate
-## system, which will replace the existing one.</code></pre>
+## number of columns of result is not a multiple of vector length (arg 17)</code></pre>
+<pre><code>## Coordinate system already present. Adding new
+## coordinate system, which will replace the existing
+## one.</code></pre>
 <p><img src="07-Phylogenetic-Analyisis_mt_BR_files/figure-html/unnamed-chunk-7-1.png" width="672" /></p>
 <p><br />
 </p>
@@ -651,9 +653,10 @@ N501Y</li>
       char_width = 0.5, 
       seq_name = F) + geom_seqlogo() + geom_msaBar()</code></pre>
 <pre><code>## Warning in rbind(c(&quot;T&quot;, &quot;A&quot;, &quot;T&quot;, &quot;T&quot;, &quot;G&quot;, &quot;A&quot;, &quot;C&quot;, &quot;T&quot;, &quot;C&quot;, &quot;A&quot;, &quot;C&quot;, :
-## number of columns of result is not a multiple of vector length (arg 9)</code></pre>
-<pre><code>## Coordinate system already present. Adding new coordinate
-## system, which will replace the existing one.</code></pre>
+## number of columns of result is not a multiple of vector length (arg 17)</code></pre>
+<pre><code>## Coordinate system already present. Adding new
+## coordinate system, which will replace the existing
+## one.</code></pre>
 <p><img src="07-Phylogenetic-Analyisis_mt_BR_files/figure-html/unnamed-chunk-8-1.png" width="672" /></p>
 <p><br />
 </p>
@@ -685,13 +688,11 @@ phangorn</p>
 </p>
 <pre class="r"><code>library(&quot;phangorn&quot;)</code></pre>
 <pre><code>## Warning: package &#39;phangorn&#39; was built under R version 4.1.2</code></pre>
-<pre><code>## Loading required package: ape</code></pre>
-<pre><code>## Warning: package &#39;ape&#39; was built under R version 4.1.2</code></pre>
 <pre><code>## 
-## Attaching package: &#39;ape&#39;</code></pre>
-<pre><code>## The following object is masked from &#39;package:Biostrings&#39;:
+## Attaching package: &#39;phangorn&#39;</code></pre>
+<pre><code>## The following object is masked from &#39;package:pROC&#39;:
 ## 
-##     complement</code></pre>
+##     coords</code></pre>
 <pre class="r"><code>dm_extremo_sul_msa_partial &lt;- dist.ml(as.DNAbin(alignment_start_to_end))</code></pre>
 <p><br />
 </p>
@@ -724,6 +725,12 @@ adegenet:</p>
 <pre><code>## The following object is masked from &#39;package:phangorn&#39;:
 ## 
 ##     AICc</code></pre>
+<pre><code>## The following object is masked from &#39;package:RCurl&#39;:
+## 
+##     pop</code></pre>
+<pre><code>## The following object is masked from &#39;package:expss&#39;:
+## 
+##     other</code></pre>
 <pre class="r"><code>dm_extremo_sul_msa_partial_df &lt;- as.data.frame(as.matrix(dm_extremo_sul_msa_partial))
 table.paint(dm_extremo_sul_msa_partial_df, cleg=0, clabel.row=.5, clabel.col=.5)</code></pre>
 <p><img src="07-Phylogenetic-Analyisis_mt_BR_files/figure-html/unnamed-chunk-10-1.png" width="672" /></p>

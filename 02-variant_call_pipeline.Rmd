@@ -3,7 +3,6 @@ title: "Variant Call Pipeline"
 
 author: "Gepoliano Chaves"
 
-
 date: "June 11th, 2024"
 
 output:
@@ -77,9 +76,9 @@ Finally, this chunk allows us to transform the mitochondrial FASTA files downloa
 
 ```{bash, eval=F}
 ## Change directory to the folder in my local machine, where I stored the GenBank mitochondrial sequences.
-cd ../../../../paei-website/data/
+cd ../geraldo/data/
 ## Open file, remove spaces and make letters uppercase
-cat mt_brazilian.fasta | tr -d ' ' |  tr '[:lower:]' '[:upper:]' > ../../ReComBio/ReComBio\ Scientific/geraldo/data/mt_brazilian_capital.fasta
+cat mt_brazilian.fasta | tr -d ' ' |  tr '[:lower:]' '[:upper:]' > mt_brazilian_capital.fasta
 ```
 
 \
@@ -162,6 +161,9 @@ for fastaFile in AF*.fasta; do
   samtools view -S -b ~/results/geraldo/mitochondria/sam/$fastaFileName".sam" > \
   ~/results/geraldo/mitochondria/bam/$fastaFileName".bam"
   echo "Finished SAM to BAM of sample $fastaFileName"
+  
+  # Aligned as in Homer
+  #samtools view -S -b test/AF243780.sam > test/AF243780.bam
   
   ## Samtools uses reference FASTA to detect "piles" in the alignment
   bcftools mpileup -f $REFERENCE ~/results/geraldo/mitochondria/bam/$fastaFileName".bam" > \
