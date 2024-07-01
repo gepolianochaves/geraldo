@@ -659,7 +659,7 @@ print(mc_df$record_level_cm)</code></pre>
 ##   virginica : Detection Prevalence virginica : Balanced Accuracy
 ## 1                        0.3333333                             1
 ##                 cm_ts
-## 1 2024-07-01 11:09:52</code></pre>
+## 1 2024-07-01 11:16:47</code></pre>
 <pre class="r"><code>glimpse(mc_df$record_level_cm)</code></pre>
 <pre><code>## Rows: 1
 ## Columns: 50
@@ -712,7 +712,7 @@ print(mc_df$record_level_cm)</code></pre>
 ## $ `virginica : Detection Rate`        &lt;dbl&gt; 0.3333333
 ## $ `virginica : Detection Prevalence`  &lt;dbl&gt; 0.3333333
 ## $ `virginica : Balanced Accuracy`     &lt;dbl&gt; 1
-## $ cm_ts                               &lt;dttm&gt; 2024-07-01 11:09:52</code></pre>
+## $ cm_ts                               &lt;dttm&gt; 2024-07-01 11:16:47</code></pre>
 <p>This stores a list item. Here you can retrieve:</p>
 <p>the confusion matrix, as this is generated automatically and does not
 require one to be fit beforehand, as in the previous example the
@@ -878,7 +878,7 @@ bin_cm$record_level_cm</code></pre>
 ##   Pos.Pred.Value Neg.Pred.Value Precision   Recall        F1 Prevalence
 ## 1      0.9909091      0.9666667 0.9909091 0.981982 0.9864253  0.6529412
 ##   Detection.Rate Detection.Prevalence Balanced.Accuracy               cm_ts
-## 1      0.6411765            0.6470588         0.9825164 2024-07-01 11:09:58</code></pre>
+## 1      0.6411765            0.6470588         0.9825164 2024-07-01 11:16:54</code></pre>
 <pre class="r"><code>glimpse(bin_cm$record_level_cm)</code></pre>
 <pre><code>## Rows: 1
 ## Columns: 23
@@ -904,7 +904,7 @@ bin_cm$record_level_cm</code></pre>
 ## $ Detection.Rate               &lt;dbl&gt; 0.6411765
 ## $ Detection.Prevalence         &lt;dbl&gt; 0.6470588
 ## $ Balanced.Accuracy            &lt;dbl&gt; 0.9825164
-## $ cm_ts                        &lt;dttm&gt; 2024-07-01 11:09:58</code></pre>
+## $ cm_ts                        &lt;dttm&gt; 2024-07-01 11:16:54</code></pre>
 <p>This is now in a data.frame class and can be used and saved as a
 single record to a database server to monitor confusion matrix
 performance over time.</p>
@@ -997,7 +997,7 @@ href="https://cran.r-project.org/web/packages/ConfusionTableR/vignettes/Confusio
 ## [91] ipred_0.9-14</code></pre>
 <pre class="r"><code>end_time &lt;- Sys.time()
 end_time - start_time</code></pre>
-<pre><code>## Time difference of 8.995719 secs</code></pre>
+<pre><code>## Time difference of 9.315599 secs</code></pre>
 </div>
 
 
