@@ -12,6 +12,7 @@ Estudamos a genômica de três das principais doenças mentais que afetam o enve
 
 * [Variantes genéticas, envelhecimento e saúde mental da população brasileira](07-Phylogenetic-Analyisis_mt_BR.html)
 * [Variant Call Pipeline](02-variant_call_pipeline.html)
+* [Classificação por Aprendizado de Máquina](05-binary-logistic-regression-appended.html)
 * [Acessando dados DATASUS para modelagem](04-datasus_raca_cor.html)
 
 \
