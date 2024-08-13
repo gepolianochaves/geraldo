@@ -9,18 +9,29 @@ output:
 bibliography: references.bib
 ---
 
-Para verificação da variável raça/cor foi utilizado o vídeo do Fábio @Rocha2023 referência.
+\
+
+Para verificação da variável raça/cor foi utilizado o vídeo do Fábio @Rocha2023 como referência.
+
+\
 
 ## Load libraries
+
+\
 
 
 ```{r load libraries, message=F, warning=F}
 library(microdatasus)
 library(dplyr)
 library(tidyverse)
+library(maditr)
 ```
 
-## Coleta de dados
+\
+
+## Coleta e Processamento de dados
+
+\
 
 ```{r fetch datasus, eval=F}
 dados = fetch_datasus(year_start = 2000,
@@ -35,7 +46,11 @@ Salvando dados. Sempre salvar dados baixados de fonte externa como .rds, pois sa
 saveRDS(dados, file = "data/dados.rds")
 ```
 
-## Carregando dados com cálculo de tempo.
+\
+
+#### Carregando dados processados e calculando tempo para carregar
+
+\
 
 ```{r}
 start_time <- Sys.time()
@@ -44,14 +59,20 @@ end_time <- Sys.time()
 end_time - start_time
 ```
 
-## Contagens
+\
 
-```{r check dataframe, message=F}
+#### Contagem de indivíduos por categoria da Variável Raça/Cor
+
+\
+
+```{r check dataframe, message=F, warning=F}
 library(expss)
 cross_cases(dados, RACACOR)
 ```
 
-## Constrói DF com identificação racial
+\
+
+#### Constrir DF com identificação racial
 
 numero total de brancos, pardos, pretos, amarelos, indígenas
 
@@ -59,21 +80,25 @@ numero total de brancos, pardos, pretos, amarelos, indígenas
 racacor_df <- dados %>% count(RACACOR, sort = TRUE)
 ```
 
-## Transformar variável Raça/Cor
+#### Transformar variável Raça/Cor
 
 Transforma coluna com caracteres em nomes de raça/cor
 
 ```{r ifelse raca cor}
 racacor_df <- racacor_df %>%
   dplyr::mutate(raca_cor_factor = ifelse(racacor_df$RACACOR == "1", "branca", 
-                                         ifelse(racacor_df$RACACOR == "2", "parda",
-                                                ifelse(racacor_df$RACACOR == "3", "preta",
-                                                       ifelse(racacor_df$RACACOR == "4", "amarela", 
+                                         ifelse(racacor_df$RACACOR == "2", "preta",
+                                                ifelse(racacor_df$RACACOR == "3", "amarela",
+                                                       ifelse(racacor_df$RACACOR == "4", "parda", 
                                                               ifelse(racacor_df$RACACOR == "5", "indígena",
                                                                      ifelse(racacor_df$RACACOR == "9", "ignorado","0")))))))
 ```
 
-## Gráfico de barras Raça/Cor
+\
+
+#### Gráfico de barras por categoria da Variável Raça/Cor
+
+\
 
 Nesta parte, poderemos estimar o número de indivíduos sob risco, considerando as categorias raciais brasileiras.
 
@@ -84,6 +109,148 @@ ggplot(data=racacor_df, aes(x=raca_cor_factor, y=n)) +
   geom_bar(stat="identity")
 ```
 
+\
+
+## Gráficos de Mortalidade Anual
+
+\
+
+#### Selecionar variáveis e processá-las para obter ano de óbito do paciente
+
+\
+
+Transforma variável DTOBITO usando função dmy criando variável (coluna) YMD em yyyy-mm-dd. Referência: https://rstudio.github.io/cheatsheets/html/lubridate.html
+
+```{r}
+library(lubridate)
+dados_selected <- dados %>%
+  select(contador, RACACOR, DTOBITO, CAUSABAS, DTNASC, IDADE) %>%
+  mutate(YMD = dmy(dados$DTOBITO))
+
+library(stringr)
+# Split Each Sample
+dados_year <- str_split_fixed(dados_selected$YMD, "-", 3)
+# Construct Vector Maintaining parts of interest
+split_vector_year <- paste0(dados_year[,1])
+# Add vector to DF, after column of interest
+dados_appended <- add_column(dados_selected, year = split_vector_year, .after = "YMD")
+```
+
+\
+
+#### Agrupar dados pela variável *years* a fim de contar o número anual de indivíduos 
+
+\
+
+Referência: https://dplyr.tidyverse.org/reference/group_by.html
+
+Cálculos com valores anuais totais:
+
+```{r}
+dados_agregados_year <- dados_appended %>%
+  group_by(year) %>%
+  summarise(n = n())
+```
+
+```{r, eval=F}
+dados_agrupados_racaCor <- dados_appended %>%
+  group_by(RACACOR) %>%
+  summarise(n = n())
+
+dados_agregados_racaCor <- dados_appended %>%
+  group_by(year) %>%
+  group_by(RACACOR) %>%
+  summarise(n = n())
+
+
+dados_agregados_racaCor <- dados_appended %>%
+  group_by(chr) %>%
+  summarise(avg = mean(x)) %>%
+  arrange(chr, .locale = "en")
+```
+
+Remover NAs dos dados agregados por ano
+
+```{r}
+dados_agregados_year <- dados_agregados_year[ which(
+  dados_agregados_year$year != "NA"), ]
+```
+
+\
+
+### Mortalidade Anual Total
+
+\
+
+```{r}
+library(ggplot2)
+# Basic line plot with points
+ggplot(data=dados_agregados_year, aes(x=year, y=n, group=1)) +
+  geom_line()+
+  geom_point()
+```
+
+\
+
+### Mortalidade Anual Total Usando Variável Raça/Cor
+
+\
+
+Mortalidade anual total (figura acima) e mortalidade anual usando a variável Raça/Cor (figura abaixo) foram feitas usando @STHTDA202408 como referência.
+
+```{r}
+dados_race_year_selcd <- dados_appended %>%
+  select(RACACOR, year)
+
+dados_agrupados_racaCor <- dados_race_year_selcd %>%
+  group_by(RACACOR) %>%
+  summarise(n = n())
+```
+
+
+```{r}
+library(reshape2)
+
+#use cast() to convert data frame from long to wide format
+wide_dados_appended <- dcast(dados_race_year_selcd, year ~ RACACOR)
+# wide_dados_appended <- dcast(dados_race_year_selcd, RACACOR ~ year)
+
+# Melt the data frame
+dados_appended_melted <- melt(wide_dados_appended, id.vars = "year")
+
+ggplot(dados_appended_melted, aes(x=year, y=value, group=variable)) +
+  geom_line(aes(linetype=variable))+
+  geom_point()
+
+# wait to change the variable names:
+
+# names(dados_appended_melted)[names(dados_appended_melted) == 'variable'] <- 'RACACOR'
+# names(dados_appended_melted)[names(dados_appended_melted) == 'value'] <- 'n'
+
+
+```
+
+\
+
+### Mortalidade Anual Total por Neuroblastoma
+
+\
+
+
+```{r}
+dados_nb <- dados_appended[ which(
+  dados_appended$CAUSABAS == "C749"), ]
+
+dados_agregados_nb_year <- dados_nb %>%
+  group_by(year) %>%
+  summarise(n = n())
+
+ggplot(data=dados_agregados_nb_year, aes(x=year, y=n, group=1)) +
+  geom_line()+
+  geom_point()
+```
+
+\
 
 ## References
 

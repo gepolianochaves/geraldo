@@ -320,34 +320,46 @@ DATASUS</h1>
 <ul>
 <li><a href="#load-libraries" id="toc-load-libraries">Load
 libraries</a></li>
-<li><a href="#coleta-de-dados" id="toc-coleta-de-dados">Coleta de
+<li><a href="#coleta-e-processamento-de-dados"
+id="toc-coleta-e-processamento-de-dados">Coleta e Processamento de
 dados</a></li>
-<li><a href="#carregando-dados-com-cálculo-de-tempo."
-id="toc-carregando-dados-com-cálculo-de-tempo.">Carregando dados com
-cálculo de tempo.</a></li>
-<li><a href="#contagens" id="toc-contagens">Contagens</a></li>
-<li><a href="#constrói-df-com-identificação-racial"
-id="toc-constrói-df-com-identificação-racial">Constrói DF com
-identificação racial</a></li>
-<li><a href="#transformar-variável-raçacor"
-id="toc-transformar-variável-raçacor">Transformar variável
-Raça/Cor</a></li>
-<li><a href="#gráfico-de-barras-raçacor"
-id="toc-gráfico-de-barras-raçacor">Gráfico de barras Raça/Cor</a></li>
+<li><a href="#gráficos-de-mortalidade-anual"
+id="toc-gráficos-de-mortalidade-anual">Gráficos de Mortalidade Anual</a>
+<ul>
+<li><a href="#mortalidade-anual-total"
+id="toc-mortalidade-anual-total">Mortalidade Anual Total</a></li>
+<li><a href="#mortalidade-anual-total-usando-variável-raçacor"
+id="toc-mortalidade-anual-total-usando-variável-raçacor">Mortalidade
+Anual Total Usando Variável Raça/Cor</a></li>
+<li><a href="#mortalidade-anual-total-por-neuroblastoma"
+id="toc-mortalidade-anual-total-por-neuroblastoma">Mortalidade Anual
+Total por Neuroblastoma</a></li>
+</ul></li>
 <li><a href="#references" id="toc-references">References</a></li>
 </ul>
 </div>
 
+<p><br />
+</p>
 <p>Para verificação da variável raça/cor foi utilizado o vídeo do Fábio
-<span class="citation">Rocha (2023)</span> referência.</p>
+<span class="citation">Rocha (2023)</span> como referência.</p>
+<p><br />
+</p>
 <div id="load-libraries" class="section level2">
 <h2>Load libraries</h2>
+<p><br />
+</p>
 <pre class="r"><code>library(microdatasus)
 library(dplyr)
-library(tidyverse)</code></pre>
+library(tidyverse)
+library(maditr)</code></pre>
+<p><br />
+</p>
 </div>
-<div id="coleta-de-dados" class="section level2">
-<h2>Coleta de dados</h2>
+<div id="coleta-e-processamento-de-dados" class="section level2">
+<h2>Coleta e Processamento de dados</h2>
+<p><br />
+</p>
 <pre class="r"><code>dados = fetch_datasus(year_start = 2000,
                       year_end = 2005,
                       uf = &quot;MG&quot;,
@@ -355,20 +367,28 @@ library(tidyverse)</code></pre>
 <p>Salvando dados. Sempre salvar dados baixados de fonte externa como
 .rds, pois salvará tempo.</p>
 <pre class="r"><code>saveRDS(dados, file = &quot;data/dados.rds&quot;)</code></pre>
-</div>
-<div id="carregando-dados-com-cálculo-de-tempo." class="section level2">
-<h2>Carregando dados com cálculo de tempo.</h2>
+<p><br />
+</p>
+<div id="carregando-dados-processados-e-calculando-tempo-para-carregar"
+class="section level4">
+<h4>Carregando dados processados e calculando tempo para carregar</h4>
+<p><br />
+</p>
 <pre class="r"><code>start_time &lt;- Sys.time()
 dados &lt;- readRDS(&quot;data/dados.rds&quot;)
 end_time &lt;- Sys.time()
 end_time - start_time</code></pre>
-<pre><code>## Time difference of 0.5377421 secs</code></pre>
+<pre><code>## Time difference of 0.526439 secs</code></pre>
+<p><br />
+</p>
 </div>
-<div id="contagens" class="section level2">
-<h2>Contagens</h2>
-<pre class="r"><code>library(expss)</code></pre>
-<pre><code>## Warning: package &#39;expss&#39; was built under R version 4.1.2</code></pre>
-<pre class="r"><code>cross_cases(dados, RACACOR)</code></pre>
+<div id="contagem-de-indivíduos-por-categoria-da-variável-raçacor"
+class="section level4">
+<h4>Contagem de indivíduos por categoria da Variável Raça/Cor</h4>
+<p><br />
+</p>
+<pre class="r"><code>library(expss)
+cross_cases(dados, RACACOR)</code></pre>
 <table class="gmisc_table" style="border-collapse: collapse; margin-top: 1em; margin-bottom: 1em;">
 <thead>
 <tr>
@@ -435,25 +455,32 @@ end_time - start_time</code></pre>
 </tr>
 </tbody>
 </table>
+<p><br />
+</p>
 </div>
-<div id="constrói-df-com-identificação-racial" class="section level2">
-<h2>Constrói DF com identificação racial</h2>
+<div id="constrir-df-com-identificação-racial" class="section level4">
+<h4>Constrir DF com identificação racial</h4>
 <p>numero total de brancos, pardos, pretos, amarelos, indígenas</p>
 <pre class="r"><code>racacor_df &lt;- dados %&gt;% count(RACACOR, sort = TRUE)</code></pre>
 </div>
-<div id="transformar-variável-raçacor" class="section level2">
-<h2>Transformar variável Raça/Cor</h2>
+<div id="transformar-variável-raçacor" class="section level4">
+<h4>Transformar variável Raça/Cor</h4>
 <p>Transforma coluna com caracteres em nomes de raça/cor</p>
 <pre class="r"><code>racacor_df &lt;- racacor_df %&gt;%
   dplyr::mutate(raca_cor_factor = ifelse(racacor_df$RACACOR == &quot;1&quot;, &quot;branca&quot;, 
-                                         ifelse(racacor_df$RACACOR == &quot;2&quot;, &quot;parda&quot;,
-                                                ifelse(racacor_df$RACACOR == &quot;3&quot;, &quot;preta&quot;,
-                                                       ifelse(racacor_df$RACACOR == &quot;4&quot;, &quot;amarela&quot;, 
+                                         ifelse(racacor_df$RACACOR == &quot;2&quot;, &quot;preta&quot;,
+                                                ifelse(racacor_df$RACACOR == &quot;3&quot;, &quot;amarela&quot;,
+                                                       ifelse(racacor_df$RACACOR == &quot;4&quot;, &quot;parda&quot;, 
                                                               ifelse(racacor_df$RACACOR == &quot;5&quot;, &quot;indígena&quot;,
                                                                      ifelse(racacor_df$RACACOR == &quot;9&quot;, &quot;ignorado&quot;,&quot;0&quot;)))))))</code></pre>
+<p><br />
+</p>
 </div>
-<div id="gráfico-de-barras-raçacor" class="section level2">
-<h2>Gráfico de barras Raça/Cor</h2>
+<div id="gráfico-de-barras-por-categoria-da-variável-raçacor"
+class="section level4">
+<h4>Gráfico de barras por categoria da Variável Raça/Cor</h4>
+<p><br />
+</p>
 <p>Nesta parte, poderemos estimar o número de indivíduos sob risco,
 considerando as categorias raciais brasileiras.</p>
 <pre class="r"><code>library(ggplot2)
@@ -461,6 +488,157 @@ considerando as categorias raciais brasileiras.</p>
 ggplot(data=racacor_df, aes(x=raca_cor_factor, y=n)) +
   geom_bar(stat=&quot;identity&quot;)</code></pre>
 <p><img src="04-datasus_raca_cor_files/figure-html/barplot-1.png" width="672" /></p>
+<p><br />
+</p>
+</div>
+</div>
+<div id="gráficos-de-mortalidade-anual" class="section level2">
+<h2>Gráficos de Mortalidade Anual</h2>
+<p><br />
+</p>
+<div
+id="selecionar-variáveis-e-processá-las-para-obter-ano-de-óbito-do-paciente"
+class="section level4">
+<h4>Selecionar variáveis e processá-las para obter ano de óbito do
+paciente</h4>
+<p><br />
+</p>
+<p>Transforma variável DTOBITO usando função dmy criando variável
+(coluna) YMD em yyyy-mm-dd. Referência: <a
+href="https://rstudio.github.io/cheatsheets/html/lubridate.html"
+class="uri">https://rstudio.github.io/cheatsheets/html/lubridate.html</a></p>
+<pre class="r"><code>library(lubridate)
+dados_selected &lt;- dados %&gt;%
+  select(contador, RACACOR, DTOBITO, CAUSABAS, DTNASC, IDADE) %&gt;%
+  mutate(YMD = dmy(dados$DTOBITO))</code></pre>
+<pre><code>## Warning: There was 1 warning in `mutate()`.
+## ℹ In argument: `YMD = dmy(dados$DTOBITO)`.
+## Caused by warning:
+## !  294 failed to parse.</code></pre>
+<pre class="r"><code>library(stringr)
+# Split Each Sample
+dados_year &lt;- str_split_fixed(dados_selected$YMD, &quot;-&quot;, 3)
+# Construct Vector Maintaining parts of interest
+split_vector_year &lt;- paste0(dados_year[,1])
+# Add vector to DF, after column of interest
+dados_appended &lt;- add_column(dados_selected, year = split_vector_year, .after = &quot;YMD&quot;)</code></pre>
+<p><br />
+</p>
+</div>
+<div
+id="agrupar-dados-pela-variável-years-a-fim-de-contar-o-número-anual-de-indivíduos"
+class="section level4">
+<h4>Agrupar dados pela variável <em>years</em> a fim de contar o número
+anual de indivíduos</h4>
+<p><br />
+</p>
+<p>Referência: <a
+href="https://dplyr.tidyverse.org/reference/group_by.html"
+class="uri">https://dplyr.tidyverse.org/reference/group_by.html</a></p>
+<p>Cálculos com valores anuais totais:</p>
+<pre class="r"><code>dados_agregados_year &lt;- dados_appended %&gt;%
+  group_by(year) %&gt;%
+  summarise(n = n())</code></pre>
+<pre class="r"><code>dados_agrupados_racaCor &lt;- dados_appended %&gt;%
+  group_by(RACACOR) %&gt;%
+  summarise(n = n())
+
+dados_agregados_racaCor &lt;- dados_appended %&gt;%
+  group_by(year) %&gt;%
+  group_by(RACACOR) %&gt;%
+  summarise(n = n())
+
+
+dados_agregados_racaCor &lt;- dados_appended %&gt;%
+  group_by(chr) %&gt;%
+  summarise(avg = mean(x)) %&gt;%
+  arrange(chr, .locale = &quot;en&quot;)</code></pre>
+<p>Remover NAs dos dados agregados por ano</p>
+<pre class="r"><code>dados_agregados_year &lt;- dados_agregados_year[ which(
+  dados_agregados_year$year != &quot;NA&quot;), ]</code></pre>
+<p><br />
+</p>
+</div>
+<div id="mortalidade-anual-total" class="section level3">
+<h3>Mortalidade Anual Total</h3>
+<p><br />
+</p>
+<pre class="r"><code>library(ggplot2)
+# Basic line plot with points
+ggplot(data=dados_agregados_year, aes(x=year, y=n, group=1)) +
+  geom_line()+
+  geom_point()</code></pre>
+<p><img src="04-datasus_raca_cor_files/figure-html/unnamed-chunk-6-1.png" width="672" /></p>
+<p><br />
+</p>
+</div>
+<div id="mortalidade-anual-total-usando-variável-raçacor"
+class="section level3">
+<h3>Mortalidade Anual Total Usando Variável Raça/Cor</h3>
+<p><br />
+</p>
+<p>Mortalidade anual total (figura acima) e mortalidade anual usando a
+variável Raça/Cor (figura abaixo) foram feitas usando <span
+class="citation">STHDA (2024)</span> como referência.</p>
+<pre class="r"><code>dados_race_year_selcd &lt;- dados_appended %&gt;%
+  select(RACACOR, year)
+
+dados_agrupados_racaCor &lt;- dados_race_year_selcd %&gt;%
+  group_by(RACACOR) %&gt;%
+  summarise(n = n())</code></pre>
+<pre class="r"><code>library(reshape2)
+
+#use cast() to convert data frame from long to wide format
+wide_dados_appended &lt;- dcast(dados_race_year_selcd, year ~ RACACOR)</code></pre>
+<pre><code>## Warning: The dcast generic in data.table has been passed a data.frame and will
+## attempt to redirect to the relevant reshape2 method; please note that reshape2
+## is superseded and is no longer actively developed, and this redirection is now
+## deprecated. Please do this redirection yourself like
+## reshape2::dcast(dados_race_year_selcd). In the next version, this warning will
+## become an error.</code></pre>
+<pre><code>## Using &#39;year&#39; as value column. Use &#39;value.var&#39; to override</code></pre>
+<pre><code>## Aggregation function missing: defaulting to length</code></pre>
+<pre class="r"><code># wide_dados_appended &lt;- dcast(dados_race_year_selcd, RACACOR ~ year)
+
+# Melt the data frame
+dados_appended_melted &lt;- melt(wide_dados_appended, id.vars = &quot;year&quot;)</code></pre>
+<pre><code>## Warning: The melt generic in data.table has been passed a data.frame and will
+## attempt to redirect to the relevant reshape2 method; please note that reshape2
+## is superseded and is no longer actively developed, and this redirection is now
+## deprecated. To continue using melt methods from reshape2 while both libraries
+## are attached, e.g. melt.list, you can prepend the namespace, i.e.
+## reshape2::melt(wide_dados_appended). In the next version, this warning will
+## become an error.</code></pre>
+<pre class="r"><code>ggplot(dados_appended_melted, aes(x=year, y=value, group=variable)) +
+  geom_line(aes(linetype=variable))+
+  geom_point()</code></pre>
+<p><img src="04-datasus_raca_cor_files/figure-html/unnamed-chunk-8-1.png" width="672" /></p>
+<pre class="r"><code># wait to change the variable names:
+
+# names(dados_appended_melted)[names(dados_appended_melted) == &#39;variable&#39;] &lt;- &#39;RACACOR&#39;
+# names(dados_appended_melted)[names(dados_appended_melted) == &#39;value&#39;] &lt;- &#39;n&#39;</code></pre>
+<p><br />
+</p>
+</div>
+<div id="mortalidade-anual-total-por-neuroblastoma"
+class="section level3">
+<h3>Mortalidade Anual Total por Neuroblastoma</h3>
+<p><br />
+</p>
+<pre class="r"><code>dados_nb &lt;- dados_appended[ which(
+  dados_appended$CAUSABAS == &quot;C749&quot;), ]
+
+dados_agregados_nb_year &lt;- dados_nb %&gt;%
+  group_by(year) %&gt;%
+  summarise(n = n())
+
+ggplot(data=dados_agregados_nb_year, aes(x=year, y=n, group=1)) +
+  geom_line()+
+  geom_point()</code></pre>
+<p><img src="04-datasus_raca_cor_files/figure-html/unnamed-chunk-9-1.png" width="672" /></p>
+<p><br />
+</p>
+</div>
 </div>
 <div id="references" class="section level2">
 <h2>References</h2>
@@ -469,6 +647,11 @@ ggplot(data=racacor_df, aes(x=raca_cor_factor, y=n)) +
 Rocha, Fábio. 2023. <em>Explorando Dados de Saúde Com o Pacote
 Microdatasus No r! (Coleta, Análise e Visualização)</em>. <a
 href="https://www.youtube.com/watch?v=3jLhC2PXi3M">https://www.youtube.com/watch?v=3jLhC2PXi3M</a>.
+</div>
+<div id="ref-STHTDA202408" class="csl-entry">
+STHDA. 2024. <em>Ggplot2 Line Plot : Quick Start Guide - r Software and
+Data Visualization</em>. <a
+href="http://www.sthda.com/english/wiki/ggplot2-line-plot-quick-start-guide-r-software-and-data-visualization">http://www.sthda.com/english/wiki/ggplot2-line-plot-quick-start-guide-r-software-and-data-visualization</a>.
 </div>
 </div>
 </div>

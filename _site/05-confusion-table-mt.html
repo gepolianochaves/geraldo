@@ -659,7 +659,7 @@ print(mc_df$record_level_cm)</code></pre>
 ##   virginica : Detection Prevalence virginica : Balanced Accuracy
 ## 1                        0.3333333                             1
 ##                 cm_ts
-## 1 2024-07-01 11:24:32</code></pre>
+## 1 2024-08-13 13:23:15</code></pre>
 <pre class="r"><code>glimpse(mc_df$record_level_cm)</code></pre>
 <pre><code>## Rows: 1
 ## Columns: 50
@@ -712,7 +712,7 @@ print(mc_df$record_level_cm)</code></pre>
 ## $ `virginica : Detection Rate`        &lt;dbl&gt; 0.3333333
 ## $ `virginica : Detection Prevalence`  &lt;dbl&gt; 0.3333333
 ## $ `virginica : Balanced Accuracy`     &lt;dbl&gt; 1
-## $ cm_ts                               &lt;dttm&gt; 2024-07-01 11:24:32</code></pre>
+## $ cm_ts                               &lt;dttm&gt; 2024-08-13 13:23:15</code></pre>
 <p>This stores a list item. Here you can retrieve:</p>
 <p>the confusion matrix, as this is generated automatically and does not
 require one to be fit beforehand, as in the previous example the
@@ -878,7 +878,7 @@ bin_cm$record_level_cm</code></pre>
 ##   Pos.Pred.Value Neg.Pred.Value Precision   Recall        F1 Prevalence
 ## 1      0.9909091      0.9666667 0.9909091 0.981982 0.9864253  0.6529412
 ##   Detection.Rate Detection.Prevalence Balanced.Accuracy               cm_ts
-## 1      0.6411765            0.6470588         0.9825164 2024-07-01 11:24:39</code></pre>
+## 1      0.6411765            0.6470588         0.9825164 2024-08-13 13:23:22</code></pre>
 <pre class="r"><code>glimpse(bin_cm$record_level_cm)</code></pre>
 <pre><code>## Rows: 1
 ## Columns: 23
@@ -904,7 +904,7 @@ bin_cm$record_level_cm</code></pre>
 ## $ Detection.Rate               &lt;dbl&gt; 0.6411765
 ## $ Detection.Prevalence         &lt;dbl&gt; 0.6470588
 ## $ Balanced.Accuracy            &lt;dbl&gt; 0.9825164
-## $ cm_ts                        &lt;dttm&gt; 2024-07-01 11:24:39</code></pre>
+## $ cm_ts                        &lt;dttm&gt; 2024-08-13 13:23:22</code></pre>
 <p>This is now in a data.frame class and can be used and saved as a
 single record to a database server to monitor confusion matrix
 performance over time.</p>
@@ -953,51 +953,51 @@ href="https://cran.r-project.org/web/packages/ConfusionTableR/vignettes/Confusio
 ## [1] stats     graphics  grDevices utils     datasets  methods   base     
 ## 
 ## other attached packages:
-##  [1] ConfusionTableR_1.0.4  randomForest_4.7-1.1   e1071_1.7-13          
-##  [4] mlbench_2.1-3.1        InformationValue_1.2.3 pROC_1.18.0           
+##  [1] ConfusionTableR_1.0.4  randomForest_4.7-1.1   e1071_1.7-14          
+##  [4] mlbench_2.1-5          InformationValue_1.2.3 pROC_1.18.0           
 ##  [7] caret_6.0-94           lattice_0.22-6         expss_0.11.4          
 ## [10] lubridate_1.9.2        forcats_1.0.0          purrr_1.0.1           
-## [13] readr_2.1.4            tidyr_1.3.0            ggplot2_3.4.2         
-## [16] tidyverse_2.0.0        microdatasus_1.4.4     data.table_1.15.2     
+## [13] readr_2.1.4            tidyr_1.3.0            ggplot2_3.5.1         
+## [16] tidyverse_2.0.0        microdatasus_1.4.4     data.table_1.15.4     
 ## [19] reshape2_1.4.4         tibble_3.2.1           stringr_1.5.0         
 ## [22] dplyr_1.1.2            kableExtra_1.3.4       maditr_0.8.4          
 ## [25] ape_5.7-1             
 ## 
 ## loaded via a namespace (and not attached):
-##  [1] nlme_3.1-162         matrixStats_1.1.0    bit64_4.0.5         
+##  [1] nlme_3.1-162         matrixStats_1.3.0    bit64_4.0.5         
 ##  [4] fontawesome_0.5.2    webshot_0.5.5        httr_1.4.7          
-##  [7] tools_4.1.1          backports_1.4.1      bslib_0.5.0         
-## [10] utf8_1.2.3           R6_2.5.1             rpart_4.1.23        
+##  [7] tools_4.1.1          backports_1.5.0      bslib_0.5.0         
+## [10] utf8_1.2.4           R6_2.5.1             rpart_4.1.23        
 ## [13] colorspace_2.1-0     nnet_7.3-19          withr_3.0.0         
 ## [16] tidyselect_1.2.0     bit_4.0.5            compiler_4.1.1      
-## [19] cli_3.6.2            rvest_1.0.3          htmlTable_2.4.1     
+## [19] cli_3.6.3            rvest_1.0.3          htmlTable_2.4.1     
 ## [22] xml2_1.3.4           labeling_0.4.3       sass_0.4.6          
-## [25] scales_1.2.1         checkmate_2.3.1      proxy_0.4-27        
-## [28] systemfonts_1.0.4    digest_0.6.35        rmarkdown_2.22      
+## [25] scales_1.3.0         checkmate_2.3.1      proxy_0.4-27        
+## [28] systemfonts_1.1.0    digest_0.6.36        rmarkdown_2.22      
 ## [31] svglite_2.1.1        pkgconfig_2.0.3      htmltools_0.5.7     
-## [34] parallelly_1.37.1    fastmap_1.1.1        highr_0.10          
-## [37] htmlwidgets_1.6.2    rlang_1.1.3          rstudioapi_0.15.0   
-## [40] jquerylib_0.1.4      farver_2.1.1         generics_0.1.3      
+## [34] parallelly_1.37.1    fastmap_1.2.0        highr_0.11          
+## [37] htmlwidgets_1.6.2    rlang_1.1.4          rstudioapi_0.16.0   
+## [40] jquerylib_0.1.4      farver_2.1.2         generics_0.1.3      
 ## [43] jsonlite_1.8.8       vroom_1.6.3          ModelMetrics_1.2.2.2
 ## [46] magrittr_2.0.3       huxtable_5.5.2       Matrix_1.5-1        
-## [49] Rcpp_1.0.12          munsell_0.5.0        fansi_1.0.6         
-## [52] furrr_0.3.1          lifecycle_1.0.4      stringi_1.8.3       
-## [55] yaml_2.3.7           MASS_7.3-60.0.1      plyr_1.8.8          
+## [49] Rcpp_1.0.12          munsell_0.5.1        fansi_1.0.6         
+## [52] furrr_0.3.1          lifecycle_1.0.4      stringi_1.8.4       
+## [55] yaml_2.3.8           MASS_7.3-60.0.1      plyr_1.8.9          
 ## [58] recipes_1.0.6        grid_4.1.1           listenv_0.9.1       
-## [61] parallel_4.1.1       crayon_1.5.2         splines_4.1.1       
+## [61] parallel_4.1.1       crayon_1.5.3         splines_4.1.1       
 ## [64] hms_1.1.3            knitr_1.45           pillar_1.9.0        
-## [67] stats4_4.1.1         future.apply_1.11.1  codetools_0.2-19    
-## [70] glue_1.7.0           evaluate_0.23        vctrs_0.6.2         
+## [67] stats4_4.1.1         future.apply_1.11.1  codetools_0.2-20    
+## [70] glue_1.7.0           evaluate_0.24.0      vctrs_0.6.2         
 ## [73] tzdb_0.4.0           foreach_1.5.2        gtable_0.3.4        
-## [76] future_1.33.1        assertthat_0.2.1     cachem_1.0.8        
-## [79] xfun_0.42            gower_1.0.1          prodlim_2023.03.31  
-## [82] class_7.3-22         survival_3.5-5       viridisLite_0.4.2   
+## [76] future_1.33.1        assertthat_0.2.1     cachem_1.1.0        
+## [79] xfun_0.45            gower_1.0.1          prodlim_2023.03.31  
+## [82] class_7.3-22         survival_3.7-0       viridisLite_0.4.2   
 ## [85] timeDate_4032.109    iterators_1.0.14     hardhat_1.3.1       
-## [88] lava_1.7.2.1         globals_0.16.3       timechange_0.2.0    
+## [88] lava_1.7.2.1         globals_0.16.3       timechange_0.3.0    
 ## [91] ipred_0.9-14</code></pre>
 <pre class="r"><code>end_time &lt;- Sys.time()
 end_time - start_time</code></pre>
-<pre><code>## Time difference of 9.079764 secs</code></pre>
+<pre><code>## Time difference of 9.024021 secs</code></pre>
 </div>
 
 
