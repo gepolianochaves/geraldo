@@ -14,7 +14,7 @@
 
 <title>Accessing the Raça/Cor Variable in DATASUS</title>
 
-<script src="site_libs/header-attrs-2.22/header-attrs.js"></script>
+<script src="site_libs/header-attrs-2.28/header-attrs.js"></script>
 <script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <link href="site_libs/bootstrap-3.3.5/css/lumen.min.css" rel="stylesheet" />
@@ -360,25 +360,91 @@ library(maditr)</code></pre>
 <h2>Coleta e Processamento de dados</h2>
 <p><br />
 </p>
-<pre class="r"><code>dados = fetch_datasus(year_start = 2000,
-                      year_end = 2005,
+<p>SIM-DO é o sistema de informação de mortalidade.</p>
+<pre class="r"><code>dados = fetch_datasus(year_start = 2015,
+                      year_end = 2024,
                       uf = &quot;MG&quot;,
                       information_system = &quot;SIM-DO&quot;)</code></pre>
-<p>Salvando dados. Sempre salvar dados baixados de fonte externa como
-.rds, pois salvará tempo.</p>
-<pre class="r"><code>saveRDS(dados, file = &quot;data/dados.rds&quot;)</code></pre>
 <p><br />
 </p>
+<p>Neste caso agora, para o ano de 2014, todos os estados são
+considerados. O algoritmo baixa informação estado por estado.</p>
+<pre class="r"><code>dados_estd = fetch_datasus(year_start = 2014,
+                           year_end = 2014,
+                           uf = &quot;AL&quot;,
+                           information_system = &quot;SIM-DO&quot;,
+                           vars = c(&quot;CONTADOR&quot;, &quot;RACACOR&quot;, &quot;DTOBITO&quot;,&quot;CAUSABAS&quot;, &quot;DTNASC&quot;, &quot;IDADE&quot;))</code></pre>
+<p><br />
+</p>
+<p>O laço <em>for</em> é usado para acessar a informação dos estados e
+dos anos, de acordo com o script de <span class="citation">Foscarini
+(2024)</span>.</p>
+<pre class="r"><code>start_time &lt;- Sys.time()
+
+# Começa com dataframe dos estados vazia.
+data_estados &lt;- c()
+
+# Define the list of states and years to be downloaded
+states &lt;- c(&quot;AC&quot;, &quot;AL&quot;, &quot;AM&quot;, &quot;AP&quot;, &quot;BA&quot;, &quot;CE&quot;, &quot;DF&quot;, &quot;ES&quot;, &quot;GO&quot;,
+            &quot;MA&quot;, &quot;MG&quot;, &quot;MS&quot;, &quot;MT&quot;, &quot;PA&quot;, &quot;PB&quot;, &quot;PE&quot;, &quot;PI&quot;, &quot;PR&quot;,
+            &quot;RJ&quot;, &quot;RN&quot;, &quot;RO&quot;, &quot;RR&quot;, &quot;RS&quot;, &quot;SC&quot;, &quot;SE&quot;, &quot;SP&quot;, &quot;TO&quot;)
+
+years &lt;- 2013
+
+# Getting mortality data from SIM (Mortality Information System)
+# for each state and year
+for (state in states) {
+  print(state)
+  for (year in years) {
+    # Fetch data from DATASUS
+    data &lt;- fetch_datasus(year_start = year, year_end = year,
+                          uf = state, information_system = &quot;SIM-DO&quot;,
+                           vars = c(&quot;CONTADOR&quot;, &quot;RACACOR&quot;, &quot;DTOBITO&quot;,&quot;CAUSABAS&quot;, &quot;DTNASC&quot;, &quot;IDADE&quot;))
+    
+    # Add the UF column
+    data_mutado &lt;- dplyr::mutate(data, UF = state)
+    
+    # Bind Rows
+    data_estados &lt;- rbind(data_mutado, data_estados)
+    
+    # Save file with state data
+    saveRDS(data_estados, file = &quot;data/data_estados.rds&quot;)
+
+ }
+}
+
+end_time &lt;- Sys.time()
+end_time - start_time
+
+## Time difference of 5.636229 mins</code></pre>
+<p><br />
+</p>
+<p>Salvando dados. Sempre salvar dados baixados de fonte externa como
+.rds, pois salvará tempo.</p>
+<pre class="r"><code>saveRDS(dados_estd, file = &quot;data/dados_estd.rds&quot;)</code></pre>
+<p><br />
+</p>
+<p>Salvar dados Brasil.</p>
+<pre class="r"><code>saveRDS(dados, file = &quot;data/dados_2000_2015.rds&quot;)</code></pre>
+<pre class="r"><code>saveRDS(dados_br, file = &quot;data/dados_br.rds&quot;)</code></pre>
 <div id="carregando-dados-processados-e-calculando-tempo-para-carregar"
 class="section level4">
 <h4>Carregando dados processados e calculando tempo para carregar</h4>
 <p><br />
 </p>
 <pre class="r"><code>start_time &lt;- Sys.time()
-dados &lt;- readRDS(&quot;data/dados.rds&quot;)
+dados &lt;- readRDS(&quot;data/dados_2000_2015.rds&quot;)
 end_time &lt;- Sys.time()
 end_time - start_time</code></pre>
-<pre><code>## Time difference of 0.526439 secs</code></pre>
+<pre><code>## Time difference of 18.42251 secs</code></pre>
+<p><br />
+</p>
+<p>Recuperando dados todo o Brasil</p>
+<pre class="r"><code>start_time &lt;- Sys.time()
+data_estados &lt;- readRDS(&quot;data/data_estados.rds&quot;)
+end_time &lt;- Sys.time()
+end_time - start_time</code></pre>
+<pre><code>## Time difference of 0.2912679 secs</code></pre>
 <p><br />
 </p>
 </div>
@@ -410,7 +476,7 @@ cross_cases(dados, RACACOR)</code></pre>
    1 
 </td>
 <td style="text-align: right;">
-289548
+857802
 </td>
 </tr>
 <tr>
@@ -418,7 +484,7 @@ cross_cases(dados, RACACOR)</code></pre>
    2 
 </td>
 <td style="text-align: right;">
-51222
+164976
 </td>
 </tr>
 <tr>
@@ -426,7 +492,7 @@ cross_cases(dados, RACACOR)</code></pre>
    3 
 </td>
 <td style="text-align: right;">
-1840
+4852
 </td>
 </tr>
 <tr>
@@ -434,7 +500,7 @@ cross_cases(dados, RACACOR)</code></pre>
    4 
 </td>
 <td style="text-align: right;">
-151858
+537096
 </td>
 </tr>
 <tr>
@@ -442,7 +508,7 @@ cross_cases(dados, RACACOR)</code></pre>
    5 
 </td>
 <td style="text-align: right;">
-512
+1875
 </td>
 </tr>
 <tr>
@@ -450,7 +516,7 @@ cross_cases(dados, RACACOR)</code></pre>
    #Total cases 
 </td>
 <td style="border-bottom: 2px solid grey; text-align: right;">
-494980
+1566601
 </td>
 </tr>
 </tbody>
@@ -511,8 +577,10 @@ class="uri">https://rstudio.github.io/cheatsheets/html/lubridate.html</a></p>
 dados_selected &lt;- dados %&gt;%
   select(contador, RACACOR, DTOBITO, CAUSABAS, DTNASC, IDADE) %&gt;%
   mutate(YMD = dmy(dados$DTOBITO))</code></pre>
-<pre><code>## Warning: There was 1 warning in `mutate()`.
-## ℹ In argument: `YMD = dmy(dados$DTOBITO)`.
+<pre><code>## Warning: There was 1 warning in
+## `mutate()`.
+## ℹ In argument: `YMD =
+##   dmy(dados$DTOBITO)`.
 ## Caused by warning:
 ## !  294 failed to parse.</code></pre>
 <pre class="r"><code>library(stringr)
@@ -522,6 +590,19 @@ dados_year &lt;- str_split_fixed(dados_selected$YMD, &quot;-&quot;, 3)
 split_vector_year &lt;- paste0(dados_year[,1])
 # Add vector to DF, after column of interest
 dados_appended &lt;- add_column(dados_selected, year = split_vector_year, .after = &quot;YMD&quot;)</code></pre>
+<p><br />
+</p>
+<p>Processar a variável year em dados_br</p>
+<pre class="r"><code>dados_br_selected &lt;- dados_br %&gt;%
+  select(CONTADOR, RACACOR, DTOBITO, CAUSABAS, DTNASC, IDADE) %&gt;%
+  mutate(YMD = dmy(dados_br$DTOBITO))
+
+# Split Each Sample
+dados_year_br &lt;- str_split_fixed(dados_br_selected$YMD, &quot;-&quot;, 3)
+# Construct Vector Maintaining parts of interest
+split_vector_year_br &lt;- paste0(dados_year_br[,1])
+# Add vector to DF, after column of interest
+dados_appended_br &lt;- add_column(dados_br_selected, year = split_vector_year_br, .after = &quot;YMD&quot;)</code></pre>
 <p><br />
 </p>
 </div>
@@ -559,6 +640,53 @@ dados_agregados_racaCor &lt;- dados_appended %&gt;%
 <p><br />
 </p>
 </div>
+<div
+id="agrupar-por-raçacor-para-calcular-percentagem-de-brancos-auto-declarados"
+class="section level4">
+<h4>Agrupar por raça/cor para calcular percentagem de brancos
+auto-declarados</h4>
+<p>use cast() to convert data frame from long to wide format</p>
+<pre class="r"><code>wide_data_estados &lt;- dcast(data_estados, UF ~ RACACOR)</code></pre>
+<pre><code>## Using &#39;UF&#39; as value column. Use &#39;value.var&#39; to override</code></pre>
+<pre><code>## Warning in
+## data.table::dcast.data.table(data.table::as.data.table(data_estados), :
+## &#39;fun.aggregate&#39; is NULL, but found duplicate row/column combinations, so
+## defaulting to length(). That is, the variables [UF, RACACOR] used in &#39;formula&#39;
+## do not uniquely identify rows in the input &#39;data&#39;. In such cases,
+## &#39;fun.aggregate&#39; is used to derive a single representative value for each
+## combination in the output data.table, for example by summing or averaging
+## (fun.aggregate=sum or fun.aggregate=mean, respectively). Check the resulting
+## table for values larger than 1 to see which combinations were not unique. See
+## ?dcast.data.table for more details.</code></pre>
+<p><br />
+</p>
+<p>Renomenando colunas</p>
+<pre class="r"><code>names(wide_data_estados)[3] =&quot;branca&quot;
+names(wide_data_estados)[4] =&quot;preta&quot;
+names(wide_data_estados)[5] =&quot;amarela&quot;
+names(wide_data_estados)[6] =&quot;parda&quot;
+names(wide_data_estados)[7] =&quot;indigena&quot;</code></pre>
+<p><br />
+</p>
+<p>Construindo variável com total de indivíduos mortos</p>
+<pre class="r"><code>data_estados_brancos &lt;- wide_data_estados %&gt;%
+  mutate(sum = rowSums(across(c(&quot;NA&quot;, &quot;branca&quot;, &quot;preta&quot;, &quot;amarela&quot;, &quot;parda&quot;, &quot;indigena&quot;))))</code></pre>
+<p><br />
+</p>
+<p>Percentual de brancos por estado</p>
+<pre class="r"><code>data_estados_brancos_perct &lt;- data_estados_brancos %&gt;%
+  mutate(brancos = branca/sum)</code></pre>
+<p><br />
+</p>
+<p>Exportando data_estados_brancos_perct para plotagem no GeoBR</p>
+<pre class="r"><code>saveRDS(data_estados_brancos_perct, file = &quot;data/data_estados_brancos_perct.rds&quot;)</code></pre>
+<p><br />
+</p>
+<p>Melt the data frame</p>
+<pre class="r"><code>data_estados_melted &lt;- melt(wide_data_estados, id.vars = &quot;UF&quot;)</code></pre>
+<p><br />
+</p>
+</div>
 <div id="mortalidade-anual-total" class="section level3">
 <h3>Mortalidade Anual Total</h3>
 <p><br />
@@ -568,7 +696,7 @@ dados_agregados_racaCor &lt;- dados_appended %&gt;%
 ggplot(data=dados_agregados_year, aes(x=year, y=n, group=1)) +
   geom_line()+
   geom_point()</code></pre>
-<p><img src="04-datasus_raca_cor_files/figure-html/unnamed-chunk-6-1.png" width="672" /></p>
+<p><img src="04-datasus_raca_cor_files/figure-html/unnamed-chunk-12-1.png" width="672" /></p>
 <p><br />
 </p>
 </div>
@@ -586,33 +714,47 @@ class="citation">STHDA (2024)</span> como referência.</p>
 dados_agrupados_racaCor &lt;- dados_race_year_selcd %&gt;%
   group_by(RACACOR) %&gt;%
   summarise(n = n())</code></pre>
-<pre class="r"><code>library(reshape2)
-
-#use cast() to convert data frame from long to wide format
+<pre class="r"><code>library(reshape2)</code></pre>
+<pre><code>## 
+## Attaching package: &#39;reshape2&#39;</code></pre>
+<pre><code>## The following object is masked from &#39;package:tidyr&#39;:
+## 
+##     smiths</code></pre>
+<pre><code>## The following objects are masked from &#39;package:maditr&#39;:
+## 
+##     dcast, melt</code></pre>
+<pre class="r"><code>#use cast() to convert data frame from long to wide format
 wide_dados_appended &lt;- dcast(dados_race_year_selcd, year ~ RACACOR)</code></pre>
-<pre><code>## Warning: The dcast generic in data.table has been passed a data.frame and will
-## attempt to redirect to the relevant reshape2 method; please note that reshape2
-## is superseded and is no longer actively developed, and this redirection is now
-## deprecated. Please do this redirection yourself like
-## reshape2::dcast(dados_race_year_selcd). In the next version, this warning will
-## become an error.</code></pre>
-<pre><code>## Using &#39;year&#39; as value column. Use &#39;value.var&#39; to override</code></pre>
+<pre><code>## Using year as value column: use value.var to override.</code></pre>
 <pre><code>## Aggregation function missing: defaulting to length</code></pre>
 <pre class="r"><code># wide_dados_appended &lt;- dcast(dados_race_year_selcd, RACACOR ~ year)
 
 # Melt the data frame
 dados_appended_melted &lt;- melt(wide_dados_appended, id.vars = &quot;year&quot;)</code></pre>
-<pre><code>## Warning: The melt generic in data.table has been passed a data.frame and will
-## attempt to redirect to the relevant reshape2 method; please note that reshape2
-## is superseded and is no longer actively developed, and this redirection is now
-## deprecated. To continue using melt methods from reshape2 while both libraries
-## are attached, e.g. melt.list, you can prepend the namespace, i.e.
-## reshape2::melt(wide_dados_appended). In the next version, this warning will
-## become an error.</code></pre>
-<pre class="r"><code>ggplot(dados_appended_melted, aes(x=year, y=value, group=variable)) +
-  geom_line(aes(linetype=variable))+
+<p><br />
+</p>
+<p>Obter variável raça/cor como palavras descritivas ao invés de
+números.</p>
+<pre class="r"><code>dados_appended_melted &lt;- dados_appended_melted %&gt;%
+  dplyr::mutate(raca_cor_factor = ifelse(dados_appended_melted$variable == &quot;1&quot;, &quot;branca&quot;, 
+                                         ifelse(dados_appended_melted$variable == &quot;2&quot;, &quot;preta&quot;,
+                                                ifelse(dados_appended_melted$variable == &quot;3&quot;, &quot;amarela&quot;,
+                                                       ifelse(dados_appended_melted$variable == &quot;4&quot;, &quot;parda&quot;, 
+                                                              ifelse(dados_appended_melted$variable == &quot;5&quot;, &quot;indígena&quot;,
+                                                                     ifelse(dados_appended_melted$variable == &quot;9&quot;, &quot;ignorado&quot;,&quot;0&quot;)))))))</code></pre>
+<p><br />
+</p>
+<p>Remove NA in year</p>
+<pre class="r"><code>dados_appended_melted &lt;- dados_appended_melted[ which(
+  dados_appended_melted$year != &quot;NA&quot;), ]</code></pre>
+<p>Remove 0 in raça/cor</p>
+<pre class="r"><code>dados_appended_melted &lt;- dados_appended_melted[ which(
+  dados_appended_melted$raca_cor_factor != &quot;0&quot;), ]</code></pre>
+<p>Visualizar plot</p>
+<pre class="r"><code>ggplot(dados_appended_melted, aes(x=year, y=value, group=raca_cor_factor)) +
+  geom_line(aes(linetype=raca_cor_factor))+
   geom_point()</code></pre>
-<p><img src="04-datasus_raca_cor_files/figure-html/unnamed-chunk-8-1.png" width="672" /></p>
+<p><img src="04-datasus_raca_cor_files/figure-html/unnamed-chunk-17-1.png" width="672" /></p>
 <pre class="r"><code># wait to change the variable names:
 
 # names(dados_appended_melted)[names(dados_appended_melted) == &#39;variable&#39;] &lt;- &#39;RACACOR&#39;
@@ -635,7 +777,60 @@ dados_agregados_nb_year &lt;- dados_nb %&gt;%
 ggplot(data=dados_agregados_nb_year, aes(x=year, y=n, group=1)) +
   geom_line()+
   geom_point()</code></pre>
-<p><img src="04-datasus_raca_cor_files/figure-html/unnamed-chunk-9-1.png" width="672" /></p>
+<p><img src="04-datasus_raca_cor_files/figure-html/unnamed-chunk-18-1.png" width="672" /></p>
+<pre class="r"><code>dados_nb_race_year_selcd &lt;- dados_nb %&gt;%
+  select(RACACOR, year)</code></pre>
+<p><br />
+</p>
+<p>use cast() to convert data frame from long to wide format</p>
+<pre class="r"><code>library(reshape2)
+wide_dados_nb_appended &lt;- dcast(dados_nb_race_year_selcd, year ~ RACACOR)</code></pre>
+<pre><code>## Using year as value column: use value.var to override.</code></pre>
+<pre><code>## Aggregation function missing: defaulting to length</code></pre>
+<p><br />
+</p>
+<p>Melt the data frame</p>
+<p><br />
+</p>
+<pre class="r"><code>dados_nb_appended_melted &lt;- melt(wide_dados_nb_appended, id.vars = &quot;year&quot;)</code></pre>
+<p>Obter variável raça/cor como palavras descritivas ao invés de
+números.</p>
+<pre class="r"><code>dados_nb_appended_melted &lt;- dados_nb_appended_melted %&gt;%
+  dplyr::mutate(raca_cor_factor = ifelse(dados_nb_appended_melted$variable == &quot;1&quot;, &quot;branca&quot;, 
+                                         ifelse(dados_nb_appended_melted$variable == &quot;2&quot;, &quot;preta&quot;,
+                                                ifelse(dados_nb_appended_melted$variable == &quot;3&quot;, &quot;amarela&quot;,
+                                                       ifelse(dados_nb_appended_melted$variable == &quot;4&quot;, &quot;parda&quot;, 
+                                                              ifelse(dados_nb_appended_melted$variable == &quot;5&quot;, &quot;indígena&quot;,
+                                                                     ifelse(dados_nb_appended_melted$variable == &quot;9&quot;, &quot;ignorado&quot;,&quot;0&quot;)))))))</code></pre>
+<p><br />
+</p>
+<p>Remove NA in year</p>
+<pre class="r"><code>dados_nb_appended_melted &lt;- dados_nb_appended_melted[ which(
+  dados_nb_appended_melted$year != &quot;NA&quot;), ]</code></pre>
+<p><br />
+</p>
+<p>Remove 0 in raça/cor</p>
+<pre class="r"><code>dados_nb_appended_melted &lt;- dados_nb_appended_melted[ which(
+  dados_nb_appended_melted$raca_cor_factor != &quot;0&quot;), ]</code></pre>
+<p><br />
+</p>
+<p>Visualizar plot</p>
+<pre class="r"><code>ggplot(dados_nb_appended_melted, aes(x=year, y=value, group=raca_cor_factor, color=raca_cor_factor)) +
+  geom_line(aes(linetype=raca_cor_factor))+
+  geom_point()</code></pre>
+<p><img src="04-datasus_raca_cor_files/figure-html/unnamed-chunk-24-1.png" width="672" /></p>
+<p><br />
+</p>
+<p>Stacked Graph</p>
+<pre class="r"><code>ggplot(dados_nb_appended_melted, aes(fill=raca_cor_factor, y=value, x=year)) + 
+    geom_bar(position=&quot;stack&quot;, stat=&quot;identity&quot;)</code></pre>
+<p><img src="04-datasus_raca_cor_files/figure-html/unnamed-chunk-25-1.png" width="672" /></p>
+<p><br />
+</p>
+<p>Stacked + Graph</p>
+<pre class="r"><code>ggplot(dados_nb_appended_melted, aes(fill=raca_cor_factor, y=value, x=year)) + 
+    geom_bar(position=&quot;fill&quot;, stat=&quot;identity&quot;)</code></pre>
+<p><img src="04-datasus_raca_cor_files/figure-html/unnamed-chunk-26-1.png" width="672" /></p>
 <p><br />
 </p>
 </div>
@@ -643,6 +838,12 @@ ggplot(data=dados_agregados_nb_year, aes(x=year, y=n, group=1)) +
 <div id="references" class="section level2">
 <h2>References</h2>
 <div id="refs" class="references csl-bib-body hanging-indent">
+<div id="ref-Foscarini2024" class="csl-entry">
+Foscarini, Victor. 2024. <em>Unlocking Brazil’s Mortality Data: A Guide
+to Extracting SIM-DATASUS Data with the Microdatasus Package in r</em>.
+<a
+href="https://medium.com/@victorfoscarini/unlocking-brazils-mortality-data-a-guide-to-extracting-sim-datasus-data-with-the-microdatasus-d7ea7bb1cc61">https://medium.com/@victorfoscarini/unlocking-brazils-mortality-data-a-guide-to-extracting-sim-datasus-data-with-the-microdatasus-d7ea7bb1cc61</a>.
+</div>
 <div id="ref-Rocha2023" class="csl-entry">
 Rocha, Fábio. 2023. <em>Explorando Dados de Saúde Com o Pacote
 Microdatasus No r! (Coleta, Análise e Visualização)</em>. <a

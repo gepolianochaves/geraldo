@@ -33,20 +33,91 @@ library(maditr)
 
 \
 
+SIM-DO é o sistema de informação de mortalidade.
+
 ```{r fetch datasus, eval=F}
-dados = fetch_datasus(year_start = 2000,
-                      year_end = 2005,
+dados = fetch_datasus(year_start = 2015,
+                      year_end = 2024,
                       uf = "MG",
                       information_system = "SIM-DO")
 ```
 
-Salvando dados. Sempre salvar dados baixados de fonte externa como .rds, pois salvará tempo.
+\
 
-```{r save data, eval=F}
-saveRDS(dados, file = "data/dados.rds")
+Neste caso agora, para o ano de 2014, todos os estados são considerados. O algoritmo baixa informação estado por estado.
+
+```{r fetch datasus BR, eval=F}
+dados_estd = fetch_datasus(year_start = 2014,
+                           year_end = 2014,
+                           uf = "AL",
+                           information_system = "SIM-DO",
+                           vars = c("CONTADOR", "RACACOR", "DTOBITO","CAUSABAS", "DTNASC", "IDADE"))
+```
+\
+
+O laço *for* é usado para acessar a informação dos estados e dos anos, de acordo com o script de @Foscarini2024.
+
+```{r, eval=F}
+
+start_time <- Sys.time()
+
+# Começa com dataframe dos estados vazia.
+data_estados <- c()
+
+# Define the list of states and years to be downloaded
+states <- c("AC", "AL", "AM", "AP", "BA", "CE", "DF", "ES", "GO",
+            "MA", "MG", "MS", "MT", "PA", "PB", "PE", "PI", "PR",
+            "RJ", "RN", "RO", "RR", "RS", "SC", "SE", "SP", "TO")
+
+years <- 2013
+
+# Getting mortality data from SIM (Mortality Information System)
+# for each state and year
+for (state in states) {
+  print(state)
+  for (year in years) {
+    # Fetch data from DATASUS
+    data <- fetch_datasus(year_start = year, year_end = year,
+                          uf = state, information_system = "SIM-DO",
+                           vars = c("CONTADOR", "RACACOR", "DTOBITO","CAUSABAS", "DTNASC", "IDADE"))
+    
+    # Add the UF column
+    data_mutado <- dplyr::mutate(data, UF = state)
+    
+    # Bind Rows
+    data_estados <- rbind(data_mutado, data_estados)
+    
+    # Save file with state data
+    saveRDS(data_estados, file = "data/data_estados.rds")
+
+ }
+}
+
+end_time <- Sys.time()
+end_time - start_time
+
+## Time difference of 5.636229 mins
 ```
 
 \
+
+Salvando dados. Sempre salvar dados baixados de fonte externa como .rds, pois salvará tempo.
+
+```{r save data estd, eval=F}
+saveRDS(dados_estd, file = "data/dados_estd.rds")
+```
+
+\
+
+Salvar dados Brasil.
+
+```{r save data mg year interval, eval=F}
+saveRDS(dados, file = "data/dados_2000_2015.rds")
+```
+
+```{r save data, eval=F}
+saveRDS(dados_br, file = "data/dados_br.rds")
+```
 
 #### Carregando dados processados e calculando tempo para carregar
 
@@ -54,7 +125,18 @@ saveRDS(dados, file = "data/dados.rds")
 
 ```{r}
 start_time <- Sys.time()
-dados <- readRDS("data/dados.rds")
+dados <- readRDS("data/dados_2000_2015.rds")
+end_time <- Sys.time()
+end_time - start_time
+```
+
+\
+
+Recuperando dados todo o Brasil
+
+```{r}
+start_time <- Sys.time()
+data_estados <- readRDS("data/data_estados.rds")
 end_time <- Sys.time()
 end_time - start_time
 ```
@@ -138,6 +220,23 @@ dados_appended <- add_column(dados_selected, year = split_vector_year, .after = 
 
 \
 
+Processar a variável year em dados_br
+
+```{r, eval=F}
+dados_br_selected <- dados_br %>%
+  select(CONTADOR, RACACOR, DTOBITO, CAUSABAS, DTNASC, IDADE) %>%
+  mutate(YMD = dmy(dados_br$DTOBITO))
+
+# Split Each Sample
+dados_year_br <- str_split_fixed(dados_br_selected$YMD, "-", 3)
+# Construct Vector Maintaining parts of interest
+split_vector_year_br <- paste0(dados_year_br[,1])
+# Add vector to DF, after column of interest
+dados_appended_br <- add_column(dados_br_selected, year = split_vector_year_br, .after = "YMD")
+```
+
+\
+
 #### Agrupar dados pela variável *years* a fim de contar o número anual de indivíduos 
 
 \
@@ -175,6 +274,64 @@ Remover NAs dos dados agregados por ano
 dados_agregados_year <- dados_agregados_year[ which(
   dados_agregados_year$year != "NA"), ]
 ```
+
+\
+
+#### Agrupar por raça/cor para calcular percentagem de brancos auto-declarados
+
+use cast() to convert data frame from long to wide format
+
+```{r}
+wide_data_estados <- dcast(data_estados, UF ~ RACACOR)
+```
+
+\
+
+Renomenando colunas
+
+```{r Renomenando colunas}
+names(wide_data_estados)[3] ="branca"
+names(wide_data_estados)[4] ="preta"
+names(wide_data_estados)[5] ="amarela"
+names(wide_data_estados)[6] ="parda"
+names(wide_data_estados)[7] ="indigena"
+```
+
+\
+
+Construindo variável com total de indivíduos mortos
+
+```{r variável com total de indivíduos mortos}
+data_estados_brancos <- wide_data_estados %>%
+  mutate(sum = rowSums(across(c("NA", "branca", "preta", "amarela", "parda", "indigena"))))
+```
+
+\
+
+Percentual de brancos por estado
+
+```{r Percentual de brancos por estado}
+data_estados_brancos_perct <- data_estados_brancos %>%
+  mutate(brancos = branca/sum)
+```
+
+\
+
+Exportando data_estados_brancos_perct para plotagem no GeoBR
+
+```{r, eval=F}
+saveRDS(data_estados_brancos_perct, file = "data/data_estados_brancos_perct.rds")
+```
+
+
+\
+
+Melt the data frame
+
+```{r, eval=F}
+data_estados_melted <- melt(wide_data_estados, id.vars = "UF")
+```
+
 
 \
 
@@ -217,17 +374,50 @@ wide_dados_appended <- dcast(dados_race_year_selcd, year ~ RACACOR)
 
 # Melt the data frame
 dados_appended_melted <- melt(wide_dados_appended, id.vars = "year")
+```
 
-ggplot(dados_appended_melted, aes(x=year, y=value, group=variable)) +
-  geom_line(aes(linetype=variable))+
+\
+
+Obter variável raça/cor como palavras descritivas ao invés de números.
+
+```{r ifelse raca cor para visualização 1, eval=T}
+dados_appended_melted <- dados_appended_melted %>%
+  dplyr::mutate(raca_cor_factor = ifelse(dados_appended_melted$variable == "1", "branca", 
+                                         ifelse(dados_appended_melted$variable == "2", "preta",
+                                                ifelse(dados_appended_melted$variable == "3", "amarela",
+                                                       ifelse(dados_appended_melted$variable == "4", "parda", 
+                                                              ifelse(dados_appended_melted$variable == "5", "indígena",
+                                                                     ifelse(dados_appended_melted$variable == "9", "ignorado","0")))))))
+```
+
+\
+
+Remove NA in year
+
+```{r}
+dados_appended_melted <- dados_appended_melted[ which(
+  dados_appended_melted$year != "NA"), ]
+```
+
+Remove 0 in raça/cor
+
+```{r}
+dados_appended_melted <- dados_appended_melted[ which(
+  dados_appended_melted$raca_cor_factor != "0"), ]
+```
+
+
+Visualizar plot
+
+```{r}
+ggplot(dados_appended_melted, aes(x=year, y=value, group=raca_cor_factor)) +
+  geom_line(aes(linetype=raca_cor_factor))+
   geom_point()
 
 # wait to change the variable names:
 
 # names(dados_appended_melted)[names(dados_appended_melted) == 'variable'] <- 'RACACOR'
 # names(dados_appended_melted)[names(dados_appended_melted) == 'value'] <- 'n'
-
-
 ```
 
 \
@@ -235,7 +425,6 @@ ggplot(dados_appended_melted, aes(x=year, y=value, group=variable)) +
 ### Mortalidade Anual Total por Neuroblastoma
 
 \
-
 
 ```{r}
 dados_nb <- dados_appended[ which(
@@ -248,6 +437,89 @@ dados_agregados_nb_year <- dados_nb %>%
 ggplot(data=dados_agregados_nb_year, aes(x=year, y=n, group=1)) +
   geom_line()+
   geom_point()
+```
+
+
+```{r}
+dados_nb_race_year_selcd <- dados_nb %>%
+  select(RACACOR, year)
+```
+
+\
+
+use cast() to convert data frame from long to wide format
+
+```{r}
+library(reshape2)
+wide_dados_nb_appended <- dcast(dados_nb_race_year_selcd, year ~ RACACOR)
+```
+
+\
+
+Melt the data frame
+
+\
+
+```{r}
+dados_nb_appended_melted <- melt(wide_dados_nb_appended, id.vars = "year")
+```
+
+Obter variável raça/cor como palavras descritivas ao invés de números.
+
+```{r ifelse raca cor para visualização 2, eval=T}
+dados_nb_appended_melted <- dados_nb_appended_melted %>%
+  dplyr::mutate(raca_cor_factor = ifelse(dados_nb_appended_melted$variable == "1", "branca", 
+                                         ifelse(dados_nb_appended_melted$variable == "2", "preta",
+                                                ifelse(dados_nb_appended_melted$variable == "3", "amarela",
+                                                       ifelse(dados_nb_appended_melted$variable == "4", "parda", 
+                                                              ifelse(dados_nb_appended_melted$variable == "5", "indígena",
+                                                                     ifelse(dados_nb_appended_melted$variable == "9", "ignorado","0")))))))
+```
+
+\
+
+Remove NA in year
+
+```{r}
+dados_nb_appended_melted <- dados_nb_appended_melted[ which(
+  dados_nb_appended_melted$year != "NA"), ]
+```
+
+\
+
+Remove 0 in raça/cor
+
+```{r}
+dados_nb_appended_melted <- dados_nb_appended_melted[ which(
+  dados_nb_appended_melted$raca_cor_factor != "0"), ]
+```
+
+\
+
+Visualizar plot
+
+```{r}
+ggplot(dados_nb_appended_melted, aes(x=year, y=value, group=raca_cor_factor, color=raca_cor_factor)) +
+  geom_line(aes(linetype=raca_cor_factor))+
+  geom_point()
+```
+
+\
+
+Stacked Graph
+
+```{r}
+ggplot(dados_nb_appended_melted, aes(fill=raca_cor_factor, y=value, x=year)) + 
+    geom_bar(position="stack", stat="identity")
+```
+
+\
+
+Stacked + Graph
+
+```{r}
+ggplot(dados_nb_appended_melted, aes(fill=raca_cor_factor, y=value, x=year)) + 
+    geom_bar(position="fill", stat="identity")
 ```
 
 \

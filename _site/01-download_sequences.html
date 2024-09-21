@@ -14,7 +14,7 @@
 
 <title>Download GenBank Sequences</title>
 
-<script src="site_libs/header-attrs-2.22/header-attrs.js"></script>
+<script src="site_libs/header-attrs-2.28/header-attrs.js"></script>
 <script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <link href="site_libs/bootstrap-3.3.5/css/lumen.min.css" rel="stylesheet" />
@@ -306,9 +306,8 @@ class="uri">https://www.ncbi.nlm.nih.gov/genbank/</a></p>
 <p><a
 href="https://jhudatascience.org/AnVIL_Phylogenetic-Techniques/downloading-the-sequences-from-genbank.html"
 class="uri">https://jhudatascience.org/AnVIL_Phylogenetic-Techniques/downloading-the-sequences-from-genbank.html</a></p>
-<pre class="r"><code>library(ape)</code></pre>
-<pre><code>## Warning: package &#39;ape&#39; was built under R version 4.1.2</code></pre>
-<pre class="r"><code>mt_brazilian &lt;- read.GenBank(c(
+<pre class="r"><code>library(ape)
+mt_brazilian &lt;- read.GenBank(c(
   &quot;AF243627&quot;, # Amerindian/Asian lineage
   &quot;AF243628&quot;, # Amerindian/Asian lineage
   &quot;AF243629&quot;, # Amerindian/Asian lineage

@@ -1,0 +1,461 @@
+---
+  title: "Binary Logistic Regression"
+  author: "Gepoliano Chaves"
+  date: "June 24th, 2024"
+  output:
+    html_document:
+      df_print: paged
+      toc: true
+  bibliography: references.bib
+---
+
+\
+
+# Summary 
+
+\
+
+This pipeline classifies the origin of the genotype based on the genotype information extracted from VCF files using a binary logistic regression model. As a test, this notebook is using the mt_dcast.txt file that have all genotypes as 1.
+
+\
+
+## Running Time
+
+\
+
+```{r}
+start_time <- Sys.time()
+```
+
+```{r, warning=F, message=F}
+library(expss)
+library(dplyr)
+library(kableExtra)
+```
+
+\
+
+This notebook is based on the tutorial from @R-Blogers2020
+
+\
+
+```{r}
+library(readr)
+adult_df <- read_csv("./data/adult.csv")
+adult <- read_csv("./data/adult.csv")
+# Checking the structure of adult data
+dim(adult)
+```
+
+```{r}
+# Subsetting the data and keeping the required variables
+adult <- adult[ ,c("workclass", "marital.status", "age", "income")]
+names(adult)[names(adult) == 'income'] <- 'Class'
+# Checking the dim
+dim(adult)
+```
+
+```{r}
+mt_features_df <- read.table("./data/mt_dcast.txt", header = T)
+dim(mt_features_df)
+```
+
+Features of MT object
+
+```{r}
+kable(mt_features_df, caption="MT Features") %>%
+  kable_styling("striped", full_width = F, font_size = 12) %>%
+  scroll_box(width = "100%", height = "600px")
+```
+
+Make origin factor
+
+```{r}
+mt_features_df$origin <- as.factor(mt_features_df$origin)
+mt_features_df <- mt_features_df %>% select(-c("GenBankID"))
+```
+
+
+### Summarizing categorical variable
+
+```{r}
+table(adult$workclass)
+```
+
+```{r}
+# Combining levels
+adult$workclass[adult$workclass == "Without-pay" | adult$workclass == "Never-worked"] <- "Unemployed"
+adult$workclass[adult$workclass == "State-gov" | adult$workclass == "Local-gov"] <- "SL-gov"
+adult$workclass[adult$workclass == "Self-emp-inc" | adult$workclass == "Self-emp-not-inc"] <- "Self-employed"
+
+# Checking the table again
+table(adult$workclass)
+```
+
+```{r}
+# Generating the frequency table
+table(adult$marital.status)
+```
+
+```{r}
+# Combining levels
+adult$marital.status[adult$marital.status == "Married-AF-spouse" | adult$marital.status == "Married-civ-spouse" | adult$marital.status == "Married-spouse-absent"] <- "Married"
+
+adult$marital.status[adult$marital.status == "Divorced" |
+                       adult$marital.status == "Separated" |
+                       adult$marital.status == "Widowed"] <- "Not-Married"
+
+# Checking the table again
+table(adult$marital.status)
+```
+
+```{r}
+# Converting to factor variables
+adult$workclass <- as.factor(adult$workclass)
+adult$marital.status <- as.factor(adult$marital.status)
+adult$Class <- as.factor(adult$Class)
+```
+
+### Deleting the missing values
+
+```{r}
+# Converting ? to NA
+adult[adult == "?"] <- NA
+
+# Keeping only the na.omit() function
+adult <- na.omit(adult)
+```
+
+### Finally taking a look into the target variable
+
+```{r}
+library(ggplot2)
+ggplot(adult, aes(age)) +
+  geom_histogram(aes(fill = Class), color = "black", binwidth = 1)
+```
+
+```{r}
+library(ggplot2)
+ggplot(mt_features_df, aes(MT_16069_BP)) +
+  geom_histogram(aes(fill = origin), color = "black", binwidth = 0.1)
+```
+
+\
+
+## Building the Model
+
+\
+
+```{r}
+# Loading caret library
+require(caret)
+# Splitting the data into train and test
+index <- createDataPartition(adult$Class, p = .70, list = FALSE)
+train <- adult[index, ]
+class(train)
+dim(train)
+train
+
+cross_cases(train, Class)
+
+test <- adult[-index, ]
+class(test)
+test
+
+# Training the model
+logistic_model <- glm(Class ~ ., family = binomial(), train)
+
+# Checking the model
+summary(logistic_model)
+```
+
+Let's look at the original objects
+
+```{r}
+dim(train)
+train
+dim(test)
+test
+```
+
+
+https://stackoverflow.com/questions/65896181/glm-error-in-evalfamilyinitialize-y-values-must-be-0-y-1-but-values-a
+
+https://stackoverflow.com/questions/22315394/factor-has-new-levels-error-for-variable-im-not-using
+
+```{r}
+# Loading caret library
+require(caret)
+# Splitting the data into train and test
+index <- createDataPartition(mt_features_df$origin, p = .60, list = FALSE)
+train_mt <- mt_features_df[index, ]
+train_mt
+
+cross_cases(train_mt, origin)
+
+test_mt <- mt_features_df[-index, ]
+test_mt
+
+# Training the model
+logistic_model_mt <- glm(origin ~ ., family = binomial(), train_mt)
+# mod2$xlevels[["y"]] <- union(mod2$xlevels[["y"]], levels(test$y))
+
+# Checking the model
+summary(logistic_model_mt)
+```
+
+### Interpreting Logistic Regression Output
+
+```{r, eval=F}
+Sigmoid function, p = exp(-0.591532)/(1+exp(-0.591532))
+```
+
+### Predicting Dependent Variable(Y) in Test Dataset
+
+```{r}
+# Predicting in the test dataset
+pred_prob <- predict(logistic_model, test, type = "response")
+head(pred_prob)
+
+pred_prob_mt <- predict(logistic_model_mt, test_mt, type="response")
+pred_prob_mt
+```
+
+#### Constructing the predictions dataframe
+
+* This is based on notebook confusion-table.Rmd
+
+* pred_prob, from above, is a factor
+
+```{r}
+predictions_mt <- cbind(data.frame(train_preds=pred_prob_mt, 
+                                test_mt$origin))
+predictions_mt
+```
+
+Then the confusion matrix can be calculated
+
+```{r, eval=F}
+cm <- caret::confusionMatrix(predictions_mt$train_preds, predictions_mt$test_mt.origin)
+```
+
+This is the error
+
+```{r, eval=F}
+Error in `match.arg()`:
+! 'arg' should be one of "link", "response", "terms"
+Backtrace:
+ 1. stats::predict(logistic_model_mt, test_mt, type = "raw")
+ 2. stats::predict.glm(logistic_model_mt, test_mt, type = "raw")
+ 3. base::match.arg(type)
+Execution halted
+```
+
+
+### Evaluating Logistic Regression Model
+
+### Converting probability to class values in the training dataset
+
+```{r Converting probability to class values in the training dataset}
+# Converting from probability to actual output
+train_mt$pred_class <- ifelse(logistic_model_mt$fitted.values >= 0.5, "America", "Africa")
+
+# Generating the classification table
+ctab_train_mt <- table(train_mt$origin, train_mt$pred_class)
+ctab_train_mt
+```
+
+### Training dataset converting from probability to class values
+
+```{r Training dataset converting from probability to class values, echo=TRUE}
+# Converting from probability to actual output
+test_mt$pred_class <- ifelse(pred_prob_mt >= 0.5, "America", "Africa")
+
+# Generating the classification table
+ctab_test_mt <- table(test_mt$origin, test_mt$pred_class)
+ctab_test_mt
+```
+
+\
+
+## Accuracy
+
+\
+
+\begin{align*}
+
+Accuracy & = \frac{TP + TN}{TN + FP + FN + TP} \\
+
+\end{align*}
+
+\
+
+```{r}
+# Accuracy in Training dataset
+accuracy_train_mt <- sum(diag(ctab_train_mt))/sum(ctab_train_mt)*100
+accuracy_train_mt
+```
+
+```{r}
+# Accuracy in Test dataset
+accuracy_test_mt <- sum(diag(ctab_test_mt))/sum(ctab_test_mt)*100
+accuracy_test_mt
+```
+
+\
+
+A model is considered fairly good if the model accuracy is greater than 70%.
+
+\
+
+### Misclassification Rate
+
+Misclassification Rate = (FP+FN)/(TN + FP + FN + TP)
+
+### True Positive Rate – Recall or Sensitivity
+
+```{r, eval=F}
+# Recall Or TPR = TP/(FN + TP)
+
+
+# Recall in Train dataset
+Recall <- (ctab_train[2, 2]/sum(ctab_train[2, ]))*100
+Recall
+```
+
+### True Negative Rate
+
+```{r}
+# TNR = TN/(TN + FP)
+
+
+# TNR in Train dataset
+TNR <- (ctab_train_mt[1, 1]/sum(ctab_train_mt[1, ]))*100
+TNR
+```
+
+### Precision
+
+```{r, eval=F}
+# Precision = TP/FP + TP
+
+
+# Precision in Train dataset
+Precision <- (ctab_train[2, 2]/sum(ctab_train[, 2]))*100
+Precision
+```
+
+### Calculating F-Score
+
+```{r, eval=FALSE}
+F_Score <- (2 * Precision * Recall / (Precision + Recall))/100
+F_Score
+```
+
+## ROC Curve
+
+```{r}
+library(pROC)
+roc_mt <- roc(train_mt$origin, logistic_model_mt$fitted.values)
+roc_mt
+plot.roc(roc_mt)
+auc(roc_mt)
+```
+
+### Concordance
+
+```{r, attr.source='.numberLines'}
+library(InformationValue)
+Concordance(logistic_model_mt$y,logistic_model_mt$fitted.values)
+```
+
+\
+
+## Confusion matrix
+
+\
+
+In this reference for the Confusion Matrix according to @CARET2023, we can find the equations for sensitivity and accuracy.
+
+```{r, eval=F}
+cm_mt <- confusionMatrix(pred_prob_mt, test$origin, positive = "America")
+cm_mt <- confusionMatrix(pred_prob_mt, test$origin)
+class(cm_mt)
+cm_mt
+```
+
+Let's look at the objects
+
+```{r}
+pred_prob_mt
+class(pred_prob_mt)
+dim(pred_prob_mt)
+length(pred_prob_mt)
+test_mt
+class(test_mt)
+dim(test_mt)
+length(test_mt)
+
+```
+
+Original
+
+```{r, eval=F}
+# Confusion Matrix
+cf <- caret::confusionMatrix(data=pred_prob,
+					reference=test)
+cf
+```
+
+MT
+
+```{r, eval=F}
+# Confusion Matrix
+cf_mt <- caret::confusionMatrix(data=pred_prob_mt,
+					reference=test_mt)
+cf_mt
+```
+
+
+## Confusion matrix Error: `data` and `reference` should be factors with the same levels.
+
+Form this video
+
+https://www.youtube.com/watch?v=WwmpZoaJrPM
+
+From this github 
+
+https://gist.github.com/nnbphuong/2c278a1443446fdb911c95796f78ef2b
+
+```{r, eval=F}
+library(caret)
+library(e1071)
+owner.df <- read.csv("./data/ownerExample.csv")
+owner.df.error <- read.csv("./data/ownerExample_2.csv")
+
+confusionMatrix(ifelse(owner.df$Probability>0.5, "owner", "nonowner"), owner.df$Class)
+
+table(ifelse(owner.df$Probability>0.5, "owner", "nonowner")) ## PREDICTED
+table(owner.df$Class) ## ACTUAL
+
+
+confusionMatrix(as.factor(ifelse(owner.df$Probability>0.5, "owner", "nonowner")), ## As factor closes here
+                owner.df$Class)
+```
+
+# References
+
+<div id="refs"></div>
+
+# Session Info
+
+```{r session}
+sessionInfo()
+```
+
+```{r}
+end_time <- Sys.time()
+end_time - start_time
+```
+
+

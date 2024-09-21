@@ -359,9 +359,11 @@ rm fasta1.txt
 rm fasta.index
 ```
 
-Read files into R and rename the columns
+Read files into R and rename the columns. sampleIDs.txt is a match of fasta file names and names given by bwa.
 
-```{r sample IDs}
+This chunk was being evaluated before I started the PRS analysis
+
+```{r sample IDs, eval=F}
 sampleIDs <- read.table("data/sampleIDs.txt")
 names(sampleIDs)[1]<-paste("GenBankID")
 names(sampleIDs)[2]<-paste("sampleName")
@@ -369,7 +371,9 @@ names(sampleIDs)[2]<-paste("sampleName")
 
 Read appended file into R and rename  columns
 
-```{r sample IDs metadataIDs.txt}
+This chunk was being evaluated before I started the PRS analysis
+
+```{r sample IDs metadataIDs.txt, eval=F}
 metadataIDs <- read.table("data/metadataIDs.txt")
 names(metadataIDs)[1]<-paste("GenBankID")
 names(metadataIDs)[2]<-paste("sampleName")
@@ -404,8 +408,10 @@ https://dplyr.tidyverse.org/reference/relocate.html
 
 \
 
-```{r read file}
-mt_extracted <- read.table("data/file3.txt")
+This chunk was being evaluated before I started the PRS analysis
+
+```{r read file, eval=F}
+mt_extracted <- read.table("data/file3.txt", sep = "\t", header = T)
 
 names(mt_extracted)[1]<-paste("sample")
 names(mt_extracted)[2]<-paste("chr")
@@ -415,7 +421,11 @@ names(mt_extracted)[4]<-paste("genotype")
 dim(mt_extracted)
 ```
 
-```{r read genotypes extracted file}
+\
+
+This chunk was being evaluated before I started the PRS analysis
+
+```{r read genotypes extracted file, eval=F}
 mt_genotypes_extracted <- read.table("data/mt_genotypes_extracted.txt")
 
 names(mt_genotypes_extracted)[1]<-paste("pos")
@@ -425,7 +435,11 @@ names(mt_genotypes_extracted)[3]<-paste("genotype")
 dim(mt_genotypes_extracted)
 ```
 
-```{r read genotypes appended file}
+\
+
+This chunk was being evaluated before I started the PRS analysis
+
+```{r read genotypes appended file, eval=F}
 mt_genotypes_appended <- read.table("data/test_mt_appended_2.txt")
 
 names(mt_genotypes_appended)[1]<-paste("pos")
@@ -438,8 +452,10 @@ dim(mt_genotypes_appended)
 Select only the columns that will make the dataframe compatible with the dcast function of the reshape2 library.
 Reshape package has funcitons dcast and melt.
 
-```{r select columns for function dcast()}
+This chunk was being evaluated before I started the PRS analysis
 
+```{r select columns for function dcast(), eval=F}
+library(maditr)
 mt_selected <- mt_extracted %>% dplyr::select(sample, pos, genotype)
 
 library(reshape2)
@@ -447,7 +463,9 @@ library(reshape2)
 mt_dcast <- dcast(mt_selected, sample ~ pos)
 ```
 
-```{r}
+This chunk was being evaluated before I started the PRS analysis
+
+```{r, eval=F}
 library(reshape2)
 
 mt_selected_genotypes_extracted <- mt_genotypes_extracted %>% dplyr::select(sample, pos, genotype)
@@ -455,7 +473,11 @@ mt_selected_genotypes_extracted <- mt_genotypes_extracted %>% dplyr::select(samp
 mt_dcast_genotypes_extracted <- dcast(mt_selected_genotypes_extracted, sample ~ pos)
 ```
 
-```{r}
+\
+
+This chunk was being evaluated before I started the PRS analysis
+
+```{r, eval=F}
 library(reshape2)
 
 mt_selected_appended <- mt_genotypes_appended %>% dplyr::select(sample, pos, genotype)
@@ -472,9 +494,13 @@ mt_dcast_appended <- mt_dcast_appended %>% dplyr::select(-c(sample))
 
 ```
 
-Rename samples with GenBank IDs  
+\
 
-```{r Merge sampleIDs and mt_dcast }
+Rename samples with GenBank IDs 
+
+This chunk was being evaluated before I started the PRS analysis
+
+```{r Merge sampleIDs and mt_dcast , eval=F}
 
 library(data.table)
 
@@ -488,7 +514,9 @@ mt_dcast <- mt_dcast %>% dplyr::select(-c(sample))
 
 metadataIDs and mt_dcast_appended
 
-```{r Merge sampleIDs and mt_dcast_appended }
+This chunk was being evaluated before I started the PRS analysis
+
+```{r Merge sampleIDs and mt_dcast_appended , eval=F}
 
 library(data.table)
 
@@ -503,7 +531,9 @@ mt_dcast_appended <- mt_dcast_appended %>% dplyr::select(-c(sampleName))
 
 Edit column names to include MT_XXXXXXX_BP
 
-```{r}
+This chunk was being evaluated before I started the PRS analysis
+
+```{r, eval=F}
 colnames(mt_dcast) <- paste("MT", colnames(mt_dcast), "BP", sep= "_")
 names(mt_dcast)[1]<-paste("GenBankID")
 ```
@@ -522,13 +552,19 @@ names(mt_dcast)[1]<-paste("GenBankID")
 
 Insert column with labels
 
-```{r}
+\
+
+This chunk was being evaluated before I started the PRS analysis
+
+```{r, eval=F}
 mt_dcast <- mt_dcast %>% dplyr::mutate(origin = ifelse(row_number() < 10, "America", "Africa" ))
 ```
 
 Relocate the origin column
 
-```{r}
+This chunk was being evaluated before I started the PRS analysis
+
+```{r, eval=F}
 mt_dcast <- mt_dcast %>% dplyr::relocate(origin, .after = GenBankID)
 ```
 
@@ -735,7 +771,9 @@ done
 
 To change genotypes to 1/0, I used this @stackOverflow2021 reference.
 
-```{r}
+This chunk was being evaluated before I started the PRS analysis
+
+```{r, eval=F}
 mt_dcast <- mt_dcast %>% mutate_all(funs(replace(., .== "C>T", "1")))%>% 
   mutate_all(funs(replace(., .== "T>C", "1")))%>% 
   mutate_all(funs(replace(., .== "C>A", "1")))%>% 
@@ -752,7 +790,9 @@ mt_dcast <- mt_dcast %>% mutate_all(funs(replace(., .== "C>T", "1")))%>%
 
 Take a look at table with genotypes changed
 
-```{r look at new genotype table}
+This chunk was being evaluated before I started the PRS analysis
+
+```{r look at new genotype table, eval=F}
 
 kable(mt_dcast, caption="New Genotype Table (Reference > Alteration)") %>%
   kable_styling("striped", full_width = F, font_size = 12) %>%
@@ -762,14 +802,20 @@ kable(mt_dcast, caption="New Genotype Table (Reference > Alteration)") %>%
 
 Check dimensions of dataframe
 
-```{r}
+\
+
+This chunk was being evaluated before I started the PRS analysis
+
+```{r, eval=F}
 dim(mt_dcast)
 ```
 
 
 Write to file
 
-```{r save rds}
+This chunk was being evaluated before I started the PRS analysis
+
+```{r save rds, eval=F}
 saveRDS(mt_dcast, file = "./data/mt_dcast.rds")
 ```
 
@@ -785,7 +831,11 @@ write.table(mt_dcast,
 ```
 
 
-```{r}
+\
+
+This chunk was being evaluated before I started the PRS analysis
+
+```{r, eval=F}
 mt_dcast_appended_binary <- mt_dcast_appended %>% mutate_all(funs(replace(., .== "C=C", "0")))%>% 
   mutate_all(funs(replace(., .== "C>T", "1")))%>% 
   mutate_all(funs(replace(., .== "T=T", "0")))%>% 
@@ -798,7 +848,11 @@ mt_dcast_appended_binary <- mt_dcast_appended %>% mutate_all(funs(replace(., .==
 
 Take a look at mt_dcast_appended_binary table
 
-```{r look at table}
+\
+
+This chunk was being evaluated before I started the PRS analysis
+
+```{r look at table, eval=F}
 library(kableExtra)
 
 kable(mt_dcast_appended_binary, caption="Genotype Table (Reference > Alteration)") %>%
@@ -808,7 +862,9 @@ kable(mt_dcast_appended_binary, caption="Genotype Table (Reference > Alteration)
 
 Save mt_dcast_appended_binary
 
-```{r save mt_dcast_appended_binary}
+This chunk was being evaluated before I started the PRS analysis
+
+```{r save mt_dcast_appended_binary, eval=F}
 write.table(mt_dcast_appended_binary,
             file = "./data/mt_dcast_appended_binary.txt",
             sep = "\t",

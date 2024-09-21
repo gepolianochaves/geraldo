@@ -15,7 +15,7 @@
 
 \
 
-This pipeline classifies the origin of the genotype based on the genotype information extracted from VCF files using a binary logistic regression model. In section 3.3 below, I discuss a potential approach to improve the Sensitivity rates of this framework using the divide and conquer approach. Because of the problem I faced running the for loop, the genotypes were constructed appending the extraction of the vcf files. This notebook is based on the tutorial from RBloggers (2020). 
+This pipeline classifies the origin of the genotype based on the genotype information extracted from VCF files using a binary logistic regression model. In section 3.3 below, I discuss a potential approach to improve the Sensitivity rates of this framework using the divide and conquer approach. The solution includes using genomic regions in ranges or intervals instead of SNPs. In other words, we can use a range of SNPs as the genotypes, instead of a single SNP as the genotype. IN this way the Machine Learning algorithm will have a chance to look at several ranges or a range of base-pairs instead of a single reagion of a SNP. This might be a solution to the sensitivity problem. Because of the problem I faced running the for loop, the genotypes were constructed appending the extraction of the vcf files. This notebook is based on the tutorial from RBloggers (2020). 
 
 \
 
@@ -314,9 +314,9 @@ Recall_test
 
 \
 
-One potential direction to improve sensitivity in the train and test datasets is to use haplogroups instead of SNPs. Take for example the Huntington's disease (HD) diagnosis. A person is positive if they have more than 35 CAG repeats. If for example we take a haplogroup of 50 bp, we can classify people with 40 CAG repeats as positive whereas individuals that have the haplogroup with less than 40 repeats are negative for HD. 
+One potential direction to improve sensitivity in the train and test datasets is to use haplogroups instead of SNPs. Take for example the Huntington's disease (HD) diagnosis. A person is positive if they have more than 35 CAG repeats. If for example we take a haplogroup of range of 50 bp, we can classify people with 40 CAG repeats as positive whereas individuals that have the haplogroup with less than 40 repeats are negative for HD. 
 
-Using this approach we can divide the genome in smaller segments and the algorithm will have to only work in these segments. We can therefore, use the divide and conquer approach to diagnose the disease using genotype information.
+Using this approach we can divide the genome into smaller segments and the algorithm will have to only work in these segments. We can therefore, use the divide and conquer approach to diagnose the disease using genotype information.
 
 \
 

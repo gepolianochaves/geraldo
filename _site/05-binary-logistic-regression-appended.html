@@ -14,7 +14,7 @@
 
 <title>Binary Logistic Regression</title>
 
-<script src="site_libs/header-attrs-2.22/header-attrs.js"></script>
+<script src="site_libs/header-attrs-2.28/header-attrs.js"></script>
 <script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <link href="site_libs/bootstrap-3.3.5/css/lumen.min.css" rel="stylesheet" />
@@ -384,9 +384,15 @@ matrix</a></li>
 genotype information extracted from VCF files using a binary logistic
 regression model. In section 3.3 below, I discuss a potential approach
 to improve the Sensitivity rates of this framework using the divide and
-conquer approach. Because of the problem I faced running the for loop,
-the genotypes were constructed appending the extraction of the vcf
-files. This notebook is based on the tutorial from RBloggers (2020).</p>
+conquer approach. The solution includes using genomic regions in ranges
+or intervals instead of SNPs. In other words, we can use a range of SNPs
+as the genotypes, instead of a single SNP as the genotype. IN this way
+the Machine Learning algorithm will have a chance to look at several
+ranges or a range of base-pairs instead of a single reagion of a SNP.
+This might be a solution to the sensitivity problem. Because of the
+problem I faced running the for loop, the genotypes were constructed
+appending the extraction of the vcf files. This notebook is based on the
+tutorial from RBloggers (2020).</p>
 <p><br />
 </p>
 <div id="load-data" class="section level2">
@@ -1199,29 +1205,11 @@ class(index)</code></pre>
 ## [22,]        33</code></pre>
 <pre class="r"><code>train_mt &lt;- mt_features_df[index, ]
 train_mt</code></pre>
-<pre><code>##        origin MT_16069bp MT_16086bp MT_16093bp MT_16111bp
-## 1  Amerindian          0          0          0          1
-## 2  Amerindian          0          0          0          0
-## 4  Amerindian          0          0          0          0
-## 6  Amerindian          0          0          0          0
-## 7  Amerindian          0          0          0          0
-## 8  Amerindian          0          0          0          1
-## 9  Amerindian          0          0          0          0
-## 10 Amerindian          0          0          0          0
-## 11 Amerindian          0          0          0          0
-## 12 Amerindian          0          0          0          0
-## 14 Amerindian          0          0          0          1
-## 18   European          0          0          0          0
-## 19   European          0          0          0          0
-## 20   European          0          0          0          0
-## 21   European          0          0          0          0
-## 25   European          0          0          0          0
-## 26   European          0          0          0          0
-## 27   European          0          0          1          0
-## 28   European          0          0          0          0
-## 31   European          0          0          0          0
-## 32   European          0          0          0          0
-## 33   European          1          0          0          0</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["origin"],"name":[1],"type":["fct"],"align":["left"]},{"label":["MT_16069bp"],"name":[2],"type":["int"],"align":["right"]},{"label":["MT_16086bp"],"name":[3],"type":["int"],"align":["right"]},{"label":["MT_16093bp"],"name":[4],"type":["int"],"align":["right"]},{"label":["MT_16111bp"],"name":[5],"type":["int"],"align":["right"]}],"data":[{"1":"Amerindian","2":"0","3":"0","4":"0","5":"1","_rn_":"1"},{"1":"Amerindian","2":"0","3":"0","4":"0","5":"0","_rn_":"2"},{"1":"Amerindian","2":"0","3":"0","4":"0","5":"0","_rn_":"4"},{"1":"Amerindian","2":"0","3":"0","4":"0","5":"0","_rn_":"6"},{"1":"Amerindian","2":"0","3":"0","4":"0","5":"0","_rn_":"7"},{"1":"Amerindian","2":"0","3":"0","4":"0","5":"1","_rn_":"8"},{"1":"Amerindian","2":"0","3":"0","4":"0","5":"0","_rn_":"9"},{"1":"Amerindian","2":"0","3":"0","4":"0","5":"0","_rn_":"10"},{"1":"Amerindian","2":"0","3":"0","4":"0","5":"0","_rn_":"11"},{"1":"Amerindian","2":"0","3":"0","4":"0","5":"0","_rn_":"12"},{"1":"Amerindian","2":"0","3":"0","4":"0","5":"1","_rn_":"14"},{"1":"European","2":"0","3":"0","4":"0","5":"0","_rn_":"18"},{"1":"European","2":"0","3":"0","4":"0","5":"0","_rn_":"19"},{"1":"European","2":"0","3":"0","4":"0","5":"0","_rn_":"20"},{"1":"European","2":"0","3":"0","4":"0","5":"0","_rn_":"21"},{"1":"European","2":"0","3":"0","4":"0","5":"0","_rn_":"25"},{"1":"European","2":"0","3":"0","4":"0","5":"0","_rn_":"26"},{"1":"European","2":"0","3":"0","4":"1","5":"0","_rn_":"27"},{"1":"European","2":"0","3":"0","4":"0","5":"0","_rn_":"28"},{"1":"European","2":"0","3":"0","4":"0","5":"0","_rn_":"31"},{"1":"European","2":"0","3":"0","4":"0","5":"0","_rn_":"32"},{"1":"European","2":"1","3":"0","4":"0","5":"0","_rn_":"33"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
 <p><br />
 </p>
 <p>Look at counts per category</p>
@@ -1273,19 +1261,11 @@ train_mt</code></pre>
 <p>Build test dataset</p>
 <pre class="r"><code>test_mt &lt;- mt_features_df[-index, ]
 test_mt</code></pre>
-<pre><code>##        origin MT_16069bp MT_16086bp MT_16093bp MT_16111bp
-## 3  Amerindian          0          0          0          0
-## 5  Amerindian          0          0          0          0
-## 13 Amerindian          0          0          0          0
-## 15 Amerindian          0          0          0          0
-## 16 Amerindian          1          0          0          0
-## 17 Amerindian          0          0          0          0
-## 22   European          0          0          0          0
-## 23   European          1          0          0          0
-## 24   European          0          0          0          0
-## 29   European          0          1          0          0
-## 30   European          0          0          0          0
-## 34   European          0          0          0          0</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["origin"],"name":[1],"type":["fct"],"align":["left"]},{"label":["MT_16069bp"],"name":[2],"type":["int"],"align":["right"]},{"label":["MT_16086bp"],"name":[3],"type":["int"],"align":["right"]},{"label":["MT_16093bp"],"name":[4],"type":["int"],"align":["right"]},{"label":["MT_16111bp"],"name":[5],"type":["int"],"align":["right"]}],"data":[{"1":"Amerindian","2":"0","3":"0","4":"0","5":"0","_rn_":"3"},{"1":"Amerindian","2":"0","3":"0","4":"0","5":"0","_rn_":"5"},{"1":"Amerindian","2":"0","3":"0","4":"0","5":"0","_rn_":"13"},{"1":"Amerindian","2":"0","3":"0","4":"0","5":"0","_rn_":"15"},{"1":"Amerindian","2":"1","3":"0","4":"0","5":"0","_rn_":"16"},{"1":"Amerindian","2":"0","3":"0","4":"0","5":"0","_rn_":"17"},{"1":"European","2":"0","3":"0","4":"0","5":"0","_rn_":"22"},{"1":"European","2":"1","3":"0","4":"0","5":"0","_rn_":"23"},{"1":"European","2":"0","3":"0","4":"0","5":"0","_rn_":"24"},{"1":"European","2":"0","3":"1","4":"0","5":"0","_rn_":"29"},{"1":"European","2":"0","3":"0","4":"0","5":"0","_rn_":"30"},{"1":"European","2":"0","3":"0","4":"0","5":"0","_rn_":"34"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
 <p><br />
 </p>
 <p>Training the model</p>
@@ -1298,10 +1278,6 @@ test_mt</code></pre>
 <pre><code>## 
 ## Call:
 ## glm(formula = origin ~ ., family = binomial(), data = train_mt)
-## 
-## Deviance Residuals: 
-##    Min      1Q  Median      3Q     Max  
-## -1.228  -1.228   0.000   1.128   1.128  
 ## 
 ## Coefficients: (1 not defined because of singularities)
 ##              Estimate Std. Error z value Pr(&gt;|z|)
@@ -1337,12 +1313,15 @@ class="section level3">
 <pre class="r"><code># Predicting in the test dataset
 pred_prob_mt &lt;- predict(logistic_model_mt, test_mt, type=&quot;response&quot;)</code></pre>
 <pre><code>## Warning in predict.lm(object, newdata, se.fit, scale = 1, type = if (type == :
-## prediction from a rank-deficient fit may be misleading</code></pre>
+## prediction from rank-deficient fit; attr(*, &quot;non-estim&quot;) has doubtful cases</code></pre>
 <pre class="r"><code>pred_prob_mt</code></pre>
 <pre><code>##         3         5        13        15        16        17        22        23 
 ## 0.5294118 0.5294118 0.5294118 0.5294118 1.0000000 0.5294118 0.5294118 1.0000000 
 ##        24        29        30        34 
-## 0.5294118 0.5294118 0.5294118 0.5294118</code></pre>
+## 0.5294118 0.5294118 0.5294118 0.5294118 
+## attr(,&quot;non-estim&quot;)
+## 29 
+## 10</code></pre>
 <p><br />
 </p>
 <div id="constructing-the-predictions-dataframe" class="section level4">
@@ -1354,19 +1333,11 @@ pred_prob_mt &lt;- predict(logistic_model_mt, test_mt, type=&quot;response&quot;
 <pre class="r"><code>predictions_mt &lt;- cbind(data.frame(train_preds=pred_prob_mt, 
                                 test_mt$origin))
 predictions_mt</code></pre>
-<pre><code>##    train_preds test_mt.origin
-## 3    0.5294118     Amerindian
-## 5    0.5294118     Amerindian
-## 13   0.5294118     Amerindian
-## 15   0.5294118     Amerindian
-## 16   1.0000000     Amerindian
-## 17   0.5294118     Amerindian
-## 22   0.5294118       European
-## 23   1.0000000       European
-## 24   0.5294118       European
-## 29   0.5294118       European
-## 30   0.5294118       European
-## 34   0.5294118       European</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["train_preds"],"name":[1],"type":["dbl"],"align":["right"]},{"label":["test_mt.origin"],"name":[2],"type":["fct"],"align":["left"]}],"data":[{"1":"0.5294118","2":"Amerindian","_rn_":"3"},{"1":"0.5294118","2":"Amerindian","_rn_":"5"},{"1":"0.5294118","2":"Amerindian","_rn_":"13"},{"1":"0.5294118","2":"Amerindian","_rn_":"15"},{"1":"1.0000000","2":"Amerindian","_rn_":"16"},{"1":"0.5294118","2":"Amerindian","_rn_":"17"},{"1":"0.5294118","2":"European","_rn_":"22"},{"1":"1.0000000","2":"European","_rn_":"23"},{"1":"0.5294118","2":"European","_rn_":"24"},{"1":"0.5294118","2":"European","_rn_":"29"},{"1":"0.5294118","2":"European","_rn_":"30"},{"1":"0.5294118","2":"European","_rn_":"34"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
 <p>Then the confusion matrix can be calculated</p>
 <pre class="r"><code>cm &lt;- caret::confusionMatrix(predictions_mt$train_preds, predictions_mt$test_mt.origin)</code></pre>
 <p>This is the error</p>
@@ -1404,29 +1375,11 @@ train_mt$pred_class &lt;- ifelse(logistic_model_mt$fitted.values &gt;= 0.5, &quo
 dim(train_mt)</code></pre>
 <pre><code>## [1] 22  6</code></pre>
 <pre class="r"><code>train_mt</code></pre>
-<pre><code>##        origin MT_16069bp MT_16086bp MT_16093bp MT_16111bp pred_class
-## 1  Amerindian          0          0          0          1   European
-## 2  Amerindian          0          0          0          0 Amerindian
-## 4  Amerindian          0          0          0          0 Amerindian
-## 6  Amerindian          0          0          0          0 Amerindian
-## 7  Amerindian          0          0          0          0 Amerindian
-## 8  Amerindian          0          0          0          1   European
-## 9  Amerindian          0          0          0          0 Amerindian
-## 10 Amerindian          0          0          0          0 Amerindian
-## 11 Amerindian          0          0          0          0 Amerindian
-## 12 Amerindian          0          0          0          0 Amerindian
-## 14 Amerindian          0          0          0          1   European
-## 18   European          0          0          0          0 Amerindian
-## 19   European          0          0          0          0 Amerindian
-## 20   European          0          0          0          0 Amerindian
-## 21   European          0          0          0          0 Amerindian
-## 25   European          0          0          0          0 Amerindian
-## 26   European          0          0          0          0 Amerindian
-## 27   European          0          0          1          0 Amerindian
-## 28   European          0          0          0          0 Amerindian
-## 31   European          0          0          0          0 Amerindian
-## 32   European          0          0          0          0 Amerindian
-## 33   European          1          0          0          0 Amerindian</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["origin"],"name":[1],"type":["fct"],"align":["left"]},{"label":["MT_16069bp"],"name":[2],"type":["int"],"align":["right"]},{"label":["MT_16086bp"],"name":[3],"type":["int"],"align":["right"]},{"label":["MT_16093bp"],"name":[4],"type":["int"],"align":["right"]},{"label":["MT_16111bp"],"name":[5],"type":["int"],"align":["right"]},{"label":["pred_class"],"name":[6],"type":["chr"],"align":["left"]}],"data":[{"1":"Amerindian","2":"0","3":"0","4":"0","5":"1","6":"European","_rn_":"1"},{"1":"Amerindian","2":"0","3":"0","4":"0","5":"0","6":"Amerindian","_rn_":"2"},{"1":"Amerindian","2":"0","3":"0","4":"0","5":"0","6":"Amerindian","_rn_":"4"},{"1":"Amerindian","2":"0","3":"0","4":"0","5":"0","6":"Amerindian","_rn_":"6"},{"1":"Amerindian","2":"0","3":"0","4":"0","5":"0","6":"Amerindian","_rn_":"7"},{"1":"Amerindian","2":"0","3":"0","4":"0","5":"1","6":"European","_rn_":"8"},{"1":"Amerindian","2":"0","3":"0","4":"0","5":"0","6":"Amerindian","_rn_":"9"},{"1":"Amerindian","2":"0","3":"0","4":"0","5":"0","6":"Amerindian","_rn_":"10"},{"1":"Amerindian","2":"0","3":"0","4":"0","5":"0","6":"Amerindian","_rn_":"11"},{"1":"Amerindian","2":"0","3":"0","4":"0","5":"0","6":"Amerindian","_rn_":"12"},{"1":"Amerindian","2":"0","3":"0","4":"0","5":"1","6":"European","_rn_":"14"},{"1":"European","2":"0","3":"0","4":"0","5":"0","6":"Amerindian","_rn_":"18"},{"1":"European","2":"0","3":"0","4":"0","5":"0","6":"Amerindian","_rn_":"19"},{"1":"European","2":"0","3":"0","4":"0","5":"0","6":"Amerindian","_rn_":"20"},{"1":"European","2":"0","3":"0","4":"0","5":"0","6":"Amerindian","_rn_":"21"},{"1":"European","2":"0","3":"0","4":"0","5":"0","6":"Amerindian","_rn_":"25"},{"1":"European","2":"0","3":"0","4":"0","5":"0","6":"Amerindian","_rn_":"26"},{"1":"European","2":"0","3":"0","4":"1","5":"0","6":"Amerindian","_rn_":"27"},{"1":"European","2":"0","3":"0","4":"0","5":"0","6":"Amerindian","_rn_":"28"},{"1":"European","2":"0","3":"0","4":"0","5":"0","6":"Amerindian","_rn_":"31"},{"1":"European","2":"0","3":"0","4":"0","5":"0","6":"Amerindian","_rn_":"32"},{"1":"European","2":"1","3":"0","4":"0","5":"0","6":"Amerindian","_rn_":"33"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
 <pre class="r"><code># Generating the classification table
 ctab_train_mt &lt;- table(train_mt$origin, train_mt$pred_class)
 ctab_train_mt</code></pre>
@@ -1527,12 +1480,12 @@ Recall_test</code></pre>
 <p>One potential direction to improve sensitivity in the train and test
 datasets is to use haplogroups instead of SNPs. Take for example the
 Huntington’s disease (HD) diagnosis. A person is positive if they have
-more than 35 CAG repeats. If for example we take a haplogroup of 50 bp,
-we can classify people with 40 CAG repeats as positive whereas
+more than 35 CAG repeats. If for example we take a haplogroup of range
+of 50 bp, we can classify people with 40 CAG repeats as positive whereas
 individuals that have the haplogroup with less than 40 repeats are
 negative for HD.</p>
-<p>Using this approach we can divide the genome in smaller segments and
-the algorithm will have to only work in these segments. We can
+<p>Using this approach we can divide the genome into smaller segments
+and the algorithm will have to only work in these segments. We can
 therefore, use the divide and conquer approach to diagnose the disease
 using genotype information.</p>
 <p><br />
@@ -1680,64 +1633,65 @@ href="https://en.wikipedia.org/wiki/Receiver_operating_characteristic">https://e
 <p><br />
 </p>
 <pre class="r"><code>sessionInfo()</code></pre>
-<pre><code>## R version 4.1.1 (2021-08-10)
-## Platform: x86_64-apple-darwin17.0 (64-bit)
-## Running under: macOS Big Sur 10.16
+<pre><code>## R version 4.4.1 (2024-06-14)
+## Platform: aarch64-apple-darwin20
+## Running under: macOS Big Sur 11.4
 ## 
 ## Matrix products: default
-## BLAS:   /Library/Frameworks/R.framework/Versions/4.1/Resources/lib/libRblas.0.dylib
-## LAPACK: /Library/Frameworks/R.framework/Versions/4.1/Resources/lib/libRlapack.dylib
+## BLAS:   /Library/Frameworks/R.framework/Versions/4.4-arm64/Resources/lib/libRblas.0.dylib 
+## LAPACK: /Library/Frameworks/R.framework/Versions/4.4-arm64/Resources/lib/libRlapack.dylib;  LAPACK version 3.12.0
 ## 
 ## locale:
 ## [1] en_US.UTF-8/en_US.UTF-8/en_US.UTF-8/C/en_US.UTF-8/en_US.UTF-8
+## 
+## time zone: America/Chicago
+## tzcode source: internal
 ## 
 ## attached base packages:
 ## [1] stats     graphics  grDevices utils     datasets  methods   base     
 ## 
 ## other attached packages:
-##  [1] InformationValue_1.2.3 pROC_1.18.0            caret_6.0-94          
-##  [4] lattice_0.22-6         expss_0.11.4           lubridate_1.9.2       
-##  [7] forcats_1.0.0          purrr_1.0.1            readr_2.1.4           
-## [10] tidyr_1.3.0            ggplot2_3.5.1          tidyverse_2.0.0       
-## [13] microdatasus_1.4.4     data.table_1.15.4      reshape2_1.4.4        
-## [16] tibble_3.2.1           stringr_1.5.0          dplyr_1.1.2           
-## [19] kableExtra_1.3.4       maditr_0.8.4           ape_5.7-1             
+##  [1] InformationValue_1.2.3 pROC_1.18.5            caret_6.0-94          
+##  [4] lattice_0.22-6         reshape2_1.4.4         expss_0.11.6          
+##  [7] lubridate_1.9.3        forcats_1.0.0          purrr_1.0.2           
+## [10] readr_2.1.5            tidyr_1.3.1            ggplot2_3.5.1         
+## [13] tidyverse_2.0.0        microdatasus_2.3.3     tibble_3.2.1          
+## [16] stringr_1.5.1          dplyr_1.1.4            kableExtra_1.4.0      
+## [19] maditr_0.8.4           ape_5.8               
 ## 
 ## loaded via a namespace (and not attached):
-##  [1] nlme_3.1-162         matrixStats_1.3.0    fontawesome_0.5.2   
-##  [4] webshot_0.5.5        httr_1.4.7           tools_4.1.1         
-##  [7] backports_1.5.0      bslib_0.5.0          utf8_1.2.4          
-## [10] R6_2.5.1             rpart_4.1.23         colorspace_2.1-0    
-## [13] nnet_7.3-19          withr_3.0.0          tidyselect_1.2.0    
-## [16] compiler_4.1.1       cli_3.6.3            rvest_1.0.3         
-## [19] htmlTable_2.4.1      xml2_1.3.4           labeling_0.4.3      
-## [22] sass_0.4.6           scales_1.3.0         checkmate_2.3.1     
-## [25] systemfonts_1.1.0    digest_0.6.36        rmarkdown_2.22      
-## [28] svglite_2.1.1        pkgconfig_2.0.3      htmltools_0.5.7     
-## [31] parallelly_1.37.1    fastmap_1.2.0        highr_0.11          
-## [34] htmlwidgets_1.6.2    rlang_1.1.4          rstudioapi_0.16.0   
-## [37] jquerylib_0.1.4      farver_2.1.2         generics_0.1.3      
-## [40] jsonlite_1.8.8       ModelMetrics_1.2.2.2 magrittr_2.0.3      
-## [43] huxtable_5.5.2       Matrix_1.5-1         Rcpp_1.0.12         
-## [46] munsell_0.5.1        fansi_1.0.6          lifecycle_1.0.4     
-## [49] stringi_1.8.4        yaml_2.3.8           MASS_7.3-60.0.1     
-## [52] plyr_1.8.9           recipes_1.0.6        grid_4.1.1          
-## [55] listenv_0.9.1        parallel_4.1.1       crayon_1.5.3        
-## [58] splines_4.1.1        hms_1.1.3            knitr_1.45          
-## [61] pillar_1.9.0         stats4_4.1.1         future.apply_1.11.1 
-## [64] codetools_0.2-20     glue_1.7.0           evaluate_0.24.0     
-## [67] vctrs_0.6.2          tzdb_0.4.0           foreach_1.5.2       
-## [70] gtable_0.3.4         future_1.33.1        assertthat_0.2.1    
-## [73] cachem_1.1.0         xfun_0.45            gower_1.0.1         
-## [76] prodlim_2023.03.31   class_7.3-22         survival_3.7-0      
-## [79] viridisLite_0.4.2    timeDate_4032.109    iterators_1.0.14    
-## [82] hardhat_1.3.1        lava_1.7.2.1         globals_0.16.3      
-## [85] timechange_0.3.0     ipred_0.9-14</code></pre>
+##  [1] tidyselect_1.2.1     viridisLite_0.4.2    timeDate_4032.109   
+##  [4] farver_2.1.2         fastmap_1.2.0        digest_0.6.37       
+##  [7] rpart_4.1.23         timechange_0.3.0     lifecycle_1.0.4     
+## [10] survival_3.7-0       magrittr_2.0.3       compiler_4.4.1      
+## [13] rlang_1.1.4          sass_0.4.9           tools_4.4.1         
+## [16] utf8_1.2.4           yaml_2.3.10          data.table_1.16.0   
+## [19] knitr_1.48           labeling_0.4.3       htmlwidgets_1.6.4   
+## [22] plyr_1.8.9           xml2_1.3.6           withr_3.0.1         
+## [25] stats4_4.4.1         nnet_7.3-19          grid_4.4.1          
+## [28] fansi_1.0.6          future_1.34.0        colorspace_2.1-1    
+## [31] globals_0.16.3       scales_1.3.0         iterators_1.0.14    
+## [34] MASS_7.3-61          cli_3.6.3            rmarkdown_2.28      
+## [37] generics_0.1.3       future.apply_1.11.2  rstudioapi_0.16.0   
+## [40] tzdb_0.4.0           cachem_1.1.0         splines_4.4.1       
+## [43] parallel_4.4.1       matrixStats_1.3.0    vctrs_0.6.5         
+## [46] hardhat_1.4.0        Matrix_1.7-0         jsonlite_1.8.8      
+## [49] hms_1.1.3            htmlTable_2.4.3      listenv_0.9.1       
+## [52] systemfonts_1.1.0    foreach_1.5.2        fontawesome_0.5.2   
+## [55] gower_1.0.1          jquerylib_0.1.4      recipes_1.1.0       
+## [58] parallelly_1.38.0    glue_1.7.0           codetools_0.2-20    
+## [61] stringi_1.8.4        gtable_0.3.5         munsell_0.5.1       
+## [64] pillar_1.9.0         htmltools_0.5.8.1    ipred_0.9-15        
+## [67] lava_1.8.0           R6_2.5.1             evaluate_0.24.0     
+## [70] highr_0.11           backports_1.5.0      bslib_0.8.0         
+## [73] class_7.3-22         Rcpp_1.0.13          prodlim_2024.06.25  
+## [76] svglite_2.1.3        nlme_3.1-166         checkmate_2.3.2     
+## [79] xfun_0.47            ModelMetrics_1.2.2.2 pkgconfig_2.0.3</code></pre>
 <p><br />
 </p>
 <pre class="r"><code>end_time &lt;- Sys.time()
 end_time - start_time</code></pre>
-<pre><code>## Time difference of 1.644398 secs</code></pre>
+<pre><code>## Time difference of 1.370299 secs</code></pre>
 </div>
 
 

@@ -1,0 +1,543 @@
+---
+  title: "Machine Learning Classification"
+  author: "Gepoliano Chaves"
+  date: "June 24th, 2024"
+  output:
+    html_document:
+      df_print: paged
+      toc: true
+  bibliography: references.bib
+---
+
+\
+
+## Summary
+
+\
+
+This pipeline classifies the origin of the genotype based on the genotype information extracted from VCF files.
+
+\
+
+## Running Time
+
+```{r}
+start_time <- Sys.time()
+```
+
+# References
+
+* Initial Google Search terms
+
+r machine learning wisconsin cancer database
+
+* RPubs notebook
+
+https://rpubs.com/raviolli77/352956
+
+* UCI Machine Learning
+
+https://search.r-project.org/CRAN/refmans/mlbench/html/BreastCancer.html
+
+* Chapter 12 of this Machine Learning Book
+
+https://fderyckel.github.io/machinelearningwithr/case-study-wisconsin-breast-cancer.html
+
+* This reference mentions Naive Bayes classification:
+
+https://data-flair.training/blogs/classification-in-r/
+
+\
+
+# 1. Load Packages
+
+\
+
+```{r, message=F, warning=F}
+suppressWarnings(library(tidyverse))
+suppressWarnings(library(caret))
+suppressWarnings(library(ggcorrplot))
+suppressWarnings(library(GGally))
+suppressWarnings(library(randomForest))
+suppressWarnings(library(e1071))
+suppressWarnings(library(ROCR))
+suppressWarnings(library(pROC))
+suppressWarnings(library(RCurl))
+suppressWarnings(library(kableExtra))
+```
+
+\
+
+# 2. Load Data
+
+\
+
+* Load file without labels
+
+
+```{r 03. load r2_gse62564_gene_sets, eval=T}
+r2_gse62564_gene_sets <- readRDS("../../ReComBio Book English/recombio bookdown/data/r2_gse62564_gene_sets.rds")
+dim(r2_gse62564_gene_sets)
+```
+
+* Change variables to binary
+
+```{r Change variables to binary}
+r2_gse62564_gene_sets <- r2_gse62564_gene_sets %>%
+  dplyr::mutate(efs_bin=ifelse(r2_gse62564_gene_sets$efs_bin == "event", "1", "0"))%>%
+  dplyr::mutate(inss_stage=ifelse(r2_gse62564_gene_sets$inss_stage == "st4", "1", "0"))%>% 
+  dplyr::mutate(mycn_status=ifelse(r2_gse62564_gene_sets$mycn_status == "mycn_amp", "1", "0"))%>% 
+  dplyr::mutate(os_bin=ifelse(r2_gse62564_gene_sets$os_bin == "event", "1", "0"))%>%
+  dplyr::mutate(progression=ifelse(r2_gse62564_gene_sets$progression == "yes", "1", "0"))%>%
+  dplyr::mutate(sex=ifelse(r2_gse62564_gene_sets$sex == "m", "1", "0"))%>%
+  dplyr::mutate_if(is.character,as.numeric)
+```
+
+
+* Load file with labels
+
+```{r 03. load r2_gse62564_gene_sets labels, eval=T}
+r2_gse62564_gene_sets_labels <- readRDS("../../ReComBio Book English/recombio bookdown/data/r2_gse62564_gene_sets_labels.rds")
+dim(r2_gse62564_gene_sets_labels)
+```
+
+* Change variables to binary and make them numeric
+
+```{r Change variables to binary and make them numeric}
+r2_gse62564_gene_sets_labels <- r2_gse62564_gene_sets_labels %>%
+  # dplyr::mutate(high_risk=ifelse(r2_gse62564_gene_sets_labels$high_risk == "yes", "1", "0"))%>% Do not change high_risk
+  dplyr::mutate(efs_bin=ifelse(r2_gse62564_gene_sets_labels$efs_bin == "event", "1", "0"))%>%
+  dplyr::mutate(inss_stage=ifelse(r2_gse62564_gene_sets_labels$inss_stage == "st4", "1", "0"))%>% 
+  dplyr::mutate(mycn_status=ifelse(r2_gse62564_gene_sets_labels$mycn_status == "mycn_amp", "1", "0"))%>% 
+  dplyr::mutate(os_bin=ifelse(r2_gse62564_gene_sets_labels$os_bin == "event", "1", "0"))%>%
+  dplyr::mutate(progression=ifelse(r2_gse62564_gene_sets_labels$progression == "yes", "1", "0"))%>%
+  dplyr::mutate(sex=ifelse(r2_gse62564_gene_sets_labels$sex == "m", "1", "0"))#%>%
+  #dplyr::mutate_at(vars(efs_bin:sex), as.numeric)
+## The comment in the previous line maker efs_bin:sex not numeric, because the website building was complaining.
+```
+
+This @stackOverflow2017 reference made it clear that I should not make high_risk numeric.
+
+\
+
+```{r load mt_dcast_1.txt, eval=T}
+mt_features_df <- read.table("../../ReComBio Scientific/geraldo/data/mt_dcast_1.txt", header = T)
+dim(mt_features_df)
+```
+
+Make rows to column
+
+```{r}
+n_occur_mt_features_df <- data.frame(table(mt_features_df$GenBankID))
+
+mt_features_df <- mt_features_df %>% distinct(GenBankID, .keep_all = TRUE)
+
+rownames(mt_features_df) <- mt_features_df$GenBankID 
+
+mt_features_df <- mt_features_df %>% select(-c("GenBankID"))
+```
+
+* Change variables to binary and make them numeric
+
+```{r, eval=F}
+mt_features_df <- mt_features_df %>%
+  dplyr::mutate_at(vars(MT_16069_BP:MT_16362_BP), as.numeric)
+```
+
+\
+
+### Table of Categorical Features
+
+\
+
+* NB
+
+```{r look at table of features}
+kable(r2_gse62564_gene_sets_labels, caption="Table of Categorical Features (NB)") %>%
+  kable_styling("striped", full_width = F, font_size = 12) %>%
+  scroll_box(width = "100%", height = "600px")
+```
+
+\
+
+* MT
+
+```{r table of features mt}
+kable(mt_features_df, caption="Table of Categorical Features (MT)") %>%
+  kable_styling("striped", full_width = F, font_size = 12) %>%
+  scroll_box(width = "100%", height = "600px")
+
+mt_features_labels <- mt_features_df
+```
+
+\
+
+Remove GenBank column
+
+```{r}
+mt_features_df <- mt_features_df %>% select(-c("origin"))
+```
+
+\
+
+### Make high_risk a factor
+
+Need to make high_risk a factor!!!!!!!!!!!!!!!!!!!!!!!!!
+
+```{r Make r2_gse62564_gene_sets_labels high_risk a factor}
+r2_gse62564_gene_sets_labels$high_risk <- as.factor(r2_gse62564_gene_sets_labels$high_risk)
+class(r2_gse62564_gene_sets_labels$high_risk)
+```
+
+
+# Creating Training and Test Sets
+
+## NB
+
+# 12.3 Understand the data
+
+# 12.3.2 Pre-process the data
+
+In the chunk above, the only point is to remove correlations below 0.9. I do not care about that now, so I will make fd2 the same DF, without using the select function:
+
+```{r}
+df2_r2_gse62564_gene_sets_labels <- r2_gse62564_gene_sets_labels
+```
+
+
+#### 12.3.2.1 Using PCA
+
+With the original dataset, 95% of the variance is explained with 10 PC’s.
+
+##### cumulative variance
+
+```{r summary NB}
+preproc_pca_df_neuroblastoma <- prcomp(r2_gse62564_gene_sets, scale = TRUE, center = TRUE)
+class(preproc_pca_df_neuroblastoma)
+dim(preproc_pca_df_neuroblastoma)
+preproc_pca_df_neuroblastoma
+summary(preproc_pca_df_neuroblastoma)
+```
+
+```{r summary MT}
+preproc_pca_df_mt <- prcomp(mt_features_df, scale = TRUE, center = TRUE)
+class(preproc_pca_df_mt)
+dim(preproc_pca_df_mt)
+preproc_pca_df_mt
+summary(preproc_pca_df_mt)
+```
+
+\
+
+##### Calculate the proportion of variance explained
+
+\
+
+```{r standard dev NB}
+pca_df_var_neuroblastoma <- preproc_pca_df_neuroblastoma$sdev^2
+class(pca_df_var_neuroblastoma)
+dim(pca_df_var_neuroblastoma)
+pca_df_var_neuroblastoma
+```
+
+```{r standard dev MT}
+pca_df_var_mt <- preproc_pca_df_mt$sdev^2
+class(pca_df_var_mt)
+dim(pca_df_var_mt)
+pca_df_var_mt
+```
+
+Division
+
+```{r division NB}
+pve_df_neuroblastoma <- pca_df_var_neuroblastoma / sum(pca_df_var_neuroblastoma)
+class(pve_df_neuroblastoma)
+pve_df_neuroblastoma
+```
+
+```{r division MT}
+pve_df_mt <- pca_df_var_mt / sum(pca_df_var_mt)
+class(pve_df_mt)
+pve_df_mt
+```
+
+Cumulative sum
+
+```{r cumulative sum NB}
+cum_pve_neuroblastoma <- cumsum(pve_df_neuroblastoma)
+class(cum_pve_neuroblastoma)
+cum_pve_neuroblastoma
+```
+
+```{r cumulative sum MT}
+cum_pve_mt <- cumsum(pve_df_mt)
+class(cum_pve_mt)
+cum_pve_mt
+length(cum_pve_mt)
+```
+
+Check number of columns in r2_gse62564_gene_sets
+
+```{r}
+ncol(r2_gse62564_gene_sets)
+dim(r2_gse62564_gene_sets)
+```
+
+mt_features_df
+
+```{r}
+ncol(mt_features_df)
+dim(mt_features_df)
+```
+
+Table
+
+```{r table}
+pve_table_neuroblastoma <- tibble(comp = seq(1:ncol(r2_gse62564_gene_sets)), pve_df_neuroblastoma, cum_pve_neuroblastoma)
+```
+
+```{r table MT}
+pve_table_mt <- tibble(comp = seq(1:ncol(mt_features_df)), pve_df_mt, cum_pve_mt)
+```
+
+* Plot
+
+```{r 8 gene sets plot}
+ggplot(pve_table_neuroblastoma, aes(x = comp, y = cum_pve_neuroblastoma)) + 
+  geom_point() + 
+  geom_abline(intercept = 0.95, color = "red", slope = 0) + 
+  labs(x = "Number of components", y = "Cumulative Variance")
+```
+
+* Plot
+
+```{r 8 gene sets plot MT}
+ggplot(pve_table_mt, aes(x = comp, y = cum_pve_mt)) + 
+  geom_point() + 
+  geom_abline(intercept = 0.95, color = "red", slope = 0) + 
+  labs(x = "Number of components", y = "Cumulative Variance")
+```
+
+* neuroblastoma 8 gene sets 
+
+* PC1 and PC2 can somehow separate the high risk and low risk groups
+
+```{r preproc_pca_df_neuroblastoma}
+pca_df_neuroblastoma <- as_tibble(preproc_pca_df_neuroblastoma$x)
+library(ggplot2)
+ggplot(pca_df_neuroblastoma, aes(x = PC1, y = PC2, col = r2_gse62564_gene_sets_labels$high_risk)) + geom_point()
+```
+
+Let’s visuzalize the first 5 components for neuroblastoma with 8 gene sets.
+
+```{r Let’s visuzalize the first 3 components for neuroblastoma with 8 gene sets}
+df_pcs_neuroblastoma <- cbind(as_tibble(r2_gse62564_gene_sets_labels$high_risk), as_tibble(preproc_pca_df_neuroblastoma$x))
+class(df_pcs_neuroblastoma)
+dim(df_pcs_neuroblastoma)
+df_pcs_neuroblastoma
+GGally::ggpairs(df_pcs_neuroblastoma, columns = 2:6, ggplot2::aes(color = value))
+```
+
+Let’s visuzalize the first components for MT.
+
+```{r visuzalize components for MT}
+df_pcs_mt <- cbind(as_tibble(mt_features_labels$origin), as_tibble(preproc_pca_df_mt$x))
+class(df_pcs_mt)
+dim(df_pcs_mt)
+df_pcs_mt
+GGally::ggpairs(df_pcs_mt, columns = 2:4, ggplot2::aes(color = value))
+```
+
+#### 12.3.2.2 Using LDA
+
+\
+
+
+####  Neuroblastoma 8 gene sets
+
+Take a look at r2_gse62564_gene_sets_labels. Because the class of the features that should be numeric did not come as numeric, we have to chage their class to numeric.
+
+```{r 3. Take a look at r2_gse62564_gene_sets_labels}
+r2_gse62564_gene_sets_labels
+class(r2_gse62564_gene_sets_labels$high_risk)
+class(r2_gse62564_gene_sets_labels$mycn_status)
+class(r2_gse62564_gene_sets_labels$efs_bin)
+```
+
+##### Predict
+
+```{r predict nb}
+preproc_lda_nb_df <- MASS::lda(high_risk ~., data = r2_gse62564_gene_sets_labels, center = TRUE, scale = TRUE)
+preproc_lda_nb_df
+```
+
+```{r predict mt}
+preproc_lda_mt_df <- MASS::lda(origin ~., data = mt_features_labels, center = TRUE, scale = TRUE)
+preproc_lda_mt_df
+```
+
+Make a df out of the LDA for visualization purpose.
+
+```{r 3. Make a df out of the LDA for visualization for nb}
+predict_lda_nb_df <- predict(preproc_lda_nb_df, r2_gse62564_gene_sets_labels)$x %>% 
+  as_tibble() %>% 
+  cbind(high_risk = r2_gse62564_gene_sets_labels$high_risk)
+```
+
+```{r 3. Make a df out of the LDA for visualization for mt}
+predict_lda_mt_df <- predict(preproc_lda_mt_df, mt_features_labels)$x %>% 
+  as_tibble() %>% 
+  cbind(origin = mt_features_labels$origin)
+```
+
+Glimpse
+
+```{r 3. glimpse function nb}
+glimpse(predict_lda_nb_df)
+```
+
+```{r 3. glimpse function mt}
+glimpse(predict_lda_mt_df)
+```
+
+\
+
+### 12.3.3 Model the data
+
+\
+
+Let’s first create a testing and training set using caret for the breast cancer datset
+
+Now for the neuroblastoma 8 gene sets dataset
+
+```{r 3. Model the data NB}
+set.seed(1815)
+df3_nb <- cbind(high_risk = df2_r2_gse62564_gene_sets_labels$high_risk, df2_r2_gse62564_gene_sets_labels)
+df_sampling_index_nb <- createDataPartition(df3_nb$high_risk, times = 1, p = 0.67, list = FALSE)
+class(df_sampling_index_nb)
+dim(df_sampling_index_nb)
+df_sampling_index_nb
+df_training_nb <- df3_nb[df_sampling_index_nb, ]
+df_testing_nb <-  df3_nb[-df_sampling_index_nb, ]
+df_control_nb <- trainControl(method="cv",
+                           number = 15,
+                           classProbs = TRUE,
+                           summaryFunction = twoClassSummary)
+```
+
+```{r 3. Model the data mt}
+set.seed(1815)
+df3_mt <- cbind(origin = mt_features_labels$origin, mt_features_df)
+df_sampling_index_mt <- createDataPartition(df3_mt$origin, times = 1, p = 0.67, list = FALSE)
+df_sampling_index_mt
+df_training_mt <- df3_mt[df_sampling_index_mt, ]
+df_training_mt
+df_testing_mt <-  df3_mt[-df_sampling_index_mt, ]
+df_control_mt <- trainControl(method="cv",
+                           number = 15,
+                           classProbs = TRUE,
+                           summaryFunction = twoClassSummary)
+```
+
+\
+
+#### 12.3.3.1 Logistic regression
+
+\
+
+```{r Important Evaluated Chunk 2: Logistic regression NB, eval=F}
+model_logreg_nb_df <- train(high_risk ~., data = df_training_nb, method = "glm", 
+                         metric = "ROC", preProcess = c("scale", "center"), 
+                         trControl = df_control_nb)
+class(model_logreg_nb_df)
+model_logreg_nb_df
+```
+
+\
+
+Too many features error:
+https://www.statology.org/prediction-from-rank-deficient-fit-may-be-misleading/
+
+Warning: There were missing values in resampled performance measures.
+
+```{r Important Evaluated Chunk 2: Logistic regression mt, eval=F}
+model_logreg_mt_df <- train(origin ~., data = df_training_mt, method = "glm", 
+                         metric = "ROC", preProcess = c("scale", "center"), 
+                         trControl = df_control_mt)
+class(model_logreg_mt_df)
+model_logreg_mt_df
+```
+
+I googled this error: Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred
+
+This refence mentioned complete separation:
+
+https://stackoverflow.com/questions/67360883/how-to-fix-fitted-probabilities-numerically-0-or-1-occurred-warning-in-r
+
+This is an article about complete separtation:
+
+https://stats.oarc.ucla.edu/other/mult-pkg/faq/general/faqwhat-is-complete-or-quasi-complete-separation-in-logisticprobit-regression-and-how-do-we-deal-with-them/
+
+```{r Important Evaluated Chunk 3: predict function, eval=F}
+prediction_logreg_nb_df <- predict(model_logreg_nb_df, df_testing_nb, type="raw")
+```
+
+Look at the data and reference datasets to see if they have the same levels
+
+Levels of prediction_logreg_nb_df when type="raw" are yes and no, which is in agreement with prediction_logreg_df
+
+```{r Look at the data and reference datasets to see if they have the same levels, eval=F}
+prediction_logreg_nb_df
+class(prediction_logreg_nb_df)
+df_testing_nb
+class(df_testing_nb)
+```
+
+Look at structures
+
+```{r}
+str(df_testing_nb$righ_risk)
+```
+
+Look at confusionMatrix function
+
+```{r Important Evaluated Chunk 4: confusionMatrix function, eval=F}
+cm_logreg_nb_df <- confusionMatrix(prediction_logreg_nb_df, as.factor(df_testing_nb$high_risk), positive = "yes")
+class(cm_logreg_nb_df)
+cm_logreg_nb_df
+str(cm_logreg_nb_df)
+```
+
+\
+
+### Compare prediction_logreg_df / df_testing and prediction_logreg_nb_df / df_testing_nb with 
+
+#### NB
+
+```{r Check prediction_logreg_nb_df and df_testing_nb, eval=F}
+prediction_logreg_nb_df
+class(prediction_logreg_nb_df)
+dim(prediction_logreg_nb_df)
+length(prediction_logreg_nb_df)
+print(head(df_testing_nb))
+class(df_testing_nb)
+class(df_testing_nb$high_risk)
+class(df_testing_nb$HIF1A)
+class(df_testing_nb$ELVIDGE_HIF1A_TARGETS_UP)
+dim(df_testing_nb)
+```
+
+# 4) References
+
+<div id="refs"></div>
+
+# Session Info
+
+```{r session}
+sessionInfo()
+```
+
+```{r}
+end_time <- Sys.time()
+end_time - start_time
+```
