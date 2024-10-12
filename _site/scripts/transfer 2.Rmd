@@ -1,0 +1,15 @@
+* Move Tumor 5hmC, RNA-Seq and cfDNA
+
+The original script in local machine was ~/Desktop/Gepoliano/hipóxia/Hypoxia_Paper/manuscripts/lab experiments/5hmC/ngsplot/scripts/ngsplot.Rmd
+
+## Define variables
+
+```{bash}
+targetFolder=./
+```
+
+## Transfer script
+
+```{bash}
+scp  /Users/gepolianochaves/Desktop/Gepoliano/ReComBio/ReComBio\ Scientific/geraldo/scripts/transfer.Rmd gchaves@hb.ucsc.edu:/hb/home/gchaves/
+```
