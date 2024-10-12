@@ -1,0 +1,586 @@
+---
+  title: "Genotype Information Extraction"
+  author: "Gepoliano Chaves"
+  date: "June 24th, 2024"
+  output:
+    html_document:
+      df_print: paged
+      toc: true
+  bibliography: references.bib
+---
+
+\
+
+## Summary
+
+\
+
+In this activity we process VCF files to generate a genotype file to be used in the machine learning framework.
+
+\
+
+## Load libraries
+
+\
+
+```{r, message=F, warning=F}
+library(maditr)
+library(kableExtra)
+library(dplyr)
+library(stringr)
+library(tibble)
+```
+
+2|6 Associação Biológica.Rmd
+
+\
+
+## 1. Compressing and indexing VCF files
+
+\
+
+Como a cada amostra corresponde um arquivo VCF, em nossa pipeline, precisamos mesclar todos os arquivos VCF correspondentes a todos os indivíduos em análise no nosso estudo. A palavra em inglês correspondente a mesclar é *merge*. Nos códigos executados abaixo, a palavra *merge* traz a ideia de que o arquivo que leva este nome, é produto de um comando de mesclagem. Para o comando de mesclagem que executaremos, é necessário os passos de compressão e indexamento, ilustrados abaixo.
+
+* Create folder compIndex to move files that will be compressed and indezed
+
+```{bash, eval = F}
+mkdir -p compIndex
+```
+
+Copy files into compIndex folder: 
+
+```{bash, eval = F}
+cp snps_vcf/* compIndex
+```
+
+Move to compIndex folder: 
+
+```{bash, eval = F}
+cd compIndex
+```
+
+Before bgzip and tabix, run the following command. Need to ask IT why I have had to run this command.
+
+```{bash, eval=F}
+source ~/.bashrc
+```
+
+bgzip
+
+```{bash, eval = F}
+for x in *snps.vcf; do bgzip $x; done
+```
+
+tabix
+
+```{bash, eval = F}
+for x in *gz; do tabix $x; done
+```
+
+\
+
+## 2. Merging VCF files
+
+\
+
+É necessário mesclar o arquivo VCF proveniente de cada amostra, o qual foi comprimido e indexado no código anterior, formando um arquivo final, contendo todas as amostras do estudo. Como as amostras usadas aqui são provenientes do estudo publicado por Labadorf, o arquivo VCF final, contendo as mutações de todas as amostras, foi chamado de Labadorf_merged.vcf, indicando a ideia de que este arquivo é proveniente de um processo de mesclagem entre todas as amostras. O comando para mesclagem dos arquivos VCF, utilizando o software bcftools, está indicado abaixo.
+
+Before merging the vcf files, make sure bcftools is loaded:
+
+```{bash, eval= F}
+module load bcftools
+```
+
+\
+
+This for loop generates the pattern that I need, replacing the ? with the slash (\):
+
+```{bash, eval=F}
+/hb/home/gchaves/results/geraldo/mitochondria/compIndex
+for i in *_snps.vcf.gz; do echo $i; done | sed 's/gz/gz ?/g' | sed -r 's/\?/\\/g'
+```
+
+\
+
+```{bash, eval=F}
+bcftools merge --missing-to-ref --force-samples \
+AF243627_snps.vcf.gz \
+AF243628_snps.vcf.gz \
+AF243629_snps.vcf.gz \
+AF243630_snps.vcf.gz \
+AF243631_snps.vcf.gz \
+AF243632_snps.vcf.gz \
+AF243633_snps.vcf.gz \
+AF243634_snps.vcf.gz \
+AF243635_snps.vcf.gz \
+AF243636_snps.vcf.gz \
+AF243637_snps.vcf.gz \
+AF243638_snps.vcf.gz \
+AF243639_snps.vcf.gz \
+AF243640_snps.vcf.gz \
+AF243700_snps.vcf.gz \
+AF243701_snps.vcf.gz \
+AF243702_snps.vcf.gz \
+AF243703_snps.vcf.gz \
+AF243704_snps.vcf.gz \
+AF243705_snps.vcf.gz \
+AF243706_snps.vcf.gz \
+AF243707_snps.vcf.gz \
+AF243708_snps.vcf.gz \
+AF243709_snps.vcf.gz \
+AF243780_snps.vcf.gz \
+AF243781_snps.vcf.gz \
+AF243782_snps.vcf.gz \
+AF243783_snps.vcf.gz \
+AF243784_snps.vcf.gz \
+AF243785_snps.vcf.gz \
+AF243786_snps.vcf.gz \
+AF243787_snps.vcf.gz \
+AF243788_snps.vcf.gz \
+AF243789_snps.vcf.gz \
+AF243790_snps.vcf.gz \
+AF243791_snps.vcf.gz \
+AF243792_snps.vcf.gz \
+AF243793_snps.vcf.gz \
+AF243794_snps.vcf.gz \
+AF243795_snps.vcf.gz \
+AF243796_snps.vcf.gz > mt_merged.vcf
+```
+
+\
+
+Print number of lines in the merged vcf file
+
+```{bash, eval=F}
+wc -l mt_merged.vcf
+382 mt_merged.vcf
+```
+
+\
+
+This should fill the genotypes with the reference, however did not work for me.
+
+https://github.com/samtools/bcftools/issues/402
+
+```{bash, eval = FALSE}
+bcftools +setGT mt_merged.vcf -Ob -o filled.bcf -- -t . -n 0
+```
+
+```{bash, eval = FALSE}
+bcftools +missing2ref  mt_merged.vcf -o filled.bcf
+```
+
+BWA Machine Learning:
+
+https://academic.oup.com/bioinformatics/article/38/9/2404/6543607
+
+\
+
+## 3. Extract ped and map from merged vcf file 
+
+\
+
+The steps in this session were initially thought for plink downstream analysis.
+The first step here is to move the merged vcf file to another folder:
+
+```{bash, eval = FALSE}
+cd ..
+mkdir -p merged_vcf
+mv compIndex/mt_merged.vcf merged_vcf
+cd merged_vcf
+```
+
+\
+
+This command can extract the ped and map file but the problem that this command won't work for mtDNA is because this command only works with bialelic data, which is not the case for mtDNA.
+
+```{bash, eval = FALSE}
+vcftools --vcf mt_merged.vcf --out mt_plink --plink
+```
+
+\
+
+Extract information from merged vcf file
+
+In the bcftools @BCFtools2024 documentation there are a lot of good examples about how to extract genotype information with the samples:
+
+http://www.htslib.org/doc/bcftools.html#query
+
+This chunk yields a result for the query option:
+
+```{bash, eval = FALSE}
+bcftools query -f '%CHROM %POS  %REF  %ALT %QUAL\n' mt_merged.vcf
+```
+
+Modifying chunk from above with chunk from below:
+
+```{bash, eval = FALSE}
+bcftools query -f '%CHROM\t%POS\t%REF\t%ALT[\t%SAMPLE=%GT]\n' mt_merged.vcf
+```
+
+Compare with chunk above
+
+```{bash, eval = FALSE}
+bcftools query -f '%CHROM\t%POS\t%REF\t%ALT[\t%QUAL]\n' mt_merged.vcf
+bcftools query -f '%CHROM\t%POS\t%REF\t%ALT[\t%FILTER]\n' mt_merged.vcf
+bcftools query -f '%CHROM %POS  %REF  %ALT %QUAL\n' mt_merged.vcf
+```
+
+Print chromosome, position, ref allele and the first alternate allele
+
+```{bash, eval = FALSE}
+bcftools query -f '%CHROM  %POS  %REF  %ALT{0}\n' mt_merged.vcf
+```
+
+Similar to above, but use tabs instead of spaces, add sample name and genotype
+
+```{bash, eval = FALSE}
+bcftools query -f '%CHROM\t%POS\t%REF\t%ALT[\t%SAMPLE=%GT]\n' mt_merged.vcf
+```
+
+bcftools query -f '%CHROM\t%POS\t%REF\t%ALT\t%INFO/TAG[\t%SAMPLE=%AD]\n' mt_merged.vcf
+
+This printed IDs as dots
+
+```{bash, eval = FALSE}
+bcftools query -f '%CHROM\t%POS\t%REF\t%ALT[\t%ID]\n' mt_merged.vcf 
+```
+
+This also did not work: https://github.com/samtools/bcftools/issues/144
+
+```{bash, eval = FALSE}
+bcftools query -f '%CHROM %POS[ %IUPACGT]\n' mt_merged.vcf
+```
+
+Print FORMAT/GT fields followed by FORMAT/GT fields
+
+```{bash, eval = FALSE}
+bcftools query -f 'GQ:[ %GQ] \t GT:[ %GT]\n' mt_merged.vcf
+```
+
+Print only samples with alternate (non-reference) genotypes
+
+```{bash, eval = FALSE}
+bcftools query -f'[%CHROM:%POS %SAMPLE %GT\n]' -i'GT="alt"' mt_merged.vcf
+```
+
+\
+
+### 3.1 Bcftools query commands
+
+\
+
+Commands that worked to extract genotypes
+
+```{bash, eval = FALSE}
+
+cd /hb/home/gchaves/results/geraldo/mitochondria/test
+## This worked:
+bcftools query -f'[%CHROM:%POS:%SAMPLE \n]' AF243780_snps.vcf 
+## This also worked:
+bcftools query -f'[%CHROM:%POS:%SAMPLE \n]' AF243780.bcf
+## This worked as well:
+bcftools query -f'[%CHROM:%POS:%SAMPLE \n]' ../merged_vcf/mt_merged.vcf
+## This did not work:
+bcftools query -f '%CHROM\t%POS\t%REF\t%ALT%SAMPLE \n' ../merged_vcf/mt_merged.vcf
+## But just adding the [], this worked:
+bcftools query -f '[%CHROM\t%POS\t%REF\t%ALT%SAMPLE \n]' ../merged_vcf/mt_merged.vcf
+```
+
+\
+
+#### 3.1.1 Extract genotypes with Bcftools Query Command
+
+\
+
+Note that in the chunk above, it was inputing from the folder above: ../merged_vcf/
+Finally output to the mt_extracted.txt file. The mt_extracted.txt file is created using the bcftools query command and contains the SNPs that we can work with:
+
+```{bash, eval = FALSE}
+bcftools query -f '[%CHROM\t%POS\t%REF\t%ALT%SAMPLE \n]' mt_merged.vcf  > mt_extracted.txt
+# Try to get genotype information
+bcftools query -f '[%CHROM\t%POS\t%GT\t%PL%SAMPLE \n]' mt_merged.vcf
+bcftools query -f '%CHROM %POS[\t%GT\t%PL]\n'
+```
+
+\
+
+Extract all positions from mt_merged.vcf file and print all positions
+
+```{bash, eval=F}
+bcftools query -f 'pos=%POS\n' mt_merged.vcf | awk -F'=' '{print $2}' > merged_vcf_positions.txt
+```
+
+\
+
+This simple for loop looks into all vcf file to look for mutation:
+
+```{bash, eval=F}
+for vcf_file in *_snps.vcf; do 
+  echo $vcf_file
+  for position in 16069 16111; do
+    echo $position
+    grep --color $position $vcf_file; done
+    done
+```
+
+\
+
+This script is more complex and starts to print all information that I want
+
+```{bash, eval=F}
+for vcf_file in *_snps.vcf; do 
+  echo $vcf_file
+  for position in 16069 16111; do
+    if
+      grep --color -q -w $position $vcf_file
+    then
+      echo "position in file"
+    else
+      echo "mutation is not in file"
+    fi
+  done;
+done
+```
+
+\
+
+This is more complex and prints almost all information that I want. The last column is the name of the vcf file. There is a column in the middle that is the genotype column:
+
+```{bash, eval=F}
+for vcf_file in *_snps.vcf; do 
+  #echo $vcf_file
+  for position in 16069 16086 16093 16111; do
+    if
+      grep --color -q -w $position $vcf_file
+    then
+      ref=$(grep -w $position $i | awk '{print $1, $2, $4, $5}'  | awk -F ',' '{print $1}' | awk '{print $3}') 
+      alt=$(grep -w $position $i | awk '{print $1, $2, $4, $5}'  | awk -F ',' '{print $1}' | awk '{print $4}') 
+      echo  "MT_"$position"bp" $i"    "$ref"1"$alt "  then is  " $vcf_file
+    else
+      echo  "MT_"$position"bp" $i"    "$ref"0"$ref "  else is  " $vcf_file
+    fi
+  done;
+done
+```
+
+\
+
+This script now prints variant name, the genotype of the variant and file name:
+
+```{bash, eval=F}
+cd /hb/home/gchaves/results/geraldo/mitochondria/snps_vcf
+for vcf_file in *_snps.vcf; do 
+  for position in 16069 16086 16093 16111 16124; do
+    if
+      grep --color -q -w $position $vcf_file
+    then
+      ref=$(grep -w $position $i | awk '{print $1, $2, $4, $5}'  | awk -F ',' '{print $1}' | awk '{print $3}') 
+      alt=$(grep -w $position $i | awk '{print $1, $2, $4, $5}'  | awk -F ',' '{print $1}' | awk '{print $4}') 
+      echo  "MT_"$position"bp" $i"    "$ref"1"$alt "  then is  " $vcf_file
+    else
+      echo  "MT_"$position"bp" $i"    "$ref"0"$ref "  else is  " $vcf_file
+    fi
+  done;
+done | awk -F ' ' '{print $1, $3, $6}'
+```
+
+\
+
+For these positions, it was yielding an error, that I found the solution to fix:
+
+```{bash, eval=F}
+cd /hb/home/gchaves/results/geraldo/mitochondria/snps_vcf
+for vcf_file in *_snps.vcf; do 
+  for position in 16069 16086 16093 16111 16124 16126 16129 16144 16153 16172 16209 16222 16270 16294 16312 16327 16362; do
+    if
+      grep --color -q -w $position $vcf_file
+    then
+      ref=$(grep -w $position $i | awk '{print $1, $2, $4, $5}'  | awk -F ',' '{print $1}' | awk '{print $3}') 
+      alt=$(grep -w $position $i | awk '{print $1, $2, $4, $5}'  | awk -F ',' '{print $1}' | awk '{print $4}') 
+      echo  "MT_"$position"bp" $i"    "$ref"1"$alt "  then is  " $vcf_file
+    else
+      echo  "MT_"$position"bp" $i"    "$ref"0"$ref "  else is  " $vcf_file
+    fi
+  done;
+done | awk -F ' ' '{print $1, $3, $6}' | sed 's/T0/0/g' | sed 's/0T/0/g' | sed 's/T1C/1/g' > genotypes2.txt
+```
+
+\
+
+Transfer 
+
+```{bash, eval=F}
+scp gchaves@hb.ucsc.edu:/hb/home/gchaves/results/geraldo/mitochondria/snps_vcf/genotypes2.txt \
+/Users/gepolianochaves/Desktop/Gepoliano/ReComBio\ Scientific/geraldo/data/genotypes2.txt
+```
+
+
+\
+
+Count number of lines in file extracted from merged VCF:
+
+```{bash, eval=F}
+wc -l mt_extracted.txt 
+1196 mt_extracted.txt
+```
+
+\
+
+Count number of lines in file extracted from merged VCF, in compIndex:
+
+```{bash, eval=F}
+cd /hb/home/gchaves/results/geraldo/mitochondria/compIndex
+wc -l mt_extracted.txt 
+1734 mt_extracted.txt
+```
+
+\
+
+Print vcf file name and vcf sample name
+
+```{bash, eval=F}
+for vcf_file in *vcf; do bcftools query -f '[%CHROM\t%POS\t%REF\t%ALT%SAMPLE \n]' AF243780_snps.vcf | awk 'NR==1{print $4}' |  awk -F ">" '{print "1:"$2}'; done
+```
+
+\
+
+### 3.2. Metadata Sample IDs in Files
+
+\
+
+This part was run in the computational server where fasta sequences are located. fasta1.txt is the file that contains the fasta file IDs as extracted using the for loop. The for loop is performed in the fasta folder maintaining fasta ID only:
+
+```{bash, eval=F}
+cd /hb/home/gchaves/results/geraldo/mitochondria/fasta
+
+for fastaFile in AF*.fasta; do
+  ## Pick just the eight firt letters of the string
+  fastaFileName=${fastaFile:0:8}
+  echo "$fastaFileName";
+  done > fasta1.txt
+```
+
+\
+
+These for loops will generate a number or index associated with each fasta file in the same order as in the for loop:
+
+```{bash, eval=F}
+for i in $(seq 1 26);do echo $i;done > fasta.index
+for i in $(seq 1 34);do echo $i;done > fasta.index
+for i in $(seq 1 41);do echo $i;done > fasta.index
+```
+
+\
+
+Then we can paste the fasta file names and the fasta file indexes together. We create a file with sample names matching GenBank IDs. We are naming the file, sampleIDs.txt:
+
+```{bash, eval=F}
+paste fasta1.txt fasta.index | awk -F "\t" '{print $1"\t"$2":sample_1"}' | sed 's/\t1:sample/\tsample/g' > sampleIDs.txt
+rm fasta1.txt
+rm fasta.index
+```
+
+\
+
+Transfer sampleIDs.txt file
+
+```{bash, eval=F}
+scp gchaves@hb.ucsc.edu:/hb/home/gchaves/results/geraldo/mitochondria/fasta/sampleIDs.txt \
+/Users/gepolianochaves/Desktop/Gepoliano/ReComBio\ Scientific/geraldo/data
+```
+
+\
+
+We then read the sampleIDs.txt files into R and rename the columns. sampleIDs.txt is a match of fasta file names and names given by bwa. In the R environment, we will have this as a dataframe matching the fasta IDs and the names given by bwa:
+
+This chunk was being evaluated before I started the PRS analysis
+
+```{r sample IDs, eval=F}
+sampleIDs <- read.table("data/sampleIDs.txt")
+names(sampleIDs)[1]<-paste("GenBankID")
+names(sampleIDs)[2]<-paste("sampleName")
+```
+
+\
+
+We then read the metadata file into R. The metadata file contains the labels of the origin or the disease status for each sample. Read appended file into R and rename  columns
+
+This chunk was being evaluated before I started the PRS analysis
+
+```{r sample IDs metadataIDs.txt, eval=F}
+metadataIDs <- read.table("data/metadataIDs.txt")
+names(metadataIDs)[1]<-paste("GenBankID")
+names(metadataIDs)[2]<-paste("sampleName")
+names(metadataIDs)[3]<-paste("origin")
+```
+
+\
+
+VCF file format:
+
+https://github.com/samtools/bcftools/issues/956
+
+http://samtools.github.io/hts-specs/VCFv4.3.pdf
+
+This command prints these columns: chr, pos, ref>alt
+
+```{bash, eval=F}
+cd /hb/home/gchaves/results/geraldo/mitochondria/compIndex
+awk -F "<*>" '{print $1}' mt_extracted.txt | awk -F "," '{print $1}' | \
+awk -F "\t" '{print $1"\t"$2"\t"$3">"$4}' >  file1.txt
+```
+
+\
+
+And this part prints the IDs bwa gives to the samples. The bwa IDs are saved in the file2.txt file:
+
+```{bash, eval=F}
+cd /hb/home/gchaves/results/geraldo/mitochondria/compIndex
+awk -F "<*>" '{print $2}' mt_extracted.txt |  awk -F "," '{print $1}' > file2.txt
+```
+
+\
+
+We then paste files file1.txt and file2.txt together to create the file3.txt
+
+```{bash, eval=F}
+cd /hb/home/gchaves/results/geraldo/mitochondria/compIndex
+paste file2.txt file1.txt > file4.txt
+```
+
+\
+
+Now save file4.txt in the local data folder:
+
+```{bash, eval=F}
+scp gchaves@hb.ucsc.edu:/hb/home/gchaves/results/geraldo/mitochondria/compIndex/file4.txt \
+/Users/gepolianochaves/Desktop/Gepoliano/ReComBio\ Scientific/geraldo/data
+```
+
+Look at the file
+
+```{bash, eval=F}
+cd /Users/gepolianochaves/Desktop/Gepoliano/ReComBio\ Scientific/geraldo/data
+head file4.txt
+wc -l file4.txt
+```
+
+
+\
+
+## 6. References
+
+\
+
+<div id="refs"></div>
+
+\
+
+## 7. Session Info
+
+\
+
+```{r session}
+sessionInfo()
+```

@@ -255,7 +255,7 @@ $(document).ready(function () {
   </a>
 </li>
 <li>
-  <a href="about.html">
+  <a href="quokka-bilby.html">
     <span class="fa fa-solid fa-circle-info"></span>
      
     Sobre nós
@@ -402,6 +402,14 @@ in the hummingbird server:</p>
 cd ../geraldo/data/
 ## Open file, remove spaces and make letters uppercase
 cat mt_brazilian.fasta | tr -d &#39; &#39; |  tr &#39;[:lower:]&#39; &#39;[:upper:]&#39; &gt; mt_brazilian_capital.fasta</code></pre>
+<p>Count the number of fasta files</p>
+<pre class="bash"><code>cd ../geraldo/data/
+grep &quot;&gt;&quot; mt_brazilian_capital.fasta | wc -l</code></pre>
+<p><br />
+</p>
+<p>Transfer fasta files to server</p>
+<pre class="bash"><code>scp /Users/gepolianochaves/Desktop/Gepoliano/ReComBio\ Scientific/geraldo/data/mt_brazilian_capital.fasta \
+gchaves@hb.ucsc.edu:/hb/home/gchaves/results/geraldo/mitochondria/fasta</code></pre>
 <p><br />
 </p>
 </div>
@@ -409,6 +417,12 @@ cat mt_brazilian.fasta | tr -d &#39; &#39; |  tr &#39;[:lower:]&#39; &#39;[:uppe
 <h3>Split and rename each fasta file</h3>
 <p><br />
 </p>
+<p>It is necessary to install split-fasta:</p>
+<pre class="bash"><code>pip install split-fasta</code></pre>
+<pre><code>## Requirement already satisfied: split-fasta in /Users/gepolianochaves/anaconda3/lib/python3.7/site-packages (1.0.0)</code></pre>
+<p><br />
+</p>
+<p>To then run split-fasta:</p>
 <pre class="bash"><code>## Change directory to the fasta folder
 cd /hb/home/gchaves/results/geraldo/mitochondria/fasta
 ## splitfasta breaks multi-fasta file

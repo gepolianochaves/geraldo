@@ -18,7 +18,7 @@ Tutorial from https://www.r-bloggers.com/2020/05/binary-logistic-regression-with
 
 ```{r}
 library(readr)
-adult <- read_csv("./data/adult.csv")
+adult <- read_csv("../data/adult.csv")
 # Checking the structure of adult data
 dim(adult)
 ```

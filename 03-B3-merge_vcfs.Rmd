@@ -1,0 +1,177 @@
+---
+  title: "Genotype Information Extraction"
+  author: "Gepoliano Chaves"
+  date: "June 24th, 2024"
+  output:
+    html_document:
+      df_print: paged
+      toc: true
+  bibliography: references.bib
+---
+
+\
+
+## Summary
+
+\
+
+In this activity we extract genetic information from VCF files to generate genotype file that will be used in the machine learning framework.
+
+\
+
+## Load libraries
+
+\
+
+```{r, message=F, warning=F}
+library(maditr)
+library(kableExtra)
+library(dplyr)
+library(stringr)
+library(tibble)
+library(reshape2)
+```
+
+\
+
+## 1. Extracting Genotypes
+
+
+\
+
+https://stackoverflow.com/questions/7743898/how-to-use-cast-on-a-data-frame
+
+* Change from the long format to the wide format:
+
+https://www.statology.org/cast-in-r/
+
+https://dplyr.tidyverse.org/reference/relocate.html
+
+\
+
+The file3.txt below was generated using the query parameter in the bcftools used in the previous notebook. This file needs to be filled until I figure out what is wrong with that filling. Genotypes are 0 and 1 for file4.txt. This chunk was being evaluated before I started the PRS analysis
+
+```{r read file, eval=T}
+mt_extracted <- read.table("data/genotypes3.txt", sep = " ", header = F)
+
+names(mt_extracted)[1]<-paste("pos")
+names(mt_extracted)[2]<-paste("genotype")
+names(mt_extracted)[3]<-paste("sample") 
+
+dim(mt_extracted)
+
+mt_extracted
+```
+
+\
+
+Fix empty spaces in object mt_extracted 
+
+```{r, eval=T}
+# Split Each Sample
+split_sample_name_df <- str_split_fixed(mt_extracted$sample, "_", 2)
+# Construct Vector Maintaining parts of interest
+split_vector_sample_names <- paste0(split_sample_name_df[, 1])
+# Add vector to DF, after column of interest
+mt_extracted <- add_column(mt_extracted, sampleID = split_vector_sample_names, .after = "sample")
+mt_extracted <- mt_extracted %>% dplyr::select(-c(sample))
+names(mt_extracted)[names(mt_extracted) == 'sampleID'] <- 'sample'
+mt_extracted
+```
+
+\
+
+### Selected columns included
+
+\
+
+Select only the columns that will make the dataframe compatible with the dcast function of the reshape2 library.
+Reshape package has functions dcast and melt. In this part, we change from the long format to the wide format using the dcast() function in R. This chunk was being evaluated before I started the PRS analysis
+
+\
+
+Use function dcast
+
+```{r, eval=T}
+library(maditr)
+mt_selected <- mt_extracted %>% dplyr::select(sample, pos, genotype)
+library(reshape2)
+mt_dcast_gt <- dcast(mt_selected, sample ~ pos)
+mt_dcast_gt
+```
+
+\
+
+this chunk needs to call the metadataIDs object:
+
+```{r sample IDs metadataIDs.txt, eval=T}
+metadataIDs <- read.table("data/metadataIDs.txt")
+names(metadataIDs)[1]<-paste("GenBankID")
+names(metadataIDs)[2]<-paste("sampleName")
+names(metadataIDs)[3]<-paste("origin")
+```
+
+\
+
+Merge mt_dcast_gt and Metadata
+
+```{r, eval=T, message=F, warning=F}
+
+library(data.table)
+
+dt1         <- data.table(mt_dcast_gt , key = "sample") 
+dt2         <- data.table(metadataIDs, key = "GenBankID")
+joined_df_1 <- dt1[dt2]
+mt_dcast_gt_lab <- joined_df_1
+mt_dcast_gt_lab <- mt_dcast_gt_lab %>% dplyr::relocate(origin, .after = sample)
+mt_dcast_gt_lab <- mt_dcast_gt_lab %>% dplyr::select(-c(sampleName))
+names(mt_dcast_gt_lab)[1]<-paste("fastaID")
+head(mt_dcast_gt_lab)
+```
+
+\
+
+### 2.1. Visualize Table
+
+\
+
+Take a look at table with genotypes changed
+
+This chunk was being evaluated before I started the PRS analysis
+
+```{r Visualize Genotype Table, eval=T}
+
+kable(mt_dcast_gt_lab, caption="Genotype Table") %>%
+  kable_styling("striped", full_width = F, font_size = 12) %>%
+  scroll_box(width = "100%", height = "600px")
+
+```
+
+\
+
+```{r save txt, eval=T}
+write.table(mt_dcast_gt_lab,
+            file = "./data/mt_dcast_gt_lab.txt",
+            sep = "\t",
+            row=F,
+            quote = F,
+            col.names = T)
+```
+
+\
+
+## 3. References
+
+\
+
+<div id="refs"></div>
+
+\
+
+## 4. Session Info
+
+\
+
+```{r session}
+sessionInfo()
+```

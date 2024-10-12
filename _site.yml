@@ -10,7 +10,7 @@ navbar:
       
     - text: "Sobre nós"  
       icon: "fa-solid fa-circle-info"
-      href: "about.html"
+      href: "quokka-bilby.html"
 
     - text: "Códigos"
       icon: "fa-solid fa-laptop-file"

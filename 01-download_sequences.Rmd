@@ -27,17 +27,77 @@ mt_brazilian <- read.GenBank(c(
   "AF243632", # Amerindian/Asian lineage
   "AF243633", # Amerindian/Asian lineage
 
-  # "AF243634", # African lineage 
-  # "AF243635", # African lineage 
-  # "AF243636", # African lineage 
-  # "AF243637", # African lineage 
-  # "AF243638", # African lineage 
-  # "AF243639", # African lineage 
-  # "AF243640"  # African lineage 
+  "AF243634", # African lineage
+  "AF243635", # African lineage
+  "AF243636", # African lineage
+  "AF243637", # African lineage
+  "AF243638", # African lineage
+  "AF243639", # African lineage
+  "AF243640", # African lineage
+  "AF243641", # African lineage
+  "AF243642", # African lineage
+  "AF243643", # African lineage
+  "AF243644", # African lineage
+  "AF243645", # African lineage
+  "AF243646", # African lineage
+  "AF243647", # African lineage
+  "AF243648", # African lineage
+  "AF243649", # African lineage
+  "AF243650", # African lineage
+  "AF243651", # African lineage
   
+  "AF243652", # European lineage
+  "AF243653", # European lineage
+  "AF243654", # European lineage
+  "AF243655", # European lineage
+  "AF243656", # European lineage
+  "AF243657", # European lineage
+  "AF243658", # European lineage
+  "AF243659", # European lineage
+  "AF243660", # European lineage
+  "AF243661", # European lineage
+  "AF243662", # European lineage
+  "AF243663", # European lineage
+  "AF243664", # European lineage
+  "AF243665", # European lineage
+  
+  "AF243666", # African lineage
+  "AF243667", # African lineage
+  "AF243668", # African lineage
+  "AF243669", # African lineage
+  "AF243670", # African lineage
+  "AF243671", # African lineage
+  "AF243672", # African lineage
+  "AF243673", # African lineage
+  "AF243674", # African lineage
+  "AF243675", # African lineage
+  "AF243676", # African lineage
+  "AF243677", # African lineage
+  "AF243678", # African lineage
+  "AF243679", # African lineage
+  "AF243680", # African lineage
+  "AF243681", # African lineage
+  "AF243682", # African lineage
+  "AF243683", # African lineage
+  "AF243684", # African lineage
+  "AF243685", # African lineage
+  "AF243686", # African lineage
+  "AF243687", # African lineage
+  "AF243688", # African lineage
+  "AF243689", # African lineage
+  "AF243690", # African lineage
+  "AF243691", # African lineage
+  "AF243692", # African lineage
+  "AF243693", # African lineage
+  "AF243694", # African lineage
+  "AF243695", # African lineage
+  
+  "AF243696", # Amerindian/Asian lineage
+  "AF243697", # Amerindian/Asian lineage
+  "AF243698", # Amerindian/Asian lineage
+  "AF243699", # Amerindian/Asian lineage
   "AF243700", # Amerindian/Asian lineage
   "AF243701", # Amerindian/Asian lineage
-  
   "AF243702", # Amerindian/Asian lineage
   "AF243703", # Amerindian/Asian lineage
   "AF243704", # Amerindian/Asian lineage
@@ -46,7 +106,7 @@ mt_brazilian <- read.GenBank(c(
   "AF243707", # Amerindian/Asian lineage
   "AF243708", # Amerindian/Asian lineage
   "AF243709", # Amerindian/Asian lineage
-  
+  "AF243710", # Amerindian/Asian lineage
   
   "AF243780", # European lineage
   "AF243781", # European lineage
@@ -77,6 +137,14 @@ write.dna(mt_brazilian,
           file = "./data/mt_brazilian.fasta", 
           format = "fasta")
 ```
+
+\
+
+```{bash, eval=F}
+scp -r gchaves@hb.ucsc.edu:/hb/home/gchaves/results/geraldo/mitochondria/snps_vcf /Users/gepolianochaves/Desktop/Gepoliano/ReComBio\ Scientific/geraldo/data
+```
+
+
 
 
 

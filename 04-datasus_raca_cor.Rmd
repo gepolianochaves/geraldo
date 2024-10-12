@@ -25,6 +25,7 @@ library(microdatasus)
 library(dplyr)
 library(tidyverse)
 library(maditr)
+library(kableExtra)
 ```
 
 \
@@ -301,16 +302,18 @@ names(wide_data_estados)[7] ="indigena"
 
 Construindo variável com total de indivíduos mortos
 
-```{r variável com total de indivíduos mortos}
+```{r variável com total de indivíduos mortos, eval=T}
 data_estados_brancos <- wide_data_estados %>%
-  mutate(sum = rowSums(across(c("NA", "branca", "preta", "amarela", "parda", "indigena"))))
+  mutate(sum = rowSums(across(c(#"NA",
+                                "branca", "preta", 
+                                "amarela", "parda", "indigena"))))
 ```
 
 \
 
 Percentual de brancos por estado
 
-```{r Percentual de brancos por estado}
+```{r Percentual de brancos por estado, eval=T}
 data_estados_brancos_perct <- data_estados_brancos %>%
   mutate(brancos = branca/sum)
 ```
@@ -429,6 +432,11 @@ ggplot(dados_appended_melted, aes(x=year, y=value, group=raca_cor_factor)) +
 ```{r}
 dados_nb <- dados_appended[ which(
   dados_appended$CAUSABAS == "C749"), ]
+dim(dados_nb)
+
+dados_estados_nb_2013 <- data_estados[ which(
+  data_estados$CAUSABAS == "C749"), ]
+dim(dados_estados_nb_2013)
 
 dados_agregados_nb_year <- dados_nb %>%
   group_by(year) %>%
@@ -439,10 +447,74 @@ ggplot(data=dados_agregados_nb_year, aes(x=year, y=n, group=1)) +
   geom_point()
 ```
 
+Insert Regions Label
+
+```{r}
+# dados_regions_nb_2013 <- dados_estados_nb_2013 %>% dplyr::mutate(Region=ifelse(states$UF=="SP", "0", 
+#                                                         ifelse(states$name_region=="Nordeste", "0.05", 
+#                                                                ifelse(states$name_region=="Centro Oeste", "0", 
+#                                                                       ifelse(states$name_region=="Sul", "0.15", 
+#                                                                              ifelse(states$name_region=="Sudeste", "0","0"))))))
+
+
+dados_estados_nb_2013$Region=ifelse(dados_estados_nb_2013$UF =="MA"
+                                   |dados_estados_nb_2013$UF =="PI"
+                                   |dados_estados_nb_2013$UF =="CE"
+                                   |dados_estados_nb_2013$UF =="RN"
+                                   |dados_estados_nb_2013$UF =="PB"
+                                   |dados_estados_nb_2013$UF =="PE"
+                                   |dados_estados_nb_2013$UF =="AL"
+                                   |dados_estados_nb_2013$UF =="SE"
+                                   |dados_estados_nb_2013$UF =="BA","Northeast",ifelse(dados_estados_nb_2013$UF =="RR"
+                                   |dados_estados_nb_2013$UF =="AP"
+                                   |dados_estados_nb_2013$UF =="PA"
+                                   |dados_estados_nb_2013$UF =="AM"
+                                   |dados_estados_nb_2013$UF =="AC"
+                                   |dados_estados_nb_2013$UF =="RO"
+                                   |dados_estados_nb_2013$UF =="TO","North",ifelse(dados_estados_nb_2013$UF =="SP"
+                                   |dados_estados_nb_2013$UF =="RJ"
+                                   |dados_estados_nb_2013$UF =="ES"
+                                   |dados_estados_nb_2013$UF =="MG","Southeast",ifelse(dados_estados_nb_2013$UF =="MT"
+                                   |dados_estados_nb_2013$UF =="MS"
+                                   |dados_estados_nb_2013$UF =="GO"
+                                   |dados_estados_nb_2013$UF =="DF","Center-West",ifelse(dados_estados_nb_2013$UF =="RS"
+                                   |dados_estados_nb_2013$UF =="PR"
+                                   |dados_estados_nb_2013$UF =="SC","South",0)))))
+
+kable(dados_estados_nb_2013, caption="dados_estados_nb_2013") %>%
+  kable_styling("striped", full_width = F, font_size = 12) %>%
+  scroll_box(width = "100%", height = "600px")
+dim(dados_estados_nb_2013)
+```
+
+```{r, eval=T}
+saveRDS(dados_estados_nb_2013, file = "../../R/R journal/data/dados_estados_nb_2013.rds")
+```
+
+
+```{r}
+kable(dados_nb, caption="dados_nb") %>%
+  kable_styling("striped", full_width = F, font_size = 12) %>%
+  scroll_box(width = "100%", height = "600px")
+dim(dados_nb)
+```
+
 
 ```{r}
 dados_nb_race_year_selcd <- dados_nb %>%
   select(RACACOR, year)
+
+dados_nb_race_2013_selcd <- dados_estados_nb_2013 %>%
+  select(RACACOR, CAUSABAS)
+```
+
+
+
+```{r}
+kable(dados_nb_race_2013_selcd, caption="dados_nb_race_2013_selcd") %>%
+  kable_styling("striped", full_width = F, font_size = 12) %>%
+  scroll_box(width = "100%", height = "600px")
+dim(dados_nb_race_2013_selcd)
 ```
 
 \
@@ -511,6 +583,14 @@ Stacked Graph
 ```{r}
 ggplot(dados_nb_appended_melted, aes(fill=raca_cor_factor, y=value, x=year)) + 
     geom_bar(position="stack", stat="identity")
+```
+
+\
+
+Save the dados_nb_appended_melted object
+
+```{r save dados_nb_appended_melted}
+saveRDS(dados_nb_appended_melted, file = "./data/dados_nb_appended_melted.rds")
 ```
 
 \

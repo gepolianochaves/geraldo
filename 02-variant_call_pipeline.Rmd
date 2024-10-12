@@ -81,11 +81,38 @@ cd ../geraldo/data/
 cat mt_brazilian.fasta | tr -d ' ' |  tr '[:lower:]' '[:upper:]' > mt_brazilian_capital.fasta
 ```
 
+Count the number of fasta files
+
+```{bash, eval=F}
+cd ../geraldo/data/
+grep ">" mt_brazilian_capital.fasta | wc -l
+```
+
+
+\
+
+Transfer fasta files to server
+
+```{bash, eval=F}
+scp /Users/gepolianochaves/Desktop/Gepoliano/ReComBio\ Scientific/geraldo/data/mt_brazilian_capital.fasta \
+gchaves@hb.ucsc.edu:/hb/home/gchaves/results/geraldo/mitochondria/fasta
+```
+
 \
 
 ### Split and rename each fasta file
 
 \
+
+It is necessary to install split-fasta:
+
+```{bash}
+pip install split-fasta
+```
+
+\
+
+To then run split-fasta:
 
 ```{bash, eval=F}
 ## Change directory to the fasta folder

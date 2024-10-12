@@ -1,0 +1,221 @@
+
+Previous reference:
+https://www.r-bloggers.com/2020/05/binary-logistic-regression-with-r/
+
+Google search: binary logistic regression R
+Reference:
+
+https://statsandr.com/blog/binary-logistic-regression-in-r/
+
+```{r}
+# import and rename dataset
+library(kmed)
+dat <- heart
+
+# select variables
+library(dplyr)
+library(maditr)
+dat <- dat %>%
+  select(
+    age,
+    sex,
+    cp,
+    thalach,
+    class
+  )
+
+# print dataset's structure
+str(dat)
+```
+
+For greater readability, we rename the variables cp, thalach and class with more informative names:
+
+```{r}
+# rename variables
+dat <- dat %>%
+  rename(
+    chest_pain = cp,
+    max_heartrate = thalach,
+    heart_disease = class
+  )
+```
+
+We transform the variables sex and chest_pain into factor and set the labels accordingly:
+
+```{r}
+# recode sex
+dat$sex <- factor(dat$sex,
+  levels = c(FALSE, TRUE),
+  labels = c("female", "male")
+)
+
+# recode chest_pain
+dat$chest_pain <- factor(dat$chest_pain,
+  levels = 1:4,
+  labels = c("typical angina", "atypical angina", "non-anginal pain", "asymptomatic")
+)
+```
+
+
+For a binary logistic regression in R, it is recommended that all the qualitative variables are transformed into factors.
+
+In our case, heart_rate (our dependent variable) is currently encoded as integer with values ranging from 0 to 4. Therefore, we first classify it into 2 classes by setting 0 for 0 values and 1 for non-0 values, using the ifelse() function:
+
+```{r}
+# recode heart_disease into 2 classes
+dat$heart_disease <- ifelse(dat$heart_disease == 0,
+  0,
+  1
+)
+```
+
+We then transform it into a factor and set the labels accordingly using the factor() function:
+
+```{r}
+# set labels for heart_disease
+dat$heart_disease <- factor(dat$heart_disease,
+  levels = c(0, 1),
+  labels = c("no disease", "disease")
+)
+```
+
+Keep in mind the order of the levels for your dependent variable, as it will have an impact on the interpretations. In R, the first level given by levels() is always taken as the reference level.
+
+In our case, the first level is the absence of the disease and the second level is the presence of the disease:
+
+```{r}
+levels(dat$heart_disease)
+```
+
+```{r}
+# basic descriptive statistics
+summary(dat)
+```
+
+# Binary logistic regression in R
+
+## Quantitative independent variable
+
+```{r}
+# save model
+m1 <- glm(heart_disease ~ age,
+  data = dat,
+  family = "binomial"
+)
+```
+
+Results of the model is saved under the object m1. Again, similar to linear regression, results can be accessed thanks to the summary() function:
+
+```{r}
+# print results
+summary(m1)
+```
+
+## OR for age
+
+```{r}
+# OR for age
+exp(coef(m1)["age"])
+```
+
+
+In our case, it corresponds to the probability that a patient of age 0 develops a heart disease, which is equal to:
+
+```{r}
+# prob(heart disease) for age = 0
+exp(coef(m1)[1]) / (1 + exp(coef(m1)[1]))
+```
+
+This means that, if we trust our model, a newborn is expected to develops a heart disease with a probability of 4.52%.
+
+For your information, a confidence interval can be computed for any of the OR using the confint() function. For example, a 95% confidence interval for the OR for age:
+
+```{r}
+# 95% CI for the OR for age
+exp(confint(m1,
+  parm = "age"
+))
+```
+
+
+Suppose we would like to predict the probability of developing a heart disease for a patient aged 30 years old:
+
+```{r}
+# predict probability to develop heart disease
+pred <- predict(m1,
+  newdata = data.frame(age = c(30)),
+  type = "response"
+)
+
+# print prediction
+pred
+```
+
+It is predicted that a 30-year-old patient has a 18.79% chance of developing a heart disease.
+
+Note that if you would like to construct a confidence interval for this prediction, it can be done by adding the se = TRUE argument in the predict() function:
+
+
+```{r}
+# predict probability to develop heart disease
+pred <- predict(m1,
+  newdata = data.frame(age = c(30)),
+  type = "response",
+  se = TRUE
+)
+
+# print prediction
+pred$fit
+```
+
+
+```{r}
+# 95% confidence interval for the prediction
+lower <- pred$fit - (qnorm(0.975) * pred$se.fit)
+upper <- pred$fit + (qnorm(0.975) * pred$se.fit)
+c(lower, upper)
+```
+
+If you are a frequent reader of the blog, you are probably know that I like visualizations. The plot_model() function available in the {sjPlot} R package does a good job of visualizing results of the model:
+
+```{r}
+# load package
+library("sjPlot")
+
+# plot
+plot_model(m1,
+  type = "pred",
+  terms = "age"
+) #+ labs(y = "Prob(heart disease)")
+```
+
+# Qualitative independent variable
+
+```{r}
+# save model
+m2 <- glm(heart_disease ~ sex,
+  data = dat,
+  family = "binomial"
+)
+
+# print results
+summary(m2)
+```
+
+```{r}
+# OR for sex
+exp(coef(m2)["sexmale"])
+```
+
+
+We can also visualize these results thanks to the plot_model() function:
+
+```{r}
+# plot
+plot_model(m2,
+  type = "pred",
+  terms = "sex"
+) #+
+  #labs(y = "Prob(heart disease)")
+```
+

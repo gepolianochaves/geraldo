@@ -1,0 +1,647 @@
+---
+  title: "Genotype Information Extraction"
+  author: "Gepoliano Chaves"
+  date: "June 24th, 2024"
+  output:
+    html_document:
+      df_print: paged
+      toc: true
+  bibliography: references.bib
+---
+
+\
+
+## Summary
+
+\
+
+In this activity we extract genetic information from VCF files to generate genotype file that will be used in the machine learning framework.
+
+\
+
+## Load libraries
+
+\
+
+```{r, message=F, warning=F}
+library(maditr)
+library(kableExtra)
+library(dplyr)
+library(stringr)
+library(tibble)
+library(reshape2)
+```
+
+\
+
+## 1. Extracting Genotypes
+
+
+\
+
+https://stackoverflow.com/questions/7743898/how-to-use-cast-on-a-data-frame
+
+https://www.statology.org/cast-in-r/
+
+https://dplyr.tidyverse.org/reference/relocate.html
+
+\
+
+The file3.txt below was generated using the query parameter in the bcftools used in the previous notebook. This file needs to be filled until I figure out what is wrong with that filling. Genotypes are 0 and 1 for file4.txt. This chunk was being evaluated before I started the PRS analysis
+
+```{r read file, eval=T}
+mt_extracted <- read.table("data/file4.txt", sep = "\t", header = T)
+
+names(mt_extracted)[1]<-paste("sample")
+names(mt_extracted)[2]<-paste("chr")
+names(mt_extracted)[3]<-paste("pos") 
+names(mt_extracted)[4]<-paste("genotype")
+
+dim(mt_extracted)
+```
+
+\
+
+Fix empty spaces in object mt_extracted 
+
+```{r, eval=T}
+# Split Each Sample
+split_sample_name_df <- str_split_fixed(mt_extracted$sample, " ", 2)
+# Construct Vector Maintaining parts of interest
+split_vector_sample_names <- paste0(split_sample_name_df[, 1])
+# Add vector to DF, after column of interest
+mt_extracted <- add_column(mt_extracted, sampleID = split_vector_sample_names, .after = "sample")
+mt_extracted <- mt_extracted %>% dplyr::select(-c(sample))
+names(mt_extracted)[names(mt_extracted) == 'sampleID'] <- 'sample'
+head(mt_extracted)
+```
+
+\
+
+The chunk that is here does not seem to have a reason to be here now and will not be included for now. This chunk was being evaluated before I started the PRS analysis
+
+```{r read genotypes extracted file, eval=T, include=T}
+mt_genotypes_extracted <- read.table("data/mt_genotypes_extracted.txt")
+
+names(mt_genotypes_extracted)[1]<-paste("pos")
+names(mt_genotypes_extracted)[2]<-paste("sample")
+names(mt_genotypes_extracted)[3]<-paste("genotype") 
+
+dim(mt_genotypes_extracted)
+head(mt_genotypes_extracted)
+```
+
+\
+
+The chunk that was here seems to be a test and will not be included for now. This chunk was being evaluated before I started the PRS analysis.
+
+```{r read genotypes appended file, eval=T, include=T}
+mt_genotypes_appended <- read.table("data/test_mt_appended_2.txt")
+
+names(mt_genotypes_appended)[1]<-paste("pos")
+names(mt_genotypes_appended)[2]<-paste("sample")
+names(mt_genotypes_appended)[3]<-paste("genotype") 
+
+dim(mt_genotypes_appended)
+head(mt_genotypes_appended)
+```
+
+\
+
+### Selected columns included
+
+\
+
+Select only the columns that will make the dataframe compatible with the dcast function of the reshape2 library.
+Reshape package has funcitons dcast and melt. This chunk was being evaluated before I started the PRS analysis
+
+```{r select columns for function dcast(), eval=T}
+library(maditr)
+mt_selected <- mt_extracted %>% dplyr::select(sample, pos, genotype)
+
+library(reshape2)
+
+mt_dcast <- dcast(mt_selected, sample ~ pos)
+
+head(mt_dcast)
+dim(mt_dcast)
+```
+
+\
+
+In this chunk the result is a data-frame with the samples in the first column and  genotypes in the other columns. This chunk was being evaluated before I started the PRS analysis:
+
+```{r, eval=F}
+library(reshape2)
+mt_selected_genotypes_extracted <- mt_genotypes_extracted %>% dplyr::select(sample, pos, genotype)
+```
+
+\
+
+That is the reason for the syntax sample ~ pos, pos coming probably from "position". This chunk was being evaluated before I started the PRS analysis:
+
+```{r, eval=F}
+mt_dcast_genotypes_extracted <- dcast(mt_selected_genotypes_extracted, sample ~ pos)
+```
+
+\
+
+This chunk was being evaluated before I started the PRS analysis
+
+```{r, eval=T}
+library(reshape2)
+
+mt_selected_appended <- mt_genotypes_appended %>% dplyr::select(sample, pos, genotype)
+
+mt_dcast_appended <- dcast(mt_selected_appended, sample ~ pos)
+
+# Split Each Sample
+split_df <- str_split_fixed(mt_dcast_appended$sample, "_", 2)
+# Construct Vector Maintaining parts of interest
+split_vector <- paste0(split_df[,1])
+# Add vector to DF, after column of interest
+mt_dcast_appended <- add_column(mt_dcast_appended, fastaID = split_vector, .after = "sample")
+mt_dcast_appended <- mt_dcast_appended %>% dplyr::select(-c(sample))
+head(mt_dcast_appended)
+```
+
+\
+
+This chunk is from notebook 03-A-merge_vcfs.Rmd, that was at first with this notebook. Chunk "Merge sampleIDs and mt_dcast", below, needs object sampleIDs, that is being loaded here. 
+
+```{r sample IDs from 03-A, eval=T}
+sampleIDs <- read.table("data/sampleIDs.txt")
+names(sampleIDs)[1]<-paste("GenBankID")
+names(sampleIDs)[2]<-paste("sampleName")
+head(sampleIDs)
+```
+
+\
+
+Order sample ID columns so check columns are equal is possible.
+
+```{r}
+mt_dcast <- mt_dcast[order(mt_dcast$sample),]
+sampleIDs <- sampleIDs[order(sampleIDs$sampleName),]
+```
+
+
+Check if columns are identical
+
+```{r, eval=F}
+if(mt_dcast$sample == sampleIDs$sampleName)
+{
+   print("Column sample and sampleName are identical")
+}
+```
+
+\
+
+Or can also use identical:
+
+```{r}
+identical(mt_dcast[['sample']],sampleIDs[['sampleName']])
+```
+
+\
+
+Rename samples with GenBank IDs. This chunk was being evaluated before I started the PRS analysis
+
+```{r Merge sampleIDs and mt_dcast , eval=T, message=F, warning=F}
+
+library(data.table)
+
+dt1         <- data.table(mt_dcast , key = "sample") 
+dt2         <- data.table(sampleIDs, key = "sampleName")
+joined_df_1 <- dt1[dt2]
+mt_dcast    <- joined_df_1
+mt_dcast <- mt_dcast %>% dplyr::relocate(GenBankID, .before = sample)
+mt_dcast <- mt_dcast %>% dplyr::select(-c(sample))
+head(mt_dcast)
+```
+
+\
+
+this chunk needs to call the metadataIDs object:
+
+```{r sample IDs metadataIDs.txt, eval=T}
+metadataIDs <- read.table("data/metadataIDs.txt")
+names(metadataIDs)[1]<-paste("GenBankID")
+names(metadataIDs)[2]<-paste("sampleName")
+names(metadataIDs)[3]<-paste("origin")
+```
+
+metadataIDs and mt_dcast_appended
+
+This chunk was being evaluated before I started the PRS analysis
+
+```{r Merge sampleIDs and mt_dcast_appended , eval=T}
+
+library(data.table)
+
+dt1               <- data.table(mt_dcast_appended , key = "fastaID") 
+dt2               <- data.table(metadataIDs, key = "GenBankID")
+joined_df_1       <- dt1[dt2]
+mt_dcast_appended <- joined_df_1
+mt_dcast_appended <- mt_dcast_appended %>% dplyr::relocate(sampleName, .after = fastaID)
+mt_dcast_appended <- mt_dcast_appended %>% dplyr::relocate(origin, .after = sampleName)
+mt_dcast_appended <- mt_dcast_appended %>% dplyr::select(-c(sampleName))
+head(mt_dcast_appended)
+```
+
+\
+
+In this part we edit column names to include the format MT_XXXXXXX_BP. This chunk was being evaluated before I started the PRS analysis
+
+```{r, eval=T}
+colnames(mt_dcast) <- paste("MT", colnames(mt_dcast), "BP", sep= "_")
+names(mt_dcast)[1]<-paste("GenBankID")
+head(mt_dcast)
+```
+
+\
+
+Remove ugly sample name column
+
+```{r, eval=F}
+mt_dcast <- mt_dcast %>% dplyr::select(-c(MT_sample_BP))
+```
+
+\
+
+Rename GenBank ID column
+
+```{r, eval=F}
+names(mt_dcast)[1]<-paste("GenBankID")
+```
+
+\
+
+Insert column with labels. This chunk was being evaluated before I started the PRS analysis
+
+```{r, eval=T}
+head(mt_dcast)
+```
+
+\
+
+Include the origin column
+
+```{r, eval=T}
+mt_dcast <- mt_dcast %>% dplyr::mutate(origin = ifelse(row_number() < 10, "America", "Africa" ))
+```
+
+\
+
+Check insertion of the origin column
+
+```{r, eval=T}
+head(mt_dcast)
+```
+
+\
+
+Relocate the column that indicated the origin. This chunk was being evaluated before I started the PRS analysis
+
+```{r, eval=T}
+mt_dcast <- mt_dcast %>% dplyr::relocate(origin, .after = GenBankID)
+```
+
+\
+
+Check relocation of the origin column
+
+```{r, eval=T}
+head(mt_dcast)
+```
+
+\
+
+### 1.1. Scripts to Extract Variant Positions
+
+\
+
+```{bash, eval=F}
+cd /hb/home/gchaves/results/geraldo/mitochondria/snps_vcf
+awk '{print $1, $2}' ../compIndex/mt_merged.vcf | grep chrM | grep 16 | awk '{print $2}'  | sed '1d' 
+```
+
+for i in fasta; grep POSITION; ifelse(POSITION in fasta, print POSITION, else)
+
+```{bash, eval=F}
+for i in *vcf; do echo $i; grep 16069 $i; done
+```
+
+\
+
+### 1.2. Extracting Genotype for Each Position
+
+\
+
+```{bash, eval=F}
+
+for i in *vcf; do
+  position=16126
+  if 
+    grep -q $position $i
+  then
+    ref=$(grep $position $i | awk '{print $1, $2, $4, $5}'  | awk -F ',' '{print $1}' | awk '{print $3}') 
+    alt=$(grep $position $i | awk '{print $1, $2, $4, $5}'  | awk -F ',' '{print $1}' | awk '{print $4}') 
+    echo $i"    "$ref">"$alt
+  else
+    echo $i"    "$ref"="$ref
+  fi
+ done
+ 
+```
+
+\
+
+### 1.3. Script in Server
+
+\
+
+For scripts like this it is assumed that the variants_list.txt is located in the same directory with the vcf files.
+
+```{bash, eval=F}
+
+#!/bin/bash
+#SBATCH --partition=128x24
+#SBATCH --job-name=align                   # Job name
+#SBATCH --mail-type=ALL                    # Mail events (NONE, BEGIN, END, FAIL, ALL)
+#SBATCH --mail-user=gchaves@ucsc.edu       # Where to send mail	
+#SBATCH --nodes=1                          # Use one node
+#SBATCH --ntasks=1                         # Run a single task	
+#SBATCH --cpus-per-task=4                  # Number of CPU cores per task
+#SBATCH --output=align.out                 # Standard output and error log
+# 
+# module load gcc/5.4.0
+
+SECONDS=0
+
+cd /hb/home/gchaves/results/geraldo/mitochondria/snps_vcf
+
+for position in $(cat variants_list.txt); do 
+## echo "MT_"$position"bp"
+for i in *_snps.vcf; do
+  if 
+    grep -q -w $position $i
+  then
+    ref=$(grep -w $position $i | awk '{print $1, $2, $4, $5}'  | awk -F ',' '{print $1}' | awk '{print $3}') 
+    alt=$(grep -w $position $i | awk '{print $1, $2, $4, $5}'  | awk -F ',' '{print $1}' | awk '{print $4}') 
+    echo  "MT_"$position"bp" $i"    "$ref">"$alt
+  else
+    echo  "MT_"$position"bp" $i"    "$ref"="$ref
+  fi
+ done; 
+done > mt_genotypes_extracted.txt
+
+echo "Finished entire for loop"
+
+duration=$SECONDS
+
+echo "$((duration / 60)) minutes and $((duration % 60)) seconds elapsed."
+```
+
+Counting lines in the output
+
+```{bash, eval=F}
+wc -l mt_genotypes_extracted.txt
+1196 mt_genotypes_extracted.txt
+```
+
+\
+
+### 1.4. Script in Server (Appending at the End)
+
+\
+
+For this the variants_list.txt has to be in the same directory as the vcf files.
+
+```{bash, eval=F}
+
+#!/bin/bash
+#SBATCH --partition=128x24
+#SBATCH --job-name=align                   # Job name
+#SBATCH --mail-type=ALL                    # Mail events (NONE, BEGIN, END, FAIL, ALL)
+#SBATCH --mail-user=gchaves@ucsc.edu       # Where to send mail	
+#SBATCH --nodes=1                          # Use one node
+#SBATCH --ntasks=1                         # Run a single task	
+#SBATCH --cpus-per-task=4                  # Number of CPU cores per task
+#SBATCH --output=align.out                 # Standard output and error log
+# 
+# module load gcc/5.4.0
+
+SECONDS=0
+
+cd /hb/home/gchaves/results/geraldo/mitochondria/snps_vcf
+
+for position in $(cat variants_list.txt); do 
+
+## echo "MT_"$position"bp"
+for i in *_snps.vcf; do
+  if 
+    grep -q -w $position $i
+  then
+    ref=$(grep -w $position $i | awk '{print $1, $2, $4, $5}'  | awk -F ',' '{print $1}' | awk '{print $3}') 
+    alt=$(grep -w $position $i | awk '{print $1, $2, $4, $5}'  | awk -F ',' '{print $1}' | awk '{print $4}') 
+    echo  "MT_"$position"bp" $i"    "$ref">"$alt
+  else
+    echo  "MT_"$position"bp" $i"    "$ref"="$ref
+  fi
+ done; 
+done 
+
+echo "Finished entire for loop"
+
+duration=$SECONDS
+
+echo "$((duration / 60)) minutes and $((duration % 60)) seconds elapsed."
+```
+
+```{bash, eval=F}
+wc -l mt_genotypes_extracted.txt
+1196 mt_genotypes_extracted.txt
+```
+
+\
+
+### 1.5. Trying Genotype Extraction in a Specific Position
+
+\
+
+```{bash, eval=F}
+for position in 16111; do 
+## echo "MT_"$position"bp"
+for i in *vcf; do
+  if 
+    grep -q -w $position $i
+  then
+    ref=$(grep -w $position $i | awk '{print $1, $2, $4, $5}'  | awk -F ',' '{print $1}' | awk '{print $3}') 
+    alt=$(grep -w $position $i | awk '{print $1, $2, $4, $5}'  | awk -F ',' '{print $1}' | awk '{print $4}') 
+    echo  "MT_"$position"bp" $i"    "$ref">"$alt
+  else
+    echo  "MT_"$position"bp" $i"    "$ref"="$ref
+  fi
+ done; 
+done
+```
+
+\
+
+### 1.6. Trying Genotype Extraction in a Range of Positions
+
+\
+
+```{bash, eval=F}
+for position in 16162; do 
+## echo "MT_"$position"bp"
+for i in *vcf; do
+  if 
+    grep -q -w $position $i
+  then
+    ref=$(grep -w $position $i | awk '{print $1, $2, $4, $5}'  | awk -F ',' '{print $1}' | awk '{print $3}') 
+    alt=$(grep -w $position $i | awk '{print $1, $2, $4, $5}'  | awk -F ',' '{print $1}' | awk '{print $4}') 
+    echo  "MT_"$position"bp" $i"    "$ref">"$alt
+  else
+    echo  "MT_"$position"bp" $i"    "$ref"="$ref
+  fi
+ done; 
+done
+```
+
+\
+
+## 2. Changing Genotypes to Binary
+
+\
+
+To change genotypes to 1/0, I used this @stackOverflow2021 reference.
+
+This chunk was being evaluated before I started the PRS analysis
+
+```{r, eval=T}
+mt_dcast
+
+mt_dcast <- mt_dcast %>% mutate_all(funs(replace(., .== "C>T", "1")))%>% 
+  mutate_all(funs(replace(., .== "T>C", "1")))%>% 
+  mutate_all(funs(replace(., .== "C>A", "1")))%>% 
+  mutate_all(funs(replace(., .== "G>A", "1")))%>% 
+  mutate_all(funs(replace(., .== "A>G", "1")))%>% 
+  mutate_all(funs(replace(., .== "A>T", "1")))
+
+mt_dcast
+```
+
+\
+
+### 2.1. Visualize Table
+
+\
+
+Take a look at table with genotypes changed
+
+This chunk was being evaluated before I started the PRS analysis
+
+```{r look at new genotype table, eval=T}
+
+kable(mt_dcast, caption="New Genotype Table (Reference > Alteration)") %>%
+  kable_styling("striped", full_width = F, font_size = 12) %>%
+  scroll_box(width = "100%", height = "600px")
+
+```
+
+Check dimensions of dataframe
+
+\
+
+This chunk was being evaluated before I started the PRS analysis
+
+```{r, eval=F}
+dim(mt_dcast)
+```
+
+
+Write to file
+
+This chunk was being evaluated before I started the PRS analysis
+
+```{r save rds, eval=F}
+saveRDS(mt_dcast, file = "./data/mt_dcast.rds")
+```
+
+Save txt file. Do not leave this chunk on so it can not randomly modify other notebooks that use the mt_dcast object.
+
+```{r save txt, eval=F}
+write.table(mt_dcast,
+            file = "./data/mt_dcast.txt",
+            sep = "\t",
+            row=F,
+            quote = F,
+            col.names = T)
+```
+
+\
+
+### 2.2. Process and save genotype file
+
+\
+
+This chunk was being evaluated before I started the PRS analysis
+
+```{r, eval=F}
+mt_dcast_appended_binary <- mt_dcast_appended %>% mutate_all(funs(replace(., .== "C=C", "0")))%>% 
+  mutate_all(funs(replace(., .== "C>T", "1")))%>% 
+  mutate_all(funs(replace(., .== "T=T", "0")))%>% 
+  mutate_all(funs(replace(., .== "T>C", "1")))%>% 
+  mutate_all(funs(replace(., .== "G=G", "0")))%>% 
+  mutate_all(funs(replace(., .== "G>A", "1")))%>%
+  mutate_all(funs(replace(., .== "A=A", "0")))%>%
+  mutate_all(funs(replace(., .== "A>G", "1")))
+```
+
+Take a look at mt_dcast_appended_binary table
+
+\
+
+This chunk was being evaluated before I started the PRS analysis
+
+```{r look at table, eval=F}
+library(kableExtra)
+
+kable(mt_dcast_appended_binary, caption="Genotype Table (Reference > Alteration)") %>%
+  kable_styling("striped", full_width = F, font_size = 12) %>%
+  scroll_box(width = "100%", height = "600px")
+```
+
+Save mt_dcast_appended_binary
+
+This chunk was being evaluated before I started the PRS analysis
+
+```{r save mt_dcast_appended_binary, eval=F}
+write.table(mt_dcast_appended_binary,
+            file = "./data/mt_dcast_appended_binary.txt",
+            sep = "\t",
+            row=F,
+            quote = F,
+            col.names = T)
+```
+
+
+\
+
+## 3. References
+
+\
+
+<div id="refs"></div>
+
+\
+
+## 4. Session Info
+
+\
+
+```{r session}
+sessionInfo()
+```

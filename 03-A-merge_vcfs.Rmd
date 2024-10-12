@@ -1,0 +1,959 @@
+---
+  title: "Genotype Information Extraction"
+  author: "Gepoliano Chaves"
+  date: "June 24th, 2024"
+  output:
+    html_document:
+      df_print: paged
+      toc: true
+  bibliography: references.bib
+---
+
+\
+
+## Summary
+
+\
+
+In this activity we process VCF files to generate a genotype file to be used in the machine learning framework.
+
+\
+
+## Load libraries
+
+\
+
+```{r, message=F, warning=F}
+library(maditr)
+library(kableExtra)
+library(dplyr)
+library(stringr)
+library(tibble)
+```
+
+2|6 Associação Biológica.Rmd
+
+\
+
+## 1. Compressing and indexing VCF files
+
+\
+
+Como a cada amostra corresponde um arquivo VCF, em nossa pipeline, precisamos mesclar todos os arquivos VCF correspondentes a todos os indivíduos em análise no nosso estudo. A palavra em inglês correspondente a mesclar é *merge*. Nos códigos executados abaixo, a palavra *merge* traz a ideia de que o arquivo que leva este nome, é produto de um comando de mesclagem. Para o comando de mesclagem que executaremos, é necessário os passos de compressão e indexamento, ilustrados abaixo.
+
+* Create folder compIndex to move files that will be compressed and indezed
+
+```{bash, eval = F}
+mkdir -p compIndex
+```
+
+Copy files into compIndex folder: 
+
+```{bash, eval = F}
+cp snps_vcf/* compIndex
+```
+
+Move to compIndex folder: 
+
+```{bash, eval = F}
+cd compIndex
+```
+
+Before bgzip and tabix, run the following command. Need to ask IT why I have had to run this command.
+
+```{bash, eval=F}
+source ~/.bashrc
+```
+
+bgzip
+
+```{bash, eval = F}
+for x in *snps.vcf; do bgzip $x; done
+```
+
+tabix
+
+```{bash, eval = F}
+for x in *gz; do tabix $x; done
+```
+
+\
+
+## 2. Merging VCF files
+
+\
+
+É necessário mesclar o arquivo VCF proveniente de cada amostra, o qual foi comprimido e indexado no código anterior, formando um arquivo final, contendo todas as amostras do estudo. Como as amostras usadas aqui são provenientes do estudo publicado por Labadorf, o arquivo VCF final, contendo as mutações de todas as amostras, foi chamado de Labadorf_merged.vcf, indicando a ideia de que este arquivo é proveniente de um processo de mesclagem entre todas as amostras. O comando para mesclagem dos arquivos VCF, utilizando o software bcftools, está indicado abaixo.
+
+Before merging the vcf files, make sure bcftools is loaded:
+
+```{bash, eval= F}
+module load bcftools
+```
+
+Now we can merge:
+
+```{bash, eval = FALSE}
+
+bcftools merge --missing-to-ref --force-samples \
+## Amerindian sequences
+AF243627_snps.vcf.gz \
+AF243628_snps.vcf.gz \
+AF243629_snps.vcf.gz \
+AF243630_snps.vcf.gz \
+AF243631_snps.vcf.gz \
+AF243632_snps.vcf.gz \
+AF243633_snps.vcf.gz \
+## Amerindian sequences
+AF243700_snps.vcf.gz \
+AF243701_snps.vcf.gz \
+# Amerindian/Asian lineage
+AF243702\
+AF243703\
+AF243704\
+AF243705\
+AF243706\
+AF243707\
+AF243708\
+AF243709\
+## European sequences
+AF243780_snps.vcf.gz \
+AF243781_snps.vcf.gz \
+AF243782_snps.vcf.gz \
+AF243783_snps.vcf.gz \
+AF243784_snps.vcf.gz \
+AF243785_snps.vcf.gz \
+AF243786_snps.vcf.gz \
+AF243787_snps.vcf.gz \
+AF243788_snps.vcf.gz \
+AF243789_snps.vcf.gz \
+AF243790_snps.vcf.gz \
+AF243791_snps.vcf.gz \
+AF243792_snps.vcf.gz \
+AF243793_snps.vcf.gz \
+AF243794_snps.vcf.gz \
+AF243795_snps.vcf.gz \
+AF243796_snps.vcf.gz > mt_merged.vcf
+
+```
+
+Modified from chunk above
+
+```{bash, eval=F}
+bcftools merge --missing-to-ref --force-samples \
+AF243627_snps.vcf.gz \
+AF243628_snps.vcf.gz \
+AF243629_snps.vcf.gz \
+AF243630_snps.vcf.gz \
+AF243631_snps.vcf.gz \
+AF243632_snps.vcf.gz \
+AF243633_snps.vcf.gz \
+AF243700_snps.vcf.gz \
+AF243701_snps.vcf.gz \
+AF243702_snps.vcf.gz \
+AF243703_snps.vcf.gz \
+AF243704_snps.vcf.gz \
+AF243705_snps.vcf.gz \
+AF243706_snps.vcf.gz \
+AF243707_snps.vcf.gz \
+AF243708_snps.vcf.gz \
+AF243709_snps.vcf.gz \
+AF243780_snps.vcf.gz \
+AF243781_snps.vcf.gz \
+AF243782_snps.vcf.gz \
+AF243783_snps.vcf.gz \
+AF243784_snps.vcf.gz \
+AF243785_snps.vcf.gz \
+AF243786_snps.vcf.gz \
+AF243787_snps.vcf.gz \
+AF243788_snps.vcf.gz \
+AF243789_snps.vcf.gz \
+AF243790_snps.vcf.gz \
+AF243791_snps.vcf.gz \
+AF243792_snps.vcf.gz \
+AF243793_snps.vcf.gz \
+AF243794_snps.vcf.gz \
+AF243795_snps.vcf.gz \
+AF243796_snps.vcf.gz > mt_merged.vcf
+
+
+```
+
+Print number of lines in the merged vcf file
+
+```{bash, eval=F}
+wc -l mt_merged.vcf
+369 mt_merged.vcf
+```
+
+This should fill the genotypes with the reference, however did not work for me.
+
+https://github.com/samtools/bcftools/issues/402
+
+```{bash, eval = FALSE}
+bcftools +setGT mt_merged.vcf -Ob -o filled.bcf -- -t . -n 0
+```
+
+```{bash, eval = FALSE}
+bcftools +missing2ref  mt_merged.vcf -o filled.bcf
+```
+
+BWA Machine Learning:
+
+https://academic.oup.com/bioinformatics/article/38/9/2404/6543607
+
+\
+
+## 3. Extract ped and map from merged vcf file 
+
+\
+
+The steps in this session were initially thought for plink downstream analysis.
+The first step here is to move the merged vcf file to another folder:
+
+```{bash, eval = FALSE}
+cd ..
+mkdir -p merged_vcf
+mv compIndex/mt_merged.vcf merged_vcf
+cd merged_vcf
+```
+
+
+\
+
+This command can extract the ped and map file but the problem that this command won't work for mtDNA is because this command only works with bialelic data, which is not the case for mtDNA.
+
+```{bash, eval = FALSE}
+vcftools --vcf mt_merged.vcf --out mt_plink --plink
+```
+
+Extract information from merged vcf file
+
+In the bcftools @BCFtools2024 documentation there are a lot of good examples about how to extract genotype information with the samples:
+
+http://www.htslib.org/doc/bcftools.html#query
+
+This chunk yields a result for the query option:
+
+```{bash, eval = FALSE}
+bcftools query -f '%CHROM %POS  %REF  %ALT %QUAL\n' mt_merged.vcf
+```
+
+Modifying chunk from above with chunk from below:
+
+```{bash, eval = FALSE}
+bcftools query -f '%CHROM\t%POS\t%REF\t%ALT[\t%SAMPLE=%GT]\n' mt_merged.vcf
+```
+
+Compare with chunk above
+
+```{bash, eval = FALSE}
+bcftools query -f '%CHROM\t%POS\t%REF\t%ALT[\t%QUAL]\n' mt_merged.vcf
+bcftools query -f '%CHROM\t%POS\t%REF\t%ALT[\t%FILTER]\n' mt_merged.vcf
+bcftools query -f '%CHROM %POS  %REF  %ALT %QUAL\n' mt_merged.vcf
+```
+
+Print chromosome, position, ref allele and the first alternate allele
+
+```{bash, eval = FALSE}
+bcftools query -f '%CHROM  %POS  %REF  %ALT{0}\n' mt_merged.vcf
+```
+
+Similar to above, but use tabs instead of spaces, add sample name and genotype
+
+```{bash, eval = FALSE}
+bcftools query -f '%CHROM\t%POS\t%REF\t%ALT[\t%SAMPLE=%GT]\n' mt_merged.vcf
+```
+
+bcftools query -f '%CHROM\t%POS\t%REF\t%ALT\t%INFO/TAG[\t%SAMPLE=%AD]\n' mt_merged.vcf
+
+This printed IDs as dots
+
+```{bash, eval = FALSE}
+bcftools query -f '%CHROM\t%POS\t%REF\t%ALT[\t%ID]\n' mt_merged.vcf 
+```
+
+This also did not work: https://github.com/samtools/bcftools/issues/144
+
+```{bash, eval = FALSE}
+bcftools query -f '%CHROM %POS[ %IUPACGT]\n' mt_merged.vcf
+```
+
+Print FORMAT/GT fields followed by FORMAT/GT fields
+
+```{bash, eval = FALSE}
+bcftools query -f 'GQ:[ %GQ] \t GT:[ %GT]\n' mt_merged.vcf
+```
+
+Print only samples with alternate (non-reference) genotypes
+
+```{bash, eval = FALSE}
+bcftools query -f'[%CHROM:%POS %SAMPLE %GT\n]' -i'GT="alt"' mt_merged.vcf
+```
+
+\
+
+### 3.1 Bcftools query commands
+
+\
+
+Commands that worked to extract genotypes
+
+```{bash, eval = FALSE}
+
+cd /hb/home/gchaves/results/geraldo/mitochondria/test
+## This worked:
+bcftools query -f'[%CHROM:%POS:%SAMPLE \n]' AF243780_snps.vcf 
+## This also worked:
+bcftools query -f'[%CHROM:%POS:%SAMPLE \n]' AF243780.bcf
+## This worked as well:
+bcftools query -f'[%CHROM:%POS:%SAMPLE \n]' ../merged_vcf/mt_merged.vcf
+## This did not work:
+bcftools query -f '%CHROM\t%POS\t%REF\t%ALT%SAMPLE \n' ../merged_vcf/mt_merged.vcf
+## But just adding the [], this worked:
+bcftools query -f '[%CHROM\t%POS\t%REF\t%ALT%SAMPLE \n]' ../merged_vcf/mt_merged.vcf
+```
+
+\
+
+#### 3.1.1 Extract genotypes with Bcftools Query Command
+
+\
+
+Note that in the chunk above, it was inputing from the folder above: ../merged_vcf/
+Finally output to the mt_extracted.txt file. The mt_extracted.txt file is created using the bcftools query command and contains the SNPs that we can work with:
+
+```{bash, eval = FALSE}
+bcftools query -f '[%CHROM\t%POS\t%REF\t%ALT%SAMPLE \n]' mt_merged.vcf  > mt_extracted.txt
+```
+
+\
+
+Count number of lines in file extracted from merged VCF:
+
+```{bash, eval=F}
+wc -l mt_extracted.txt 
+1196 mt_extracted.txt
+```
+
+\
+
+Count number of lines in file extracted from merged VCF, in compIndex:
+
+```{bash, eval=F}
+cd /hb/home/gchaves/results/geraldo/mitochondria/compIndex
+wc -l mt_extracted.txt 
+1734 mt_extracted.txt
+```
+
+\
+
+Print vcf file name and vcf sample name
+
+```{bash, eval=F}
+for vcf_file in *vcf; do bcftools query -f '[%CHROM\t%POS\t%REF\t%ALT%SAMPLE \n]' AF243780_snps.vcf | awk 'NR==1{print $4}' |  awk -F ">" '{print "1:"$2}'; done
+```
+
+\
+
+### 3.2. Metadata Sample IDs in Files
+
+\
+
+This part was run in the computational server where fasta sequences are located. fasta1.txt is the file that contains the fasta file IDs as extracted using the for loop. The for loop is performed in the fasta folder maintaining fasta ID only:
+
+```{bash, eval=F}
+cd /hb/home/gchaves/results/geraldo/mitochondria/fasta
+
+for fastaFile in AF*.fasta; do
+  ## Pick just the eight firt letters of the string
+  fastaFileName=${fastaFile:0:8}
+  echo "$fastaFileName";
+  done > fasta1.txt
+```
+
+\
+
+These for loops will generate a number or index associated with each fasta file in the same order as in the for loop:
+
+```{bash, eval=F}
+for i in $(seq 1 26);do echo $i;done > fasta.index
+for i in $(seq 1 34);do echo $i;done > fasta.index
+```
+
+\
+
+Then we can paste the fasta file names and the fasta file indexes together. We create a file with sample names matching GenBank IDs. We are naming the file, sampleIDs.txt:
+
+```{bash, eval=F}
+paste fasta1.txt fasta.index | awk -F "\t" '{print $1"\t"$2":sample_1"}' | sed 's/\t1:sample/\tsample/g' > sampleIDs.txt
+rm fasta1.txt
+rm fasta.index
+```
+
+\
+
+We then read the sampleIDs.txt files into R and rename the columns. sampleIDs.txt is a match of fasta file names and names given by bwa. In the R environment, we will have this as a dataframe matching the fasta IDs and the names given by bwa:
+
+This chunk was being evaluated before I started the PRS analysis
+
+```{r sample IDs, eval=F}
+sampleIDs <- read.table("data/sampleIDs.txt")
+names(sampleIDs)[1]<-paste("GenBankID")
+names(sampleIDs)[2]<-paste("sampleName")
+```
+
+\
+
+We then read the metadata file into R. The metadata file contains the labels of the origin or the disease status for each sample. Read appended file into R and rename  columns
+
+This chunk was being evaluated before I started the PRS analysis
+
+```{r sample IDs metadataIDs.txt, eval=F}
+metadataIDs <- read.table("data/metadataIDs.txt")
+names(metadataIDs)[1]<-paste("GenBankID")
+names(metadataIDs)[2]<-paste("sampleName")
+names(metadataIDs)[3]<-paste("origin")
+```
+
+\
+
+VCF file format:
+
+https://github.com/samtools/bcftools/issues/956
+
+http://samtools.github.io/hts-specs/VCFv4.3.pdf
+
+This command prints these columns: chr, pos, ref>alt
+
+```{bash, eval=F}
+cd /hb/home/gchaves/results/geraldo/mitochondria/compIndex
+awk -F "<*>" '{print $1}' mt_extracted.txt | awk -F "," '{print $1}' | \
+awk -F "\t" '{print $1"\t"$2"\t"$3">"$4}' >  file1.txt
+```
+
+\
+
+And this part prints the IDs bwa gives to the samples. The bwa IDs are saved in the file2.txt file:
+
+```{bash, eval=F}
+cd /hb/home/gchaves/results/geraldo/mitochondria/compIndex
+awk -F "<*>" '{print $2}' mt_extracted.txt |  awk -F "," '{print $1}' > file2.txt
+```
+
+\
+
+We then paste files file1.txt and file2.txt together to create the file3.txt
+
+```{bash, eval=F}
+cd /hb/home/gchaves/results/geraldo/mitochondria/compIndex
+paste file2.txt file1.txt > file4.txt
+```
+
+\
+
+Now save file4.txt in the local data folder:
+
+```{bash, eval=F}
+scp gchaves@hb.ucsc.edu:/hb/home/gchaves/results/geraldo/mitochondria/compIndex/file4.txt \
+/Users/gepolianochaves/Desktop/Gepoliano/ReComBio\ Scientific/geraldo/data
+```
+
+
+\
+
+## 4. Extracting Genotypes
+
+\
+
+https://stackoverflow.com/questions/7743898/how-to-use-cast-on-a-data-frame
+
+https://www.statology.org/cast-in-r/
+
+https://dplyr.tidyverse.org/reference/relocate.html
+
+\
+
+This chunk was being evaluated before I started the PRS analysis
+
+```{r read file, eval=F}
+mt_extracted <- read.table("data/file3.txt", sep = "\t", header = T)
+
+names(mt_extracted)[1]<-paste("sample")
+names(mt_extracted)[2]<-paste("chr")
+names(mt_extracted)[3]<-paste("pos") 
+names(mt_extracted)[4]<-paste("genotype")
+
+dim(mt_extracted)
+```
+
+\
+
+This chunk was being evaluated before I started the PRS analysis
+
+```{r read genotypes extracted file, eval=F}
+mt_genotypes_extracted <- read.table("data/mt_genotypes_extracted.txt")
+
+names(mt_genotypes_extracted)[1]<-paste("pos")
+names(mt_genotypes_extracted)[2]<-paste("sample")
+names(mt_genotypes_extracted)[3]<-paste("genotype") 
+
+dim(mt_genotypes_extracted)
+```
+
+\
+
+This chunk was being evaluated before I started the PRS analysis
+
+```{r read genotypes appended file, eval=F}
+mt_genotypes_appended <- read.table("data/test_mt_appended_2.txt")
+
+names(mt_genotypes_appended)[1]<-paste("pos")
+names(mt_genotypes_appended)[2]<-paste("sample")
+names(mt_genotypes_appended)[3]<-paste("genotype") 
+
+dim(mt_genotypes_appended)
+```
+
+Select only the columns that will make the dataframe compatible with the dcast function of the reshape2 library.
+Reshape package has funcitons dcast and melt.
+
+This chunk was being evaluated before I started the PRS analysis
+
+```{r select columns for function dcast(), eval=F}
+library(maditr)
+mt_selected <- mt_extracted %>% dplyr::select(sample, pos, genotype)
+
+library(reshape2)
+
+mt_dcast <- dcast(mt_selected, sample ~ pos)
+```
+
+This chunk was being evaluated before I started the PRS analysis
+
+```{r, eval=F}
+library(reshape2)
+
+mt_selected_genotypes_extracted <- mt_genotypes_extracted %>% dplyr::select(sample, pos, genotype)
+
+mt_dcast_genotypes_extracted <- dcast(mt_selected_genotypes_extracted, sample ~ pos)
+```
+
+\
+
+This chunk was being evaluated before I started the PRS analysis
+
+```{r, eval=F}
+library(reshape2)
+
+mt_selected_appended <- mt_genotypes_appended %>% dplyr::select(sample, pos, genotype)
+
+mt_dcast_appended <- dcast(mt_selected_appended, sample ~ pos)
+
+# Split Each Sample
+split_df <- str_split_fixed(mt_dcast_appended$sample, "_", 2)
+# Construct Vector Maintaining parts of interest
+split_vector <- paste0(split_df[,1])
+# Add vector to DF, after column of interest
+mt_dcast_appended <- add_column(mt_dcast_appended, fastaID = split_vector, .after = "sample")
+mt_dcast_appended <- mt_dcast_appended %>% dplyr::select(-c(sample))
+
+```
+
+\
+
+Rename samples with GenBank IDs 
+
+This chunk was being evaluated before I started the PRS analysis
+
+```{r Merge sampleIDs and mt_dcast , eval=F}
+
+library(data.table)
+
+dt1         <- data.table(mt_dcast , key = "sample") 
+dt2         <- data.table(sampleIDs, key = "sampleName")
+joined_df_1 <- dt1[dt2]
+mt_dcast    <- joined_df_1
+mt_dcast <- mt_dcast %>% dplyr::relocate(GenBankID, .before = sample)
+mt_dcast <- mt_dcast %>% dplyr::select(-c(sample))
+```
+
+metadataIDs and mt_dcast_appended
+
+This chunk was being evaluated before I started the PRS analysis
+
+```{r Merge sampleIDs and mt_dcast_appended , eval=F}
+
+library(data.table)
+
+dt1               <- data.table(mt_dcast_appended , key = "fastaID") 
+dt2               <- data.table(metadataIDs, key = "GenBankID")
+joined_df_1       <- dt1[dt2]
+mt_dcast_appended <- joined_df_1
+mt_dcast_appended <- mt_dcast_appended %>% dplyr::relocate(sampleName, .after = fastaID)
+mt_dcast_appended <- mt_dcast_appended %>% dplyr::relocate(origin, .after = sampleName)
+mt_dcast_appended <- mt_dcast_appended %>% dplyr::select(-c(sampleName))
+```
+
+Edit column names to include MT_XXXXXXX_BP
+
+This chunk was being evaluated before I started the PRS analysis
+
+```{r, eval=F}
+colnames(mt_dcast) <- paste("MT", colnames(mt_dcast), "BP", sep= "_")
+names(mt_dcast)[1]<-paste("GenBankID")
+```
+
+Remove ugly sample name column
+
+```{r, eval=F}
+mt_dcast <- mt_dcast %>% dplyr::select(-c(MT_sample_BP))
+```
+
+Rename GenBank ID column
+
+```{r, eval=F}
+names(mt_dcast)[1]<-paste("GenBankID")
+```
+
+Insert column with labels
+
+\
+
+This chunk was being evaluated before I started the PRS analysis
+
+```{r, eval=F}
+mt_dcast <- mt_dcast %>% dplyr::mutate(origin = ifelse(row_number() < 10, "America", "Africa" ))
+```
+
+Relocate the origin column
+
+This chunk was being evaluated before I started the PRS analysis
+
+```{r, eval=F}
+mt_dcast <- mt_dcast %>% dplyr::relocate(origin, .after = GenBankID)
+```
+
+\
+
+### 4.1. Scripts to Extract Variant Positions
+
+\
+
+```{bash, eval=F}
+cd /hb/home/gchaves/results/geraldo/mitochondria/snps_vcf
+awk '{print $1, $2}' ../compIndex/mt_merged.vcf | grep chrM | grep 16 | awk '{print $2}'  | sed '1d' 
+```
+
+for i in fasta; grep POSITION; ifelse(POSITION in fasta, print POSITION, else)
+
+```{bash, eval=F}
+for i in *vcf; do echo $i; grep 16069 $i; done
+```
+
+\
+
+#### 4.1.1. Extracting Genotype for Each Position
+
+\
+
+```{bash, eval=F}
+
+for i in *vcf; do
+  position=16126
+  if 
+    grep -q $position $i
+  then
+    ref=$(grep $position $i | awk '{print $1, $2, $4, $5}'  | awk -F ',' '{print $1}' | awk '{print $3}') 
+    alt=$(grep $position $i | awk '{print $1, $2, $4, $5}'  | awk -F ',' '{print $1}' | awk '{print $4}') 
+    echo $i"    "$ref">"$alt
+  else
+    echo $i"    "$ref"="$ref
+  fi
+ done
+ 
+```
+
+\
+
+#### 4.1.2. Script in Server
+
+\
+
+For scripts like this it is assumed that the variants_list.txt is located in the same directory with the vcf files.
+
+```{bash, eval=F}
+
+#!/bin/bash
+#SBATCH --partition=128x24
+#SBATCH --job-name=align                   # Job name
+#SBATCH --mail-type=ALL                    # Mail events (NONE, BEGIN, END, FAIL, ALL)
+#SBATCH --mail-user=gchaves@ucsc.edu       # Where to send mail	
+#SBATCH --nodes=1                          # Use one node
+#SBATCH --ntasks=1                         # Run a single task	
+#SBATCH --cpus-per-task=4                  # Number of CPU cores per task
+#SBATCH --output=align.out                 # Standard output and error log
+# 
+# module load gcc/5.4.0
+
+SECONDS=0
+
+cd /hb/home/gchaves/results/geraldo/mitochondria/snps_vcf
+
+for position in $(cat variants_list.txt); do 
+## echo "MT_"$position"bp"
+for i in *_snps.vcf; do
+  if 
+    grep -q -w $position $i
+  then
+    ref=$(grep -w $position $i | awk '{print $1, $2, $4, $5}'  | awk -F ',' '{print $1}' | awk '{print $3}') 
+    alt=$(grep -w $position $i | awk '{print $1, $2, $4, $5}'  | awk -F ',' '{print $1}' | awk '{print $4}') 
+    echo  "MT_"$position"bp" $i"    "$ref">"$alt
+  else
+    echo  "MT_"$position"bp" $i"    "$ref"="$ref
+  fi
+ done; 
+done > mt_genotypes_extracted.txt
+
+echo "Finished entire for loop"
+
+duration=$SECONDS
+
+echo "$((duration / 60)) minutes and $((duration % 60)) seconds elapsed."
+```
+
+Counting lines in the output
+
+```{bash, eval=F}
+wc -l mt_genotypes_extracted.txt
+1196 mt_genotypes_extracted.txt
+```
+
+\
+
+#### 4.1.3. Script in Server (Appending at the End)
+
+\
+
+For this the variants_list.txt has to be in the same directory as the vcf files.
+
+```{bash, eval=F}
+
+#!/bin/bash
+#SBATCH --partition=128x24
+#SBATCH --job-name=align                   # Job name
+#SBATCH --mail-type=ALL                    # Mail events (NONE, BEGIN, END, FAIL, ALL)
+#SBATCH --mail-user=gchaves@ucsc.edu       # Where to send mail	
+#SBATCH --nodes=1                          # Use one node
+#SBATCH --ntasks=1                         # Run a single task	
+#SBATCH --cpus-per-task=4                  # Number of CPU cores per task
+#SBATCH --output=align.out                 # Standard output and error log
+# 
+# module load gcc/5.4.0
+
+SECONDS=0
+
+cd /hb/home/gchaves/results/geraldo/mitochondria/snps_vcf
+
+for position in $(cat variants_list.txt); do 
+
+## echo "MT_"$position"bp"
+for i in *_snps.vcf; do
+  if 
+    grep -q -w $position $i
+  then
+    ref=$(grep -w $position $i | awk '{print $1, $2, $4, $5}'  | awk -F ',' '{print $1}' | awk '{print $3}') 
+    alt=$(grep -w $position $i | awk '{print $1, $2, $4, $5}'  | awk -F ',' '{print $1}' | awk '{print $4}') 
+    echo  "MT_"$position"bp" $i"    "$ref">"$alt
+  else
+    echo  "MT_"$position"bp" $i"    "$ref"="$ref
+  fi
+ done; 
+done 
+
+echo "Finished entire for loop"
+
+duration=$SECONDS
+
+echo "$((duration / 60)) minutes and $((duration % 60)) seconds elapsed."
+```
+
+```{bash, eval=F}
+wc -l mt_genotypes_extracted.txt
+1196 mt_genotypes_extracted.txt
+```
+
+\
+
+#### 4.1.4. Trying Genotype Extraction in a Specific Position
+
+\
+
+```{bash, eval=F}
+for position in 16111; do 
+## echo "MT_"$position"bp"
+for i in *vcf; do
+  if 
+    grep -q -w $position $i
+  then
+    ref=$(grep -w $position $i | awk '{print $1, $2, $4, $5}'  | awk -F ',' '{print $1}' | awk '{print $3}') 
+    alt=$(grep -w $position $i | awk '{print $1, $2, $4, $5}'  | awk -F ',' '{print $1}' | awk '{print $4}') 
+    echo  "MT_"$position"bp" $i"    "$ref">"$alt
+  else
+    echo  "MT_"$position"bp" $i"    "$ref"="$ref
+  fi
+ done; 
+done
+```
+
+\
+
+#### 4.1.5. Trying Genotype Extraction in a Range of Positions
+
+\
+
+```{bash, eval=F}
+for position in 16162; do 
+## echo "MT_"$position"bp"
+for i in *vcf; do
+  if 
+    grep -q -w $position $i
+  then
+    ref=$(grep -w $position $i | awk '{print $1, $2, $4, $5}'  | awk -F ',' '{print $1}' | awk '{print $3}') 
+    alt=$(grep -w $position $i | awk '{print $1, $2, $4, $5}'  | awk -F ',' '{print $1}' | awk '{print $4}') 
+    echo  "MT_"$position"bp" $i"    "$ref">"$alt
+  else
+    echo  "MT_"$position"bp" $i"    "$ref"="$ref
+  fi
+ done; 
+done
+```
+
+\
+
+## 5. Changing Genotypes to Binary
+
+\
+
+To change genotypes to 1/0, I used this @stackOverflow2021 reference.
+
+This chunk was being evaluated before I started the PRS analysis
+
+```{r, eval=F}
+mt_dcast <- mt_dcast %>% mutate_all(funs(replace(., .== "C>T", "1")))%>% 
+  mutate_all(funs(replace(., .== "T>C", "1")))%>% 
+  mutate_all(funs(replace(., .== "C>A", "1")))%>% 
+  mutate_all(funs(replace(., .== "G>A", "1")))%>% 
+  mutate_all(funs(replace(., .== "A>G", "1")))%>% 
+  mutate_all(funs(replace(., .== "A>T", "1")))
+```
+
+\
+
+### 5.1. Visualize Table
+
+\
+
+Take a look at table with genotypes changed
+
+This chunk was being evaluated before I started the PRS analysis
+
+```{r look at new genotype table, eval=F}
+
+kable(mt_dcast, caption="New Genotype Table (Reference > Alteration)") %>%
+  kable_styling("striped", full_width = F, font_size = 12) %>%
+  scroll_box(width = "100%", height = "600px")
+
+```
+
+Check dimensions of dataframe
+
+\
+
+This chunk was being evaluated before I started the PRS analysis
+
+```{r, eval=F}
+dim(mt_dcast)
+```
+
+
+Write to file
+
+This chunk was being evaluated before I started the PRS analysis
+
+```{r save rds, eval=F}
+saveRDS(mt_dcast, file = "./data/mt_dcast.rds")
+```
+
+Save txt file. Do not leave this chunk on so it can not randomly modify other notebooks that use the mt_dcast object.
+
+```{r save txt, eval=F}
+write.table(mt_dcast,
+            file = "./data/mt_dcast.txt",
+            sep = "\t",
+            row=F,
+            quote = F,
+            col.names = T)
+```
+
+
+\
+
+This chunk was being evaluated before I started the PRS analysis
+
+```{r, eval=F}
+mt_dcast_appended_binary <- mt_dcast_appended %>% mutate_all(funs(replace(., .== "C=C", "0")))%>% 
+  mutate_all(funs(replace(., .== "C>T", "1")))%>% 
+  mutate_all(funs(replace(., .== "T=T", "0")))%>% 
+  mutate_all(funs(replace(., .== "T>C", "1")))%>% 
+  mutate_all(funs(replace(., .== "G=G", "0")))%>% 
+  mutate_all(funs(replace(., .== "G>A", "1")))%>%
+  mutate_all(funs(replace(., .== "A=A", "0")))%>%
+  mutate_all(funs(replace(., .== "A>G", "1")))
+```
+
+Take a look at mt_dcast_appended_binary table
+
+\
+
+This chunk was being evaluated before I started the PRS analysis
+
+```{r look at table, eval=F}
+library(kableExtra)
+
+kable(mt_dcast_appended_binary, caption="Genotype Table (Reference > Alteration)") %>%
+  kable_styling("striped", full_width = F, font_size = 12) %>%
+  scroll_box(width = "100%", height = "600px")
+```
+
+Save mt_dcast_appended_binary
+
+This chunk was being evaluated before I started the PRS analysis
+
+```{r save mt_dcast_appended_binary, eval=F}
+write.table(mt_dcast_appended_binary,
+            file = "./data/mt_dcast_appended_binary.txt",
+            sep = "\t",
+            row=F,
+            quote = F,
+            col.names = T)
+```
+
+
+\
+
+## 6. References
+
+\
+
+<div id="refs"></div>
+
+\
+
+## 7. Session Info
+
+\
+
+```{r session}
+sessionInfo()
+```
