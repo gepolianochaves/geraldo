@@ -1,0 +1,2671 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+<meta name="author" content="Gepoliano Chaves" />
+
+
+<title>Genotype Information Extraction</title>
+
+<script src="site_libs/header-attrs-2.28/header-attrs.js"></script>
+<script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/lumen.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<style>h1 {font-size: 34px;}
+       h1.title {font-size: 38px;}
+       h2 {font-size: 30px;}
+       h3 {font-size: 24px;}
+       h4 {font-size: 18px;}
+       h5 {font-size: 16px;}
+       h6 {font-size: 12px;}
+       code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
+       pre:not([class]) { background-color: white }</style>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<link href="site_libs/highlightjs-9.12.0/default.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+<link href="site_libs/pagedtable-1.1/css/pagedtable.css" rel="stylesheet" />
+<script src="site_libs/pagedtable-1.1/js/pagedtable.js"></script>
+<script src="site_libs/kePrint-0.0.1/kePrint.js"></script>
+<link href="site_libs/lightable-0.0.1/lightable.css" rel="stylesheet" />
+<link href="site_libs/font-awesome-6.4.2/css/all.min.css" rel="stylesheet" />
+<link href="site_libs/font-awesome-6.4.2/css/v4-shims.min.css" rel="stylesheet" />
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+<style type="text/css">code{white-space: pre;}</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+
+
+<style type="text/css">
+/* for pandoc --citeproc since 2.11 */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+}
+.hanging div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}
+</style>
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+details > summary > p:only-child {
+  display: inline;
+}
+pre code {
+  padding: 0;
+}
+</style>
+
+
+<style type="text/css">
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #adb5bd;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script type="text/javascript">
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark the anchor link active (and if it's in a dropdown, also mark that active)
+  var dropdown = menuAnchor.closest('li.dropdown');
+  if (window.bootstrap) { // Bootstrap 4+
+    menuAnchor.addClass('active');
+    dropdown.find('> .dropdown-toggle').addClass('active');
+  } else { // Bootstrap 3
+    menuAnchor.parent().addClass('active');
+    dropdown.addClass('active');
+  }
+
+  // Navbar adjustments
+  var navHeight = $(".navbar").first().height() + 15;
+  var style = document.createElement('style');
+  var pt = "padding-top: " + navHeight + "px; ";
+  var mt = "margin-top: -" + navHeight + "px; ";
+  var css = "";
+  // offset scroll position for anchor links (for fixed navbar)
+  for (var i = 1; i <= 6; i++) {
+    css += ".section h" + i + "{ " + pt + mt + "}\n";
+  }
+  style.innerHTML = "body {" + pt + "padding-bottom: 40px; }\n" + css;
+  document.head.appendChild(style);
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before, .tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "\e259";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "\e258";
+  font-family: 'Glyphicons Halflings';
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+
+
+<div class="navbar navbar-inverse  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-bs-toggle="collapse" data-target="#navbar" data-bs-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">Gerenciamento Genômico e Algorítmico de Fenótipos, Riscos, Diagnósticos e Prognósticos em Dados de Doenças em Brasileiros</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">
+    <span class="fa fa-home"></span>
+     
+    Home
+  </a>
+</li>
+<li>
+  <a href="quokka-bilby.html">
+    <span class="fa fa-solid fa-circle-info"></span>
+     
+    Sobre nós
+  </a>
+</li>
+<li>
+  <a href="codigo.html">
+    <span class="fa fa-solid fa-laptop-file"></span>
+     
+    Códigos
+  </a>
+</li>
+<li>
+  <a href="PmD.html">
+    <span class="fa fa-solid fa-people-arrows"></span>
+     
+    PmD
+  </a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div id="header">
+
+
+
+<h1 class="title toc-ignore">Genotype Information Extraction</h1>
+<h4 class="author">Gepoliano Chaves</h4>
+<h4 class="date">June 24th, 2024</h4>
+
+</div>
+
+<div id="TOC">
+<ul>
+<li><a href="#summary" id="toc-summary">Summary</a></li>
+<li><a href="#load-libraries" id="toc-load-libraries">Load
+libraries</a></li>
+<li><a href="#extracting-genotypes" id="toc-extracting-genotypes">1.
+Extracting Genotypes</a>
+<ul>
+<li><a href="#selected-columns-included"
+id="toc-selected-columns-included">Selected columns included</a></li>
+<li><a href="#visualize-table" id="toc-visualize-table">2.1. Visualize
+Table</a></li>
+</ul></li>
+<li><a href="#references" id="toc-references">3. References</a></li>
+<li><a href="#session-info" id="toc-session-info">4. Session
+Info</a></li>
+</ul>
+</div>
+
+<p><br />
+</p>
+<div id="summary" class="section level2">
+<h2>Summary</h2>
+<p><br />
+</p>
+<p>In this activity we extract genetic information from VCF files to
+generate genotype file that will be used in the machine learning
+framework.</p>
+<p><br />
+</p>
+</div>
+<div id="load-libraries" class="section level2">
+<h2>Load libraries</h2>
+<p><br />
+</p>
+<pre class="r"><code>library(maditr)
+library(kableExtra)
+library(dplyr)
+library(stringr)
+library(tibble)
+library(reshape2)</code></pre>
+<p><br />
+</p>
+</div>
+<div id="extracting-genotypes" class="section level2">
+<h2>1. Extracting Genotypes</h2>
+<p><br />
+</p>
+<p><a
+href="https://stackoverflow.com/questions/7743898/how-to-use-cast-on-a-data-frame"
+class="uri">https://stackoverflow.com/questions/7743898/how-to-use-cast-on-a-data-frame</a></p>
+<ul>
+<li>Change from the long format to the wide format:</li>
+</ul>
+<p><a href="https://www.statology.org/cast-in-r/"
+class="uri">https://www.statology.org/cast-in-r/</a></p>
+<p><a href="https://dplyr.tidyverse.org/reference/relocate.html"
+class="uri">https://dplyr.tidyverse.org/reference/relocate.html</a></p>
+<p><br />
+</p>
+<p>The file3.txt below was generated using the query parameter in the
+bcftools used in the previous notebook. This file needs to be filled
+until I figure out what is wrong with that filling. Genotypes are 0 and
+1 for file4.txt. This chunk was being evaluated before I started the PRS
+analysis</p>
+<pre class="r"><code>mt_extracted &lt;- read.table(&quot;data/genotypes4.txt&quot;, sep = &quot; &quot;, header = F)
+
+
+names(mt_extracted)[1]&lt;-paste(&quot;pos&quot;)
+names(mt_extracted)[2]&lt;-paste(&quot;genotype&quot;)
+names(mt_extracted)[3]&lt;-paste(&quot;sample&quot;) 
+
+dim(mt_extracted)</code></pre>
+<pre><code>## [1] 578   3</code></pre>
+<pre class="r"><code>mt_extracted</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":["pos"],"name":[1],"type":["chr"],"align":["left"]},{"label":["genotype"],"name":[2],"type":["int"],"align":["right"]},{"label":["sample"],"name":[3],"type":["chr"],"align":["left"]}],"data":[{"1":"MT_16069_bp","2":"0","3":"AF243634_snps.vcf"},{"1":"MT_16086_bp","2":"0","3":"AF243634_snps.vcf"},{"1":"MT_16093_bp","2":"0","3":"AF243634_snps.vcf"},{"1":"MT_16111_bp","2":"0","3":"AF243634_snps.vcf"},{"1":"MT_16124_bp","2":"0","3":"AF243634_snps.vcf"},{"1":"MT_16126_bp","2":"1","3":"AF243634_snps.vcf"},{"1":"MT_16129_bp","2":"0","3":"AF243634_snps.vcf"},{"1":"MT_16144_bp","2":"0","3":"AF243634_snps.vcf"},{"1":"MT_16153_bp","2":"0","3":"AF243634_snps.vcf"},{"1":"MT_16172_bp","2":"0","3":"AF243634_snps.vcf"},{"1":"MT_16209_bp","2":"0","3":"AF243634_snps.vcf"},{"1":"MT_16222_bp","2":"0","3":"AF243634_snps.vcf"},{"1":"MT_16270_bp","2":"1","3":"AF243634_snps.vcf"},{"1":"MT_16294_bp","2":"0","3":"AF243634_snps.vcf"},{"1":"MT_16312_bp","2":"0","3":"AF243634_snps.vcf"},{"1":"MT_16327_bp","2":"0","3":"AF243634_snps.vcf"},{"1":"MT_16362_bp","2":"0","3":"AF243634_snps.vcf"},{"1":"MT_16069_bp","2":"0","3":"AF243635_snps.vcf"},{"1":"MT_16086_bp","2":"0","3":"AF243635_snps.vcf"},{"1":"MT_16093_bp","2":"0","3":"AF243635_snps.vcf"},{"1":"MT_16111_bp","2":"0","3":"AF243635_snps.vcf"},{"1":"MT_16124_bp","2":"0","3":"AF243635_snps.vcf"},{"1":"MT_16126_bp","2":"0","3":"AF243635_snps.vcf"},{"1":"MT_16129_bp","2":"0","3":"AF243635_snps.vcf"},{"1":"MT_16144_bp","2":"0","3":"AF243635_snps.vcf"},{"1":"MT_16153_bp","2":"0","3":"AF243635_snps.vcf"},{"1":"MT_16172_bp","2":"0","3":"AF243635_snps.vcf"},{"1":"MT_16209_bp","2":"0","3":"AF243635_snps.vcf"},{"1":"MT_16222_bp","2":"0","3":"AF243635_snps.vcf"},{"1":"MT_16270_bp","2":"0","3":"AF243635_snps.vcf"},{"1":"MT_16294_bp","2":"0","3":"AF243635_snps.vcf"},{"1":"MT_16312_bp","2":"0","3":"AF243635_snps.vcf"},{"1":"MT_16327_bp","2":"1","3":"AF243635_snps.vcf"},{"1":"MT_16362_bp","2":"0","3":"AF243635_snps.vcf"},{"1":"MT_16069_bp","2":"0","3":"AF243636_snps.vcf"},{"1":"MT_16086_bp","2":"0","3":"AF243636_snps.vcf"},{"1":"MT_16093_bp","2":"0","3":"AF243636_snps.vcf"},{"1":"MT_16111_bp","2":"0","3":"AF243636_snps.vcf"},{"1":"MT_16124_bp","2":"0","3":"AF243636_snps.vcf"},{"1":"MT_16126_bp","2":"0","3":"AF243636_snps.vcf"},{"1":"MT_16129_bp","2":"0","3":"AF243636_snps.vcf"},{"1":"MT_16144_bp","2":"0","3":"AF243636_snps.vcf"},{"1":"MT_16153_bp","2":"0","3":"AF243636_snps.vcf"},{"1":"MT_16172_bp","2":"0","3":"AF243636_snps.vcf"},{"1":"MT_16209_bp","2":"0","3":"AF243636_snps.vcf"},{"1":"MT_16222_bp","2":"0","3":"AF243636_snps.vcf"},{"1":"MT_16270_bp","2":"0","3":"AF243636_snps.vcf"},{"1":"MT_16294_bp","2":"1","3":"AF243636_snps.vcf"},{"1":"MT_16312_bp","2":"0","3":"AF243636_snps.vcf"},{"1":"MT_16327_bp","2":"0","3":"AF243636_snps.vcf"},{"1":"MT_16362_bp","2":"0","3":"AF243636_snps.vcf"},{"1":"MT_16069_bp","2":"0","3":"AF243637_snps.vcf"},{"1":"MT_16086_bp","2":"0","3":"AF243637_snps.vcf"},{"1":"MT_16093_bp","2":"0","3":"AF243637_snps.vcf"},{"1":"MT_16111_bp","2":"0","3":"AF243637_snps.vcf"},{"1":"MT_16124_bp","2":"0","3":"AF243637_snps.vcf"},{"1":"MT_16126_bp","2":"0","3":"AF243637_snps.vcf"},{"1":"MT_16129_bp","2":"0","3":"AF243637_snps.vcf"},{"1":"MT_16144_bp","2":"0","3":"AF243637_snps.vcf"},{"1":"MT_16153_bp","2":"0","3":"AF243637_snps.vcf"},{"1":"MT_16172_bp","2":"0","3":"AF243637_snps.vcf"},{"1":"MT_16209_bp","2":"0","3":"AF243637_snps.vcf"},{"1":"MT_16222_bp","2":"0","3":"AF243637_snps.vcf"},{"1":"MT_16270_bp","2":"0","3":"AF243637_snps.vcf"},{"1":"MT_16294_bp","2":"0","3":"AF243637_snps.vcf"},{"1":"MT_16312_bp","2":"0","3":"AF243637_snps.vcf"},{"1":"MT_16327_bp","2":"1","3":"AF243637_snps.vcf"},{"1":"MT_16362_bp","2":"0","3":"AF243637_snps.vcf"},{"1":"MT_16069_bp","2":"0","3":"AF243638_snps.vcf"},{"1":"MT_16086_bp","2":"0","3":"AF243638_snps.vcf"},{"1":"MT_16093_bp","2":"0","3":"AF243638_snps.vcf"},{"1":"MT_16111_bp","2":"0","3":"AF243638_snps.vcf"},{"1":"MT_16124_bp","2":"0","3":"AF243638_snps.vcf"},{"1":"MT_16126_bp","2":"0","3":"AF243638_snps.vcf"},{"1":"MT_16129_bp","2":"1","3":"AF243638_snps.vcf"},{"1":"MT_16144_bp","2":"0","3":"AF243638_snps.vcf"},{"1":"MT_16153_bp","2":"0","3":"AF243638_snps.vcf"},{"1":"MT_16172_bp","2":"1","3":"AF243638_snps.vcf"},{"1":"MT_16209_bp","2":"0","3":"AF243638_snps.vcf"},{"1":"MT_16222_bp","2":"0","3":"AF243638_snps.vcf"},{"1":"MT_16270_bp","2":"0","3":"AF243638_snps.vcf"},{"1":"MT_16294_bp","2":"0","3":"AF243638_snps.vcf"},{"1":"MT_16312_bp","2":"0","3":"AF243638_snps.vcf"},{"1":"MT_16327_bp","2":"0","3":"AF243638_snps.vcf"},{"1":"MT_16362_bp","2":"0","3":"AF243638_snps.vcf"},{"1":"MT_16069_bp","2":"0","3":"AF243639_snps.vcf"},{"1":"MT_16086_bp","2":"0","3":"AF243639_snps.vcf"},{"1":"MT_16093_bp","2":"0","3":"AF243639_snps.vcf"},{"1":"MT_16111_bp","2":"0","3":"AF243639_snps.vcf"},{"1":"MT_16124_bp","2":"0","3":"AF243639_snps.vcf"},{"1":"MT_16126_bp","2":"0","3":"AF243639_snps.vcf"},{"1":"MT_16129_bp","2":"0","3":"AF243639_snps.vcf"},{"1":"MT_16144_bp","2":"0","3":"AF243639_snps.vcf"},{"1":"MT_16153_bp","2":"0","3":"AF243639_snps.vcf"},{"1":"MT_16172_bp","2":"0","3":"AF243639_snps.vcf"},{"1":"MT_16209_bp","2":"0","3":"AF243639_snps.vcf"},{"1":"MT_16222_bp","2":"0","3":"AF243639_snps.vcf"},{"1":"MT_16270_bp","2":"0","3":"AF243639_snps.vcf"},{"1":"MT_16294_bp","2":"1","3":"AF243639_snps.vcf"},{"1":"MT_16312_bp","2":"0","3":"AF243639_snps.vcf"},{"1":"MT_16327_bp","2":"0","3":"AF243639_snps.vcf"},{"1":"MT_16362_bp","2":"0","3":"AF243639_snps.vcf"},{"1":"MT_16069_bp","2":"0","3":"AF243640_snps.vcf"},{"1":"MT_16086_bp","2":"0","3":"AF243640_snps.vcf"},{"1":"MT_16093_bp","2":"1","3":"AF243640_snps.vcf"},{"1":"MT_16111_bp","2":"0","3":"AF243640_snps.vcf"},{"1":"MT_16124_bp","2":"1","3":"AF243640_snps.vcf"},{"1":"MT_16126_bp","2":"0","3":"AF243640_snps.vcf"},{"1":"MT_16129_bp","2":"0","3":"AF243640_snps.vcf"},{"1":"MT_16144_bp","2":"0","3":"AF243640_snps.vcf"},{"1":"MT_16153_bp","2":"0","3":"AF243640_snps.vcf"},{"1":"MT_16172_bp","2":"0","3":"AF243640_snps.vcf"},{"1":"MT_16209_bp","2":"0","3":"AF243640_snps.vcf"},{"1":"MT_16222_bp","2":"0","3":"AF243640_snps.vcf"},{"1":"MT_16270_bp","2":"0","3":"AF243640_snps.vcf"},{"1":"MT_16294_bp","2":"0","3":"AF243640_snps.vcf"},{"1":"MT_16312_bp","2":"0","3":"AF243640_snps.vcf"},{"1":"MT_16327_bp","2":"0","3":"AF243640_snps.vcf"},{"1":"MT_16362_bp","2":"0","3":"AF243640_snps.vcf"},{"1":"MT_16069_bp","2":"0","3":"AF243641_snps.vcf"},{"1":"MT_16086_bp","2":"0","3":"AF243641_snps.vcf"},{"1":"MT_16093_bp","2":"0","3":"AF243641_snps.vcf"},{"1":"MT_16111_bp","2":"0","3":"AF243641_snps.vcf"},{"1":"MT_16124_bp","2":"0","3":"AF243641_snps.vcf"},{"1":"MT_16126_bp","2":"0","3":"AF243641_snps.vcf"},{"1":"MT_16129_bp","2":"0","3":"AF243641_snps.vcf"},{"1":"MT_16144_bp","2":"0","3":"AF243641_snps.vcf"},{"1":"MT_16153_bp","2":"0","3":"AF243641_snps.vcf"},{"1":"MT_16172_bp","2":"0","3":"AF243641_snps.vcf"},{"1":"MT_16209_bp","2":"0","3":"AF243641_snps.vcf"},{"1":"MT_16222_bp","2":"0","3":"AF243641_snps.vcf"},{"1":"MT_16270_bp","2":"0","3":"AF243641_snps.vcf"},{"1":"MT_16294_bp","2":"0","3":"AF243641_snps.vcf"},{"1":"MT_16312_bp","2":"0","3":"AF243641_snps.vcf"},{"1":"MT_16327_bp","2":"1","3":"AF243641_snps.vcf"},{"1":"MT_16362_bp","2":"0","3":"AF243641_snps.vcf"},{"1":"MT_16069_bp","2":"0","3":"AF243642_snps.vcf"},{"1":"MT_16086_bp","2":"0","3":"AF243642_snps.vcf"},{"1":"MT_16093_bp","2":"0","3":"AF243642_snps.vcf"},{"1":"MT_16111_bp","2":"0","3":"AF243642_snps.vcf"},{"1":"MT_16124_bp","2":"0","3":"AF243642_snps.vcf"},{"1":"MT_16126_bp","2":"0","3":"AF243642_snps.vcf"},{"1":"MT_16129_bp","2":"0","3":"AF243642_snps.vcf"},{"1":"MT_16144_bp","2":"0","3":"AF243642_snps.vcf"},{"1":"MT_16153_bp","2":"0","3":"AF243642_snps.vcf"},{"1":"MT_16172_bp","2":"0","3":"AF243642_snps.vcf"},{"1":"MT_16209_bp","2":"0","3":"AF243642_snps.vcf"},{"1":"MT_16222_bp","2":"0","3":"AF243642_snps.vcf"},{"1":"MT_16270_bp","2":"0","3":"AF243642_snps.vcf"},{"1":"MT_16294_bp","2":"0","3":"AF243642_snps.vcf"},{"1":"MT_16312_bp","2":"0","3":"AF243642_snps.vcf"},{"1":"MT_16327_bp","2":"0","3":"AF243642_snps.vcf"},{"1":"MT_16362_bp","2":"0","3":"AF243642_snps.vcf"},{"1":"MT_16069_bp","2":"0","3":"AF243643_snps.vcf"},{"1":"MT_16086_bp","2":"0","3":"AF243643_snps.vcf"},{"1":"MT_16093_bp","2":"0","3":"AF243643_snps.vcf"},{"1":"MT_16111_bp","2":"0","3":"AF243643_snps.vcf"},{"1":"MT_16124_bp","2":"0","3":"AF243643_snps.vcf"},{"1":"MT_16126_bp","2":"0","3":"AF243643_snps.vcf"},{"1":"MT_16129_bp","2":"0","3":"AF243643_snps.vcf"},{"1":"MT_16144_bp","2":"0","3":"AF243643_snps.vcf"},{"1":"MT_16153_bp","2":"0","3":"AF243643_snps.vcf"},{"1":"MT_16172_bp","2":"0","3":"AF243643_snps.vcf"},{"1":"MT_16209_bp","2":"0","3":"AF243643_snps.vcf"},{"1":"MT_16222_bp","2":"0","3":"AF243643_snps.vcf"},{"1":"MT_16270_bp","2":"0","3":"AF243643_snps.vcf"},{"1":"MT_16294_bp","2":"1","3":"AF243643_snps.vcf"},{"1":"MT_16312_bp","2":"0","3":"AF243643_snps.vcf"},{"1":"MT_16327_bp","2":"0","3":"AF243643_snps.vcf"},{"1":"MT_16362_bp","2":"0","3":"AF243643_snps.vcf"},{"1":"MT_16069_bp","2":"0","3":"AF243644_snps.vcf"},{"1":"MT_16086_bp","2":"0","3":"AF243644_snps.vcf"},{"1":"MT_16093_bp","2":"0","3":"AF243644_snps.vcf"},{"1":"MT_16111_bp","2":"0","3":"AF243644_snps.vcf"},{"1":"MT_16124_bp","2":"0","3":"AF243644_snps.vcf"},{"1":"MT_16126_bp","2":"0","3":"AF243644_snps.vcf"},{"1":"MT_16129_bp","2":"1","3":"AF243644_snps.vcf"},{"1":"MT_16144_bp","2":"0","3":"AF243644_snps.vcf"},{"1":"MT_16153_bp","2":"0","3":"AF243644_snps.vcf"},{"1":"MT_16172_bp","2":"0","3":"AF243644_snps.vcf"},{"1":"MT_16209_bp","2":"0","3":"AF243644_snps.vcf"},{"1":"MT_16222_bp","2":"0","3":"AF243644_snps.vcf"},{"1":"MT_16270_bp","2":"0","3":"AF243644_snps.vcf"},{"1":"MT_16294_bp","2":"1","3":"AF243644_snps.vcf"},{"1":"MT_16312_bp","2":"0","3":"AF243644_snps.vcf"},{"1":"MT_16327_bp","2":"0","3":"AF243644_snps.vcf"},{"1":"MT_16362_bp","2":"0","3":"AF243644_snps.vcf"},{"1":"MT_16069_bp","2":"0","3":"AF243645_snps.vcf"},{"1":"MT_16086_bp","2":"0","3":"AF243645_snps.vcf"},{"1":"MT_16093_bp","2":"1","3":"AF243645_snps.vcf"},{"1":"MT_16111_bp","2":"0","3":"AF243645_snps.vcf"},{"1":"MT_16124_bp","2":"0","3":"AF243645_snps.vcf"},{"1":"MT_16126_bp","2":"0","3":"AF243645_snps.vcf"},{"1":"MT_16129_bp","2":"1","3":"AF243645_snps.vcf"},{"1":"MT_16144_bp","2":"0","3":"AF243645_snps.vcf"},{"1":"MT_16153_bp","2":"0","3":"AF243645_snps.vcf"},{"1":"MT_16172_bp","2":"0","3":"AF243645_snps.vcf"},{"1":"MT_16209_bp","2":"0","3":"AF243645_snps.vcf"},{"1":"MT_16222_bp","2":"0","3":"AF243645_snps.vcf"},{"1":"MT_16270_bp","2":"0","3":"AF243645_snps.vcf"},{"1":"MT_16294_bp","2":"1","3":"AF243645_snps.vcf"},{"1":"MT_16312_bp","2":"0","3":"AF243645_snps.vcf"},{"1":"MT_16327_bp","2":"0","3":"AF243645_snps.vcf"},{"1":"MT_16362_bp","2":"0","3":"AF243645_snps.vcf"},{"1":"MT_16069_bp","2":"0","3":"AF243646_snps.vcf"},{"1":"MT_16086_bp","2":"0","3":"AF243646_snps.vcf"},{"1":"MT_16093_bp","2":"0","3":"AF243646_snps.vcf"},{"1":"MT_16111_bp","2":"0","3":"AF243646_snps.vcf"},{"1":"MT_16124_bp","2":"0","3":"AF243646_snps.vcf"},{"1":"MT_16126_bp","2":"0","3":"AF243646_snps.vcf"},{"1":"MT_16129_bp","2":"0","3":"AF243646_snps.vcf"},{"1":"MT_16144_bp","2":"0","3":"AF243646_snps.vcf"},{"1":"MT_16153_bp","2":"0","3":"AF243646_snps.vcf"},{"1":"MT_16172_bp","2":"0","3":"AF243646_snps.vcf"},{"1":"MT_16209_bp","2":"0","3":"AF243646_snps.vcf"},{"1":"MT_16222_bp","2":"0","3":"AF243646_snps.vcf"},{"1":"MT_16270_bp","2":"0","3":"AF243646_snps.vcf"},{"1":"MT_16294_bp","2":"1","3":"AF243646_snps.vcf"},{"1":"MT_16312_bp","2":"0","3":"AF243646_snps.vcf"},{"1":"MT_16327_bp","2":"0","3":"AF243646_snps.vcf"},{"1":"MT_16362_bp","2":"0","3":"AF243646_snps.vcf"},{"1":"MT_16069_bp","2":"0","3":"AF243647_snps.vcf"},{"1":"MT_16086_bp","2":"0","3":"AF243647_snps.vcf"},{"1":"MT_16093_bp","2":"0","3":"AF243647_snps.vcf"},{"1":"MT_16111_bp","2":"0","3":"AF243647_snps.vcf"},{"1":"MT_16124_bp","2":"0","3":"AF243647_snps.vcf"},{"1":"MT_16126_bp","2":"0","3":"AF243647_snps.vcf"},{"1":"MT_16129_bp","2":"1","3":"AF243647_snps.vcf"},{"1":"MT_16144_bp","2":"0","3":"AF243647_snps.vcf"},{"1":"MT_16153_bp","2":"0","3":"AF243647_snps.vcf"},{"1":"MT_16172_bp","2":"1","3":"AF243647_snps.vcf"},{"1":"MT_16209_bp","2":"0","3":"AF243647_snps.vcf"},{"1":"MT_16222_bp","2":"0","3":"AF243647_snps.vcf"},{"1":"MT_16270_bp","2":"0","3":"AF243647_snps.vcf"},{"1":"MT_16294_bp","2":"0","3":"AF243647_snps.vcf"},{"1":"MT_16312_bp","2":"0","3":"AF243647_snps.vcf"},{"1":"MT_16327_bp","2":"0","3":"AF243647_snps.vcf"},{"1":"MT_16362_bp","2":"0","3":"AF243647_snps.vcf"},{"1":"MT_16069_bp","2":"0","3":"AF243648_snps.vcf"},{"1":"MT_16086_bp","2":"0","3":"AF243648_snps.vcf"},{"1":"MT_16093_bp","2":"0","3":"AF243648_snps.vcf"},{"1":"MT_16111_bp","2":"0","3":"AF243648_snps.vcf"},{"1":"MT_16124_bp","2":"1","3":"AF243648_snps.vcf"},{"1":"MT_16126_bp","2":"0","3":"AF243648_snps.vcf"},{"1":"MT_16129_bp","2":"0","3":"AF243648_snps.vcf"},{"1":"MT_16144_bp","2":"0","3":"AF243648_snps.vcf"},{"1":"MT_16153_bp","2":"0","3":"AF243648_snps.vcf"},{"1":"MT_16172_bp","2":"0","3":"AF243648_snps.vcf"},{"1":"MT_16209_bp","2":"0","3":"AF243648_snps.vcf"},{"1":"MT_16222_bp","2":"0","3":"AF243648_snps.vcf"},{"1":"MT_16270_bp","2":"0","3":"AF243648_snps.vcf"},{"1":"MT_16294_bp","2":"0","3":"AF243648_snps.vcf"},{"1":"MT_16312_bp","2":"0","3":"AF243648_snps.vcf"},{"1":"MT_16327_bp","2":"0","3":"AF243648_snps.vcf"},{"1":"MT_16362_bp","2":"0","3":"AF243648_snps.vcf"},{"1":"MT_16069_bp","2":"0","3":"AF243649_snps.vcf"},{"1":"MT_16086_bp","2":"0","3":"AF243649_snps.vcf"},{"1":"MT_16093_bp","2":"0","3":"AF243649_snps.vcf"},{"1":"MT_16111_bp","2":"0","3":"AF243649_snps.vcf"},{"1":"MT_16124_bp","2":"0","3":"AF243649_snps.vcf"},{"1":"MT_16126_bp","2":"0","3":"AF243649_snps.vcf"},{"1":"MT_16129_bp","2":"0","3":"AF243649_snps.vcf"},{"1":"MT_16144_bp","2":"0","3":"AF243649_snps.vcf"},{"1":"MT_16153_bp","2":"0","3":"AF243649_snps.vcf"},{"1":"MT_16172_bp","2":"1","3":"AF243649_snps.vcf"},{"1":"MT_16209_bp","2":"0","3":"AF243649_snps.vcf"},{"1":"MT_16222_bp","2":"0","3":"AF243649_snps.vcf"},{"1":"MT_16270_bp","2":"0","3":"AF243649_snps.vcf"},{"1":"MT_16294_bp","2":"0","3":"AF243649_snps.vcf"},{"1":"MT_16312_bp","2":"0","3":"AF243649_snps.vcf"},{"1":"MT_16327_bp","2":"1","3":"AF243649_snps.vcf"},{"1":"MT_16362_bp","2":"0","3":"AF243649_snps.vcf"},{"1":"MT_16069_bp","2":"0","3":"AF243650_snps.vcf"},{"1":"MT_16086_bp","2":"0","3":"AF243650_snps.vcf"},{"1":"MT_16093_bp","2":"0","3":"AF243650_snps.vcf"},{"1":"MT_16111_bp","2":"0","3":"AF243650_snps.vcf"},{"1":"MT_16124_bp","2":"0","3":"AF243650_snps.vcf"},{"1":"MT_16126_bp","2":"0","3":"AF243650_snps.vcf"},{"1":"MT_16129_bp","2":"0","3":"AF243650_snps.vcf"},{"1":"MT_16144_bp","2":"0","3":"AF243650_snps.vcf"},{"1":"MT_16153_bp","2":"0","3":"AF243650_snps.vcf"},{"1":"MT_16172_bp","2":"0","3":"AF243650_snps.vcf"},{"1":"MT_16209_bp","2":"0","3":"AF243650_snps.vcf"},{"1":"MT_16222_bp","2":"0","3":"AF243650_snps.vcf"},{"1":"MT_16270_bp","2":"0","3":"AF243650_snps.vcf"},{"1":"MT_16294_bp","2":"1","3":"AF243650_snps.vcf"},{"1":"MT_16312_bp","2":"0","3":"AF243650_snps.vcf"},{"1":"MT_16327_bp","2":"0","3":"AF243650_snps.vcf"},{"1":"MT_16362_bp","2":"0","3":"AF243650_snps.vcf"},{"1":"MT_16069_bp","2":"0","3":"AF243780_snps.vcf"},{"1":"MT_16086_bp","2":"0","3":"AF243780_snps.vcf"},{"1":"MT_16093_bp","2":"0","3":"AF243780_snps.vcf"},{"1":"MT_16111_bp","2":"0","3":"AF243780_snps.vcf"},{"1":"MT_16124_bp","2":"0","3":"AF243780_snps.vcf"},{"1":"MT_16126_bp","2":"0","3":"AF243780_snps.vcf"},{"1":"MT_16129_bp","2":"0","3":"AF243780_snps.vcf"},{"1":"MT_16144_bp","2":"0","3":"AF243780_snps.vcf"},{"1":"MT_16153_bp","2":"0","3":"AF243780_snps.vcf"},{"1":"MT_16172_bp","2":"0","3":"AF243780_snps.vcf"},{"1":"MT_16209_bp","2":"0","3":"AF243780_snps.vcf"},{"1":"MT_16222_bp","2":"0","3":"AF243780_snps.vcf"},{"1":"MT_16270_bp","2":"0","3":"AF243780_snps.vcf"},{"1":"MT_16294_bp","2":"0","3":"AF243780_snps.vcf"},{"1":"MT_16312_bp","2":"0","3":"AF243780_snps.vcf"},{"1":"MT_16327_bp","2":"0","3":"AF243780_snps.vcf"},{"1":"MT_16362_bp","2":"0","3":"AF243780_snps.vcf"},{"1":"MT_16069_bp","2":"0","3":"AF243781_snps.vcf"},{"1":"MT_16086_bp","2":"0","3":"AF243781_snps.vcf"},{"1":"MT_16093_bp","2":"0","3":"AF243781_snps.vcf"},{"1":"MT_16111_bp","2":"0","3":"AF243781_snps.vcf"},{"1":"MT_16124_bp","2":"0","3":"AF243781_snps.vcf"},{"1":"MT_16126_bp","2":"0","3":"AF243781_snps.vcf"},{"1":"MT_16129_bp","2":"0","3":"AF243781_snps.vcf"},{"1":"MT_16144_bp","2":"0","3":"AF243781_snps.vcf"},{"1":"MT_16153_bp","2":"0","3":"AF243781_snps.vcf"},{"1":"MT_16172_bp","2":"0","3":"AF243781_snps.vcf"},{"1":"MT_16209_bp","2":"0","3":"AF243781_snps.vcf"},{"1":"MT_16222_bp","2":"0","3":"AF243781_snps.vcf"},{"1":"MT_16270_bp","2":"0","3":"AF243781_snps.vcf"},{"1":"MT_16294_bp","2":"0","3":"AF243781_snps.vcf"},{"1":"MT_16312_bp","2":"0","3":"AF243781_snps.vcf"},{"1":"MT_16327_bp","2":"0","3":"AF243781_snps.vcf"},{"1":"MT_16362_bp","2":"0","3":"AF243781_snps.vcf"},{"1":"MT_16069_bp","2":"0","3":"AF243782_snps.vcf"},{"1":"MT_16086_bp","2":"0","3":"AF243782_snps.vcf"},{"1":"MT_16093_bp","2":"0","3":"AF243782_snps.vcf"},{"1":"MT_16111_bp","2":"0","3":"AF243782_snps.vcf"},{"1":"MT_16124_bp","2":"0","3":"AF243782_snps.vcf"},{"1":"MT_16126_bp","2":"0","3":"AF243782_snps.vcf"},{"1":"MT_16129_bp","2":"0","3":"AF243782_snps.vcf"},{"1":"MT_16144_bp","2":"1","3":"AF243782_snps.vcf"},{"1":"MT_16153_bp","2":"0","3":"AF243782_snps.vcf"},{"1":"MT_16172_bp","2":"0","3":"AF243782_snps.vcf"},{"1":"MT_16209_bp","2":"0","3":"AF243782_snps.vcf"},{"1":"MT_16222_bp","2":"0","3":"AF243782_snps.vcf"},{"1":"MT_16270_bp","2":"1","3":"AF243782_snps.vcf"},{"1":"MT_16294_bp","2":"0","3":"AF243782_snps.vcf"},{"1":"MT_16312_bp","2":"0","3":"AF243782_snps.vcf"},{"1":"MT_16327_bp","2":"0","3":"AF243782_snps.vcf"},{"1":"MT_16362_bp","2":"0","3":"AF243782_snps.vcf"},{"1":"MT_16069_bp","2":"0","3":"AF243783_snps.vcf"},{"1":"MT_16086_bp","2":"0","3":"AF243783_snps.vcf"},{"1":"MT_16093_bp","2":"0","3":"AF243783_snps.vcf"},{"1":"MT_16111_bp","2":"0","3":"AF243783_snps.vcf"},{"1":"MT_16124_bp","2":"0","3":"AF243783_snps.vcf"},{"1":"MT_16126_bp","2":"1","3":"AF243783_snps.vcf"},{"1":"MT_16129_bp","2":"0","3":"AF243783_snps.vcf"},{"1":"MT_16144_bp","2":"0","3":"AF243783_snps.vcf"},{"1":"MT_16153_bp","2":"1","3":"AF243783_snps.vcf"},{"1":"MT_16172_bp","2":"0","3":"AF243783_snps.vcf"},{"1":"MT_16209_bp","2":"0","3":"AF243783_snps.vcf"},{"1":"MT_16222_bp","2":"0","3":"AF243783_snps.vcf"},{"1":"MT_16270_bp","2":"0","3":"AF243783_snps.vcf"},{"1":"MT_16294_bp","2":"1","3":"AF243783_snps.vcf"},{"1":"MT_16312_bp","2":"0","3":"AF243783_snps.vcf"},{"1":"MT_16327_bp","2":"0","3":"AF243783_snps.vcf"},{"1":"MT_16362_bp","2":"0","3":"AF243783_snps.vcf"},{"1":"MT_16069_bp","2":"0","3":"AF243784_snps.vcf"},{"1":"MT_16086_bp","2":"0","3":"AF243784_snps.vcf"},{"1":"MT_16093_bp","2":"0","3":"AF243784_snps.vcf"},{"1":"MT_16111_bp","2":"0","3":"AF243784_snps.vcf"},{"1":"MT_16124_bp","2":"0","3":"AF243784_snps.vcf"},{"1":"MT_16126_bp","2":"0","3":"AF243784_snps.vcf"},{"1":"MT_16129_bp","2":"0","3":"AF243784_snps.vcf"},{"1":"MT_16144_bp","2":"0","3":"AF243784_snps.vcf"},{"1":"MT_16153_bp","2":"0","3":"AF243784_snps.vcf"},{"1":"MT_16172_bp","2":"0","3":"AF243784_snps.vcf"},{"1":"MT_16209_bp","2":"0","3":"AF243784_snps.vcf"},{"1":"MT_16222_bp","2":"0","3":"AF243784_snps.vcf"},{"1":"MT_16270_bp","2":"0","3":"AF243784_snps.vcf"},{"1":"MT_16294_bp","2":"0","3":"AF243784_snps.vcf"},{"1":"MT_16312_bp","2":"0","3":"AF243784_snps.vcf"},{"1":"MT_16327_bp","2":"0","3":"AF243784_snps.vcf"},{"1":"MT_16362_bp","2":"0","3":"AF243784_snps.vcf"},{"1":"MT_16069_bp","2":"1","3":"AF243785_snps.vcf"},{"1":"MT_16086_bp","2":"0","3":"AF243785_snps.vcf"},{"1":"MT_16093_bp","2":"0","3":"AF243785_snps.vcf"},{"1":"MT_16111_bp","2":"0","3":"AF243785_snps.vcf"},{"1":"MT_16124_bp","2":"0","3":"AF243785_snps.vcf"},{"1":"MT_16126_bp","2":"1","3":"AF243785_snps.vcf"},{"1":"MT_16129_bp","2":"0","3":"AF243785_snps.vcf"},{"1":"MT_16144_bp","2":"0","3":"AF243785_snps.vcf"},{"1":"MT_16153_bp","2":"0","3":"AF243785_snps.vcf"},{"1":"MT_16172_bp","2":"0","3":"AF243785_snps.vcf"},{"1":"MT_16209_bp","2":"0","3":"AF243785_snps.vcf"},{"1":"MT_16222_bp","2":"0","3":"AF243785_snps.vcf"},{"1":"MT_16270_bp","2":"0","3":"AF243785_snps.vcf"},{"1":"MT_16294_bp","2":"0","3":"AF243785_snps.vcf"},{"1":"MT_16312_bp","2":"0","3":"AF243785_snps.vcf"},{"1":"MT_16327_bp","2":"0","3":"AF243785_snps.vcf"},{"1":"MT_16362_bp","2":"0","3":"AF243785_snps.vcf"},{"1":"MT_16069_bp","2":"0","3":"AF243786_snps.vcf"},{"1":"MT_16086_bp","2":"0","3":"AF243786_snps.vcf"},{"1":"MT_16093_bp","2":"0","3":"AF243786_snps.vcf"},{"1":"MT_16111_bp","2":"0","3":"AF243786_snps.vcf"},{"1":"MT_16124_bp","2":"1","3":"AF243786_snps.vcf"},{"1":"MT_16126_bp","2":"0","3":"AF243786_snps.vcf"},{"1":"MT_16129_bp","2":"0","3":"AF243786_snps.vcf"},{"1":"MT_16144_bp","2":"0","3":"AF243786_snps.vcf"},{"1":"MT_16153_bp","2":"0","3":"AF243786_snps.vcf"},{"1":"MT_16172_bp","2":"0","3":"AF243786_snps.vcf"},{"1":"MT_16209_bp","2":"0","3":"AF243786_snps.vcf"},{"1":"MT_16222_bp","2":"0","3":"AF243786_snps.vcf"},{"1":"MT_16270_bp","2":"0","3":"AF243786_snps.vcf"},{"1":"MT_16294_bp","2":"0","3":"AF243786_snps.vcf"},{"1":"MT_16312_bp","2":"0","3":"AF243786_snps.vcf"},{"1":"MT_16327_bp","2":"0","3":"AF243786_snps.vcf"},{"1":"MT_16362_bp","2":"0","3":"AF243786_snps.vcf"},{"1":"MT_16069_bp","2":"0","3":"AF243787_snps.vcf"},{"1":"MT_16086_bp","2":"0","3":"AF243787_snps.vcf"},{"1":"MT_16093_bp","2":"0","3":"AF243787_snps.vcf"},{"1":"MT_16111_bp","2":"0","3":"AF243787_snps.vcf"},{"1":"MT_16124_bp","2":"0","3":"AF243787_snps.vcf"},{"1":"MT_16126_bp","2":"0","3":"AF243787_snps.vcf"},{"1":"MT_16129_bp","2":"0","3":"AF243787_snps.vcf"},{"1":"MT_16144_bp","2":"0","3":"AF243787_snps.vcf"},{"1":"MT_16153_bp","2":"0","3":"AF243787_snps.vcf"},{"1":"MT_16172_bp","2":"0","3":"AF243787_snps.vcf"},{"1":"MT_16209_bp","2":"0","3":"AF243787_snps.vcf"},{"1":"MT_16222_bp","2":"0","3":"AF243787_snps.vcf"},{"1":"MT_16270_bp","2":"0","3":"AF243787_snps.vcf"},{"1":"MT_16294_bp","2":"0","3":"AF243787_snps.vcf"},{"1":"MT_16312_bp","2":"0","3":"AF243787_snps.vcf"},{"1":"MT_16327_bp","2":"0","3":"AF243787_snps.vcf"},{"1":"MT_16362_bp","2":"0","3":"AF243787_snps.vcf"},{"1":"MT_16069_bp","2":"0","3":"AF243788_snps.vcf"},{"1":"MT_16086_bp","2":"0","3":"AF243788_snps.vcf"},{"1":"MT_16093_bp","2":"0","3":"AF243788_snps.vcf"},{"1":"MT_16111_bp","2":"0","3":"AF243788_snps.vcf"},{"1":"MT_16124_bp","2":"0","3":"AF243788_snps.vcf"},{"1":"MT_16126_bp","2":"1","3":"AF243788_snps.vcf"},{"1":"MT_16129_bp","2":"0","3":"AF243788_snps.vcf"},{"1":"MT_16144_bp","2":"0","3":"AF243788_snps.vcf"},{"1":"MT_16153_bp","2":"0","3":"AF243788_snps.vcf"},{"1":"MT_16172_bp","2":"0","3":"AF243788_snps.vcf"},{"1":"MT_16209_bp","2":"0","3":"AF243788_snps.vcf"},{"1":"MT_16222_bp","2":"0","3":"AF243788_snps.vcf"},{"1":"MT_16270_bp","2":"0","3":"AF243788_snps.vcf"},{"1":"MT_16294_bp","2":"1","3":"AF243788_snps.vcf"},{"1":"MT_16312_bp","2":"0","3":"AF243788_snps.vcf"},{"1":"MT_16327_bp","2":"0","3":"AF243788_snps.vcf"},{"1":"MT_16362_bp","2":"1","3":"AF243788_snps.vcf"},{"1":"MT_16069_bp","2":"0","3":"AF243789_snps.vcf"},{"1":"MT_16086_bp","2":"0","3":"AF243789_snps.vcf"},{"1":"MT_16093_bp","2":"1","3":"AF243789_snps.vcf"},{"1":"MT_16111_bp","2":"0","3":"AF243789_snps.vcf"},{"1":"MT_16124_bp","2":"0","3":"AF243789_snps.vcf"},{"1":"MT_16126_bp","2":"0","3":"AF243789_snps.vcf"},{"1":"MT_16129_bp","2":"0","3":"AF243789_snps.vcf"},{"1":"MT_16144_bp","2":"0","3":"AF243789_snps.vcf"},{"1":"MT_16153_bp","2":"0","3":"AF243789_snps.vcf"},{"1":"MT_16172_bp","2":"0","3":"AF243789_snps.vcf"},{"1":"MT_16209_bp","2":"0","3":"AF243789_snps.vcf"},{"1":"MT_16222_bp","2":"0","3":"AF243789_snps.vcf"},{"1":"MT_16270_bp","2":"0","3":"AF243789_snps.vcf"},{"1":"MT_16294_bp","2":"0","3":"AF243789_snps.vcf"},{"1":"MT_16312_bp","2":"0","3":"AF243789_snps.vcf"},{"1":"MT_16327_bp","2":"0","3":"AF243789_snps.vcf"},{"1":"MT_16362_bp","2":"0","3":"AF243789_snps.vcf"},{"1":"MT_16069_bp","2":"0","3":"AF243790_snps.vcf"},{"1":"MT_16086_bp","2":"0","3":"AF243790_snps.vcf"},{"1":"MT_16093_bp","2":"0","3":"AF243790_snps.vcf"},{"1":"MT_16111_bp","2":"0","3":"AF243790_snps.vcf"},{"1":"MT_16124_bp","2":"0","3":"AF243790_snps.vcf"},{"1":"MT_16126_bp","2":"0","3":"AF243790_snps.vcf"},{"1":"MT_16129_bp","2":"0","3":"AF243790_snps.vcf"},{"1":"MT_16144_bp","2":"0","3":"AF243790_snps.vcf"},{"1":"MT_16153_bp","2":"0","3":"AF243790_snps.vcf"},{"1":"MT_16172_bp","2":"0","3":"AF243790_snps.vcf"},{"1":"MT_16209_bp","2":"0","3":"AF243790_snps.vcf"},{"1":"MT_16222_bp","2":"0","3":"AF243790_snps.vcf"},{"1":"MT_16270_bp","2":"0","3":"AF243790_snps.vcf"},{"1":"MT_16294_bp","2":"0","3":"AF243790_snps.vcf"},{"1":"MT_16312_bp","2":"0","3":"AF243790_snps.vcf"},{"1":"MT_16327_bp","2":"0","3":"AF243790_snps.vcf"},{"1":"MT_16362_bp","2":"0","3":"AF243790_snps.vcf"},{"1":"MT_16069_bp","2":"0","3":"AF243791_snps.vcf"},{"1":"MT_16086_bp","2":"1","3":"AF243791_snps.vcf"},{"1":"MT_16093_bp","2":"0","3":"AF243791_snps.vcf"},{"1":"MT_16111_bp","2":"0","3":"AF243791_snps.vcf"},{"1":"MT_16124_bp","2":"0","3":"AF243791_snps.vcf"},{"1":"MT_16126_bp","2":"0","3":"AF243791_snps.vcf"},{"1":"MT_16129_bp","2":"0","3":"AF243791_snps.vcf"},{"1":"MT_16144_bp","2":"0","3":"AF243791_snps.vcf"},{"1":"MT_16153_bp","2":"0","3":"AF243791_snps.vcf"},{"1":"MT_16172_bp","2":"0","3":"AF243791_snps.vcf"},{"1":"MT_16209_bp","2":"0","3":"AF243791_snps.vcf"},{"1":"MT_16222_bp","2":"0","3":"AF243791_snps.vcf"},{"1":"MT_16270_bp","2":"0","3":"AF243791_snps.vcf"},{"1":"MT_16294_bp","2":"0","3":"AF243791_snps.vcf"},{"1":"MT_16312_bp","2":"0","3":"AF243791_snps.vcf"},{"1":"MT_16327_bp","2":"0","3":"AF243791_snps.vcf"},{"1":"MT_16362_bp","2":"0","3":"AF243791_snps.vcf"},{"1":"MT_16069_bp","2":"0","3":"AF243792_snps.vcf"},{"1":"MT_16086_bp","2":"0","3":"AF243792_snps.vcf"},{"1":"MT_16093_bp","2":"0","3":"AF243792_snps.vcf"},{"1":"MT_16111_bp","2":"0","3":"AF243792_snps.vcf"},{"1":"MT_16124_bp","2":"0","3":"AF243792_snps.vcf"},{"1":"MT_16126_bp","2":"0","3":"AF243792_snps.vcf"},{"1":"MT_16129_bp","2":"0","3":"AF243792_snps.vcf"},{"1":"MT_16144_bp","2":"0","3":"AF243792_snps.vcf"},{"1":"MT_16153_bp","2":"0","3":"AF243792_snps.vcf"},{"1":"MT_16172_bp","2":"0","3":"AF243792_snps.vcf"},{"1":"MT_16209_bp","2":"0","3":"AF243792_snps.vcf"},{"1":"MT_16222_bp","2":"0","3":"AF243792_snps.vcf"},{"1":"MT_16270_bp","2":"1","3":"AF243792_snps.vcf"},{"1":"MT_16294_bp","2":"0","3":"AF243792_snps.vcf"},{"1":"MT_16312_bp","2":"0","3":"AF243792_snps.vcf"},{"1":"MT_16327_bp","2":"0","3":"AF243792_snps.vcf"},{"1":"MT_16362_bp","2":"0","3":"AF243792_snps.vcf"},{"1":"MT_16069_bp","2":"0","3":"AF243793_snps.vcf"},{"1":"MT_16086_bp","2":"0","3":"AF243793_snps.vcf"},{"1":"MT_16093_bp","2":"0","3":"AF243793_snps.vcf"},{"1":"MT_16111_bp","2":"0","3":"AF243793_snps.vcf"},{"1":"MT_16124_bp","2":"0","3":"AF243793_snps.vcf"},{"1":"MT_16126_bp","2":"0","3":"AF243793_snps.vcf"},{"1":"MT_16129_bp","2":"0","3":"AF243793_snps.vcf"},{"1":"MT_16144_bp","2":"0","3":"AF243793_snps.vcf"},{"1":"MT_16153_bp","2":"0","3":"AF243793_snps.vcf"},{"1":"MT_16172_bp","2":"0","3":"AF243793_snps.vcf"},{"1":"MT_16209_bp","2":"0","3":"AF243793_snps.vcf"},{"1":"MT_16222_bp","2":"0","3":"AF243793_snps.vcf"},{"1":"MT_16270_bp","2":"0","3":"AF243793_snps.vcf"},{"1":"MT_16294_bp","2":"0","3":"AF243793_snps.vcf"},{"1":"MT_16312_bp","2":"0","3":"AF243793_snps.vcf"},{"1":"MT_16327_bp","2":"0","3":"AF243793_snps.vcf"},{"1":"MT_16362_bp","2":"0","3":"AF243793_snps.vcf"},{"1":"MT_16069_bp","2":"0","3":"AF243794_snps.vcf"},{"1":"MT_16086_bp","2":"0","3":"AF243794_snps.vcf"},{"1":"MT_16093_bp","2":"0","3":"AF243794_snps.vcf"},{"1":"MT_16111_bp","2":"0","3":"AF243794_snps.vcf"},{"1":"MT_16124_bp","2":"0","3":"AF243794_snps.vcf"},{"1":"MT_16126_bp","2":"0","3":"AF243794_snps.vcf"},{"1":"MT_16129_bp","2":"0","3":"AF243794_snps.vcf"},{"1":"MT_16144_bp","2":"0","3":"AF243794_snps.vcf"},{"1":"MT_16153_bp","2":"0","3":"AF243794_snps.vcf"},{"1":"MT_16172_bp","2":"0","3":"AF243794_snps.vcf"},{"1":"MT_16209_bp","2":"0","3":"AF243794_snps.vcf"},{"1":"MT_16222_bp","2":"0","3":"AF243794_snps.vcf"},{"1":"MT_16270_bp","2":"0","3":"AF243794_snps.vcf"},{"1":"MT_16294_bp","2":"0","3":"AF243794_snps.vcf"},{"1":"MT_16312_bp","2":"0","3":"AF243794_snps.vcf"},{"1":"MT_16327_bp","2":"0","3":"AF243794_snps.vcf"},{"1":"MT_16362_bp","2":"0","3":"AF243794_snps.vcf"},{"1":"MT_16069_bp","2":"1","3":"AF243795_snps.vcf"},{"1":"MT_16086_bp","2":"0","3":"AF243795_snps.vcf"},{"1":"MT_16093_bp","2":"0","3":"AF243795_snps.vcf"},{"1":"MT_16111_bp","2":"0","3":"AF243795_snps.vcf"},{"1":"MT_16124_bp","2":"0","3":"AF243795_snps.vcf"},{"1":"MT_16126_bp","2":"1","3":"AF243795_snps.vcf"},{"1":"MT_16129_bp","2":"0","3":"AF243795_snps.vcf"},{"1":"MT_16144_bp","2":"0","3":"AF243795_snps.vcf"},{"1":"MT_16153_bp","2":"0","3":"AF243795_snps.vcf"},{"1":"MT_16172_bp","2":"0","3":"AF243795_snps.vcf"},{"1":"MT_16209_bp","2":"0","3":"AF243795_snps.vcf"},{"1":"MT_16222_bp","2":"1","3":"AF243795_snps.vcf"},{"1":"MT_16270_bp","2":"0","3":"AF243795_snps.vcf"},{"1":"MT_16294_bp","2":"0","3":"AF243795_snps.vcf"},{"1":"MT_16312_bp","2":"0","3":"AF243795_snps.vcf"},{"1":"MT_16327_bp","2":"0","3":"AF243795_snps.vcf"},{"1":"MT_16362_bp","2":"0","3":"AF243795_snps.vcf"},{"1":"MT_16069_bp","2":"0","3":"AF243796_snps.vcf"},{"1":"MT_16086_bp","2":"0","3":"AF243796_snps.vcf"},{"1":"MT_16093_bp","2":"0","3":"AF243796_snps.vcf"},{"1":"MT_16111_bp","2":"0","3":"AF243796_snps.vcf"},{"1":"MT_16124_bp","2":"0","3":"AF243796_snps.vcf"},{"1":"MT_16126_bp","2":"1","3":"AF243796_snps.vcf"},{"1":"MT_16129_bp","2":"0","3":"AF243796_snps.vcf"},{"1":"MT_16144_bp","2":"0","3":"AF243796_snps.vcf"},{"1":"MT_16153_bp","2":"0","3":"AF243796_snps.vcf"},{"1":"MT_16172_bp","2":"0","3":"AF243796_snps.vcf"},{"1":"MT_16209_bp","2":"0","3":"AF243796_snps.vcf"},{"1":"MT_16222_bp","2":"0","3":"AF243796_snps.vcf"},{"1":"MT_16270_bp","2":"0","3":"AF243796_snps.vcf"},{"1":"MT_16294_bp","2":"0","3":"AF243796_snps.vcf"},{"1":"MT_16312_bp","2":"0","3":"AF243796_snps.vcf"},{"1":"MT_16327_bp","2":"0","3":"AF243796_snps.vcf"},{"1":"MT_16362_bp","2":"1","3":"AF243796_snps.vcf"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+<p><br />
+</p>
+<p>Fix empty spaces in object mt_extracted</p>
+<pre class="r"><code># Split Each Sample
+split_sample_name_df &lt;- str_split_fixed(mt_extracted$sample, &quot;_&quot;, 2)
+# Construct Vector Maintaining parts of interest
+split_vector_sample_names &lt;- paste0(split_sample_name_df[, 1])
+# Add vector to DF, after column of interest
+mt_extracted &lt;- add_column(mt_extracted, sampleID = split_vector_sample_names, .after = &quot;sample&quot;)
+mt_extracted &lt;- mt_extracted %&gt;% dplyr::select(-c(sample))
+names(mt_extracted)[names(mt_extracted) == &#39;sampleID&#39;] &lt;- &#39;sample&#39;
+mt_extracted</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":["pos"],"name":[1],"type":["chr"],"align":["left"]},{"label":["genotype"],"name":[2],"type":["int"],"align":["right"]},{"label":["sample"],"name":[3],"type":["chr"],"align":["left"]}],"data":[{"1":"MT_16069_bp","2":"0","3":"AF243634"},{"1":"MT_16086_bp","2":"0","3":"AF243634"},{"1":"MT_16093_bp","2":"0","3":"AF243634"},{"1":"MT_16111_bp","2":"0","3":"AF243634"},{"1":"MT_16124_bp","2":"0","3":"AF243634"},{"1":"MT_16126_bp","2":"1","3":"AF243634"},{"1":"MT_16129_bp","2":"0","3":"AF243634"},{"1":"MT_16144_bp","2":"0","3":"AF243634"},{"1":"MT_16153_bp","2":"0","3":"AF243634"},{"1":"MT_16172_bp","2":"0","3":"AF243634"},{"1":"MT_16209_bp","2":"0","3":"AF243634"},{"1":"MT_16222_bp","2":"0","3":"AF243634"},{"1":"MT_16270_bp","2":"1","3":"AF243634"},{"1":"MT_16294_bp","2":"0","3":"AF243634"},{"1":"MT_16312_bp","2":"0","3":"AF243634"},{"1":"MT_16327_bp","2":"0","3":"AF243634"},{"1":"MT_16362_bp","2":"0","3":"AF243634"},{"1":"MT_16069_bp","2":"0","3":"AF243635"},{"1":"MT_16086_bp","2":"0","3":"AF243635"},{"1":"MT_16093_bp","2":"0","3":"AF243635"},{"1":"MT_16111_bp","2":"0","3":"AF243635"},{"1":"MT_16124_bp","2":"0","3":"AF243635"},{"1":"MT_16126_bp","2":"0","3":"AF243635"},{"1":"MT_16129_bp","2":"0","3":"AF243635"},{"1":"MT_16144_bp","2":"0","3":"AF243635"},{"1":"MT_16153_bp","2":"0","3":"AF243635"},{"1":"MT_16172_bp","2":"0","3":"AF243635"},{"1":"MT_16209_bp","2":"0","3":"AF243635"},{"1":"MT_16222_bp","2":"0","3":"AF243635"},{"1":"MT_16270_bp","2":"0","3":"AF243635"},{"1":"MT_16294_bp","2":"0","3":"AF243635"},{"1":"MT_16312_bp","2":"0","3":"AF243635"},{"1":"MT_16327_bp","2":"1","3":"AF243635"},{"1":"MT_16362_bp","2":"0","3":"AF243635"},{"1":"MT_16069_bp","2":"0","3":"AF243636"},{"1":"MT_16086_bp","2":"0","3":"AF243636"},{"1":"MT_16093_bp","2":"0","3":"AF243636"},{"1":"MT_16111_bp","2":"0","3":"AF243636"},{"1":"MT_16124_bp","2":"0","3":"AF243636"},{"1":"MT_16126_bp","2":"0","3":"AF243636"},{"1":"MT_16129_bp","2":"0","3":"AF243636"},{"1":"MT_16144_bp","2":"0","3":"AF243636"},{"1":"MT_16153_bp","2":"0","3":"AF243636"},{"1":"MT_16172_bp","2":"0","3":"AF243636"},{"1":"MT_16209_bp","2":"0","3":"AF243636"},{"1":"MT_16222_bp","2":"0","3":"AF243636"},{"1":"MT_16270_bp","2":"0","3":"AF243636"},{"1":"MT_16294_bp","2":"1","3":"AF243636"},{"1":"MT_16312_bp","2":"0","3":"AF243636"},{"1":"MT_16327_bp","2":"0","3":"AF243636"},{"1":"MT_16362_bp","2":"0","3":"AF243636"},{"1":"MT_16069_bp","2":"0","3":"AF243637"},{"1":"MT_16086_bp","2":"0","3":"AF243637"},{"1":"MT_16093_bp","2":"0","3":"AF243637"},{"1":"MT_16111_bp","2":"0","3":"AF243637"},{"1":"MT_16124_bp","2":"0","3":"AF243637"},{"1":"MT_16126_bp","2":"0","3":"AF243637"},{"1":"MT_16129_bp","2":"0","3":"AF243637"},{"1":"MT_16144_bp","2":"0","3":"AF243637"},{"1":"MT_16153_bp","2":"0","3":"AF243637"},{"1":"MT_16172_bp","2":"0","3":"AF243637"},{"1":"MT_16209_bp","2":"0","3":"AF243637"},{"1":"MT_16222_bp","2":"0","3":"AF243637"},{"1":"MT_16270_bp","2":"0","3":"AF243637"},{"1":"MT_16294_bp","2":"0","3":"AF243637"},{"1":"MT_16312_bp","2":"0","3":"AF243637"},{"1":"MT_16327_bp","2":"1","3":"AF243637"},{"1":"MT_16362_bp","2":"0","3":"AF243637"},{"1":"MT_16069_bp","2":"0","3":"AF243638"},{"1":"MT_16086_bp","2":"0","3":"AF243638"},{"1":"MT_16093_bp","2":"0","3":"AF243638"},{"1":"MT_16111_bp","2":"0","3":"AF243638"},{"1":"MT_16124_bp","2":"0","3":"AF243638"},{"1":"MT_16126_bp","2":"0","3":"AF243638"},{"1":"MT_16129_bp","2":"1","3":"AF243638"},{"1":"MT_16144_bp","2":"0","3":"AF243638"},{"1":"MT_16153_bp","2":"0","3":"AF243638"},{"1":"MT_16172_bp","2":"1","3":"AF243638"},{"1":"MT_16209_bp","2":"0","3":"AF243638"},{"1":"MT_16222_bp","2":"0","3":"AF243638"},{"1":"MT_16270_bp","2":"0","3":"AF243638"},{"1":"MT_16294_bp","2":"0","3":"AF243638"},{"1":"MT_16312_bp","2":"0","3":"AF243638"},{"1":"MT_16327_bp","2":"0","3":"AF243638"},{"1":"MT_16362_bp","2":"0","3":"AF243638"},{"1":"MT_16069_bp","2":"0","3":"AF243639"},{"1":"MT_16086_bp","2":"0","3":"AF243639"},{"1":"MT_16093_bp","2":"0","3":"AF243639"},{"1":"MT_16111_bp","2":"0","3":"AF243639"},{"1":"MT_16124_bp","2":"0","3":"AF243639"},{"1":"MT_16126_bp","2":"0","3":"AF243639"},{"1":"MT_16129_bp","2":"0","3":"AF243639"},{"1":"MT_16144_bp","2":"0","3":"AF243639"},{"1":"MT_16153_bp","2":"0","3":"AF243639"},{"1":"MT_16172_bp","2":"0","3":"AF243639"},{"1":"MT_16209_bp","2":"0","3":"AF243639"},{"1":"MT_16222_bp","2":"0","3":"AF243639"},{"1":"MT_16270_bp","2":"0","3":"AF243639"},{"1":"MT_16294_bp","2":"1","3":"AF243639"},{"1":"MT_16312_bp","2":"0","3":"AF243639"},{"1":"MT_16327_bp","2":"0","3":"AF243639"},{"1":"MT_16362_bp","2":"0","3":"AF243639"},{"1":"MT_16069_bp","2":"0","3":"AF243640"},{"1":"MT_16086_bp","2":"0","3":"AF243640"},{"1":"MT_16093_bp","2":"1","3":"AF243640"},{"1":"MT_16111_bp","2":"0","3":"AF243640"},{"1":"MT_16124_bp","2":"1","3":"AF243640"},{"1":"MT_16126_bp","2":"0","3":"AF243640"},{"1":"MT_16129_bp","2":"0","3":"AF243640"},{"1":"MT_16144_bp","2":"0","3":"AF243640"},{"1":"MT_16153_bp","2":"0","3":"AF243640"},{"1":"MT_16172_bp","2":"0","3":"AF243640"},{"1":"MT_16209_bp","2":"0","3":"AF243640"},{"1":"MT_16222_bp","2":"0","3":"AF243640"},{"1":"MT_16270_bp","2":"0","3":"AF243640"},{"1":"MT_16294_bp","2":"0","3":"AF243640"},{"1":"MT_16312_bp","2":"0","3":"AF243640"},{"1":"MT_16327_bp","2":"0","3":"AF243640"},{"1":"MT_16362_bp","2":"0","3":"AF243640"},{"1":"MT_16069_bp","2":"0","3":"AF243641"},{"1":"MT_16086_bp","2":"0","3":"AF243641"},{"1":"MT_16093_bp","2":"0","3":"AF243641"},{"1":"MT_16111_bp","2":"0","3":"AF243641"},{"1":"MT_16124_bp","2":"0","3":"AF243641"},{"1":"MT_16126_bp","2":"0","3":"AF243641"},{"1":"MT_16129_bp","2":"0","3":"AF243641"},{"1":"MT_16144_bp","2":"0","3":"AF243641"},{"1":"MT_16153_bp","2":"0","3":"AF243641"},{"1":"MT_16172_bp","2":"0","3":"AF243641"},{"1":"MT_16209_bp","2":"0","3":"AF243641"},{"1":"MT_16222_bp","2":"0","3":"AF243641"},{"1":"MT_16270_bp","2":"0","3":"AF243641"},{"1":"MT_16294_bp","2":"0","3":"AF243641"},{"1":"MT_16312_bp","2":"0","3":"AF243641"},{"1":"MT_16327_bp","2":"1","3":"AF243641"},{"1":"MT_16362_bp","2":"0","3":"AF243641"},{"1":"MT_16069_bp","2":"0","3":"AF243642"},{"1":"MT_16086_bp","2":"0","3":"AF243642"},{"1":"MT_16093_bp","2":"0","3":"AF243642"},{"1":"MT_16111_bp","2":"0","3":"AF243642"},{"1":"MT_16124_bp","2":"0","3":"AF243642"},{"1":"MT_16126_bp","2":"0","3":"AF243642"},{"1":"MT_16129_bp","2":"0","3":"AF243642"},{"1":"MT_16144_bp","2":"0","3":"AF243642"},{"1":"MT_16153_bp","2":"0","3":"AF243642"},{"1":"MT_16172_bp","2":"0","3":"AF243642"},{"1":"MT_16209_bp","2":"0","3":"AF243642"},{"1":"MT_16222_bp","2":"0","3":"AF243642"},{"1":"MT_16270_bp","2":"0","3":"AF243642"},{"1":"MT_16294_bp","2":"0","3":"AF243642"},{"1":"MT_16312_bp","2":"0","3":"AF243642"},{"1":"MT_16327_bp","2":"0","3":"AF243642"},{"1":"MT_16362_bp","2":"0","3":"AF243642"},{"1":"MT_16069_bp","2":"0","3":"AF243643"},{"1":"MT_16086_bp","2":"0","3":"AF243643"},{"1":"MT_16093_bp","2":"0","3":"AF243643"},{"1":"MT_16111_bp","2":"0","3":"AF243643"},{"1":"MT_16124_bp","2":"0","3":"AF243643"},{"1":"MT_16126_bp","2":"0","3":"AF243643"},{"1":"MT_16129_bp","2":"0","3":"AF243643"},{"1":"MT_16144_bp","2":"0","3":"AF243643"},{"1":"MT_16153_bp","2":"0","3":"AF243643"},{"1":"MT_16172_bp","2":"0","3":"AF243643"},{"1":"MT_16209_bp","2":"0","3":"AF243643"},{"1":"MT_16222_bp","2":"0","3":"AF243643"},{"1":"MT_16270_bp","2":"0","3":"AF243643"},{"1":"MT_16294_bp","2":"1","3":"AF243643"},{"1":"MT_16312_bp","2":"0","3":"AF243643"},{"1":"MT_16327_bp","2":"0","3":"AF243643"},{"1":"MT_16362_bp","2":"0","3":"AF243643"},{"1":"MT_16069_bp","2":"0","3":"AF243644"},{"1":"MT_16086_bp","2":"0","3":"AF243644"},{"1":"MT_16093_bp","2":"0","3":"AF243644"},{"1":"MT_16111_bp","2":"0","3":"AF243644"},{"1":"MT_16124_bp","2":"0","3":"AF243644"},{"1":"MT_16126_bp","2":"0","3":"AF243644"},{"1":"MT_16129_bp","2":"1","3":"AF243644"},{"1":"MT_16144_bp","2":"0","3":"AF243644"},{"1":"MT_16153_bp","2":"0","3":"AF243644"},{"1":"MT_16172_bp","2":"0","3":"AF243644"},{"1":"MT_16209_bp","2":"0","3":"AF243644"},{"1":"MT_16222_bp","2":"0","3":"AF243644"},{"1":"MT_16270_bp","2":"0","3":"AF243644"},{"1":"MT_16294_bp","2":"1","3":"AF243644"},{"1":"MT_16312_bp","2":"0","3":"AF243644"},{"1":"MT_16327_bp","2":"0","3":"AF243644"},{"1":"MT_16362_bp","2":"0","3":"AF243644"},{"1":"MT_16069_bp","2":"0","3":"AF243645"},{"1":"MT_16086_bp","2":"0","3":"AF243645"},{"1":"MT_16093_bp","2":"1","3":"AF243645"},{"1":"MT_16111_bp","2":"0","3":"AF243645"},{"1":"MT_16124_bp","2":"0","3":"AF243645"},{"1":"MT_16126_bp","2":"0","3":"AF243645"},{"1":"MT_16129_bp","2":"1","3":"AF243645"},{"1":"MT_16144_bp","2":"0","3":"AF243645"},{"1":"MT_16153_bp","2":"0","3":"AF243645"},{"1":"MT_16172_bp","2":"0","3":"AF243645"},{"1":"MT_16209_bp","2":"0","3":"AF243645"},{"1":"MT_16222_bp","2":"0","3":"AF243645"},{"1":"MT_16270_bp","2":"0","3":"AF243645"},{"1":"MT_16294_bp","2":"1","3":"AF243645"},{"1":"MT_16312_bp","2":"0","3":"AF243645"},{"1":"MT_16327_bp","2":"0","3":"AF243645"},{"1":"MT_16362_bp","2":"0","3":"AF243645"},{"1":"MT_16069_bp","2":"0","3":"AF243646"},{"1":"MT_16086_bp","2":"0","3":"AF243646"},{"1":"MT_16093_bp","2":"0","3":"AF243646"},{"1":"MT_16111_bp","2":"0","3":"AF243646"},{"1":"MT_16124_bp","2":"0","3":"AF243646"},{"1":"MT_16126_bp","2":"0","3":"AF243646"},{"1":"MT_16129_bp","2":"0","3":"AF243646"},{"1":"MT_16144_bp","2":"0","3":"AF243646"},{"1":"MT_16153_bp","2":"0","3":"AF243646"},{"1":"MT_16172_bp","2":"0","3":"AF243646"},{"1":"MT_16209_bp","2":"0","3":"AF243646"},{"1":"MT_16222_bp","2":"0","3":"AF243646"},{"1":"MT_16270_bp","2":"0","3":"AF243646"},{"1":"MT_16294_bp","2":"1","3":"AF243646"},{"1":"MT_16312_bp","2":"0","3":"AF243646"},{"1":"MT_16327_bp","2":"0","3":"AF243646"},{"1":"MT_16362_bp","2":"0","3":"AF243646"},{"1":"MT_16069_bp","2":"0","3":"AF243647"},{"1":"MT_16086_bp","2":"0","3":"AF243647"},{"1":"MT_16093_bp","2":"0","3":"AF243647"},{"1":"MT_16111_bp","2":"0","3":"AF243647"},{"1":"MT_16124_bp","2":"0","3":"AF243647"},{"1":"MT_16126_bp","2":"0","3":"AF243647"},{"1":"MT_16129_bp","2":"1","3":"AF243647"},{"1":"MT_16144_bp","2":"0","3":"AF243647"},{"1":"MT_16153_bp","2":"0","3":"AF243647"},{"1":"MT_16172_bp","2":"1","3":"AF243647"},{"1":"MT_16209_bp","2":"0","3":"AF243647"},{"1":"MT_16222_bp","2":"0","3":"AF243647"},{"1":"MT_16270_bp","2":"0","3":"AF243647"},{"1":"MT_16294_bp","2":"0","3":"AF243647"},{"1":"MT_16312_bp","2":"0","3":"AF243647"},{"1":"MT_16327_bp","2":"0","3":"AF243647"},{"1":"MT_16362_bp","2":"0","3":"AF243647"},{"1":"MT_16069_bp","2":"0","3":"AF243648"},{"1":"MT_16086_bp","2":"0","3":"AF243648"},{"1":"MT_16093_bp","2":"0","3":"AF243648"},{"1":"MT_16111_bp","2":"0","3":"AF243648"},{"1":"MT_16124_bp","2":"1","3":"AF243648"},{"1":"MT_16126_bp","2":"0","3":"AF243648"},{"1":"MT_16129_bp","2":"0","3":"AF243648"},{"1":"MT_16144_bp","2":"0","3":"AF243648"},{"1":"MT_16153_bp","2":"0","3":"AF243648"},{"1":"MT_16172_bp","2":"0","3":"AF243648"},{"1":"MT_16209_bp","2":"0","3":"AF243648"},{"1":"MT_16222_bp","2":"0","3":"AF243648"},{"1":"MT_16270_bp","2":"0","3":"AF243648"},{"1":"MT_16294_bp","2":"0","3":"AF243648"},{"1":"MT_16312_bp","2":"0","3":"AF243648"},{"1":"MT_16327_bp","2":"0","3":"AF243648"},{"1":"MT_16362_bp","2":"0","3":"AF243648"},{"1":"MT_16069_bp","2":"0","3":"AF243649"},{"1":"MT_16086_bp","2":"0","3":"AF243649"},{"1":"MT_16093_bp","2":"0","3":"AF243649"},{"1":"MT_16111_bp","2":"0","3":"AF243649"},{"1":"MT_16124_bp","2":"0","3":"AF243649"},{"1":"MT_16126_bp","2":"0","3":"AF243649"},{"1":"MT_16129_bp","2":"0","3":"AF243649"},{"1":"MT_16144_bp","2":"0","3":"AF243649"},{"1":"MT_16153_bp","2":"0","3":"AF243649"},{"1":"MT_16172_bp","2":"1","3":"AF243649"},{"1":"MT_16209_bp","2":"0","3":"AF243649"},{"1":"MT_16222_bp","2":"0","3":"AF243649"},{"1":"MT_16270_bp","2":"0","3":"AF243649"},{"1":"MT_16294_bp","2":"0","3":"AF243649"},{"1":"MT_16312_bp","2":"0","3":"AF243649"},{"1":"MT_16327_bp","2":"1","3":"AF243649"},{"1":"MT_16362_bp","2":"0","3":"AF243649"},{"1":"MT_16069_bp","2":"0","3":"AF243650"},{"1":"MT_16086_bp","2":"0","3":"AF243650"},{"1":"MT_16093_bp","2":"0","3":"AF243650"},{"1":"MT_16111_bp","2":"0","3":"AF243650"},{"1":"MT_16124_bp","2":"0","3":"AF243650"},{"1":"MT_16126_bp","2":"0","3":"AF243650"},{"1":"MT_16129_bp","2":"0","3":"AF243650"},{"1":"MT_16144_bp","2":"0","3":"AF243650"},{"1":"MT_16153_bp","2":"0","3":"AF243650"},{"1":"MT_16172_bp","2":"0","3":"AF243650"},{"1":"MT_16209_bp","2":"0","3":"AF243650"},{"1":"MT_16222_bp","2":"0","3":"AF243650"},{"1":"MT_16270_bp","2":"0","3":"AF243650"},{"1":"MT_16294_bp","2":"1","3":"AF243650"},{"1":"MT_16312_bp","2":"0","3":"AF243650"},{"1":"MT_16327_bp","2":"0","3":"AF243650"},{"1":"MT_16362_bp","2":"0","3":"AF243650"},{"1":"MT_16069_bp","2":"0","3":"AF243780"},{"1":"MT_16086_bp","2":"0","3":"AF243780"},{"1":"MT_16093_bp","2":"0","3":"AF243780"},{"1":"MT_16111_bp","2":"0","3":"AF243780"},{"1":"MT_16124_bp","2":"0","3":"AF243780"},{"1":"MT_16126_bp","2":"0","3":"AF243780"},{"1":"MT_16129_bp","2":"0","3":"AF243780"},{"1":"MT_16144_bp","2":"0","3":"AF243780"},{"1":"MT_16153_bp","2":"0","3":"AF243780"},{"1":"MT_16172_bp","2":"0","3":"AF243780"},{"1":"MT_16209_bp","2":"0","3":"AF243780"},{"1":"MT_16222_bp","2":"0","3":"AF243780"},{"1":"MT_16270_bp","2":"0","3":"AF243780"},{"1":"MT_16294_bp","2":"0","3":"AF243780"},{"1":"MT_16312_bp","2":"0","3":"AF243780"},{"1":"MT_16327_bp","2":"0","3":"AF243780"},{"1":"MT_16362_bp","2":"0","3":"AF243780"},{"1":"MT_16069_bp","2":"0","3":"AF243781"},{"1":"MT_16086_bp","2":"0","3":"AF243781"},{"1":"MT_16093_bp","2":"0","3":"AF243781"},{"1":"MT_16111_bp","2":"0","3":"AF243781"},{"1":"MT_16124_bp","2":"0","3":"AF243781"},{"1":"MT_16126_bp","2":"0","3":"AF243781"},{"1":"MT_16129_bp","2":"0","3":"AF243781"},{"1":"MT_16144_bp","2":"0","3":"AF243781"},{"1":"MT_16153_bp","2":"0","3":"AF243781"},{"1":"MT_16172_bp","2":"0","3":"AF243781"},{"1":"MT_16209_bp","2":"0","3":"AF243781"},{"1":"MT_16222_bp","2":"0","3":"AF243781"},{"1":"MT_16270_bp","2":"0","3":"AF243781"},{"1":"MT_16294_bp","2":"0","3":"AF243781"},{"1":"MT_16312_bp","2":"0","3":"AF243781"},{"1":"MT_16327_bp","2":"0","3":"AF243781"},{"1":"MT_16362_bp","2":"0","3":"AF243781"},{"1":"MT_16069_bp","2":"0","3":"AF243782"},{"1":"MT_16086_bp","2":"0","3":"AF243782"},{"1":"MT_16093_bp","2":"0","3":"AF243782"},{"1":"MT_16111_bp","2":"0","3":"AF243782"},{"1":"MT_16124_bp","2":"0","3":"AF243782"},{"1":"MT_16126_bp","2":"0","3":"AF243782"},{"1":"MT_16129_bp","2":"0","3":"AF243782"},{"1":"MT_16144_bp","2":"1","3":"AF243782"},{"1":"MT_16153_bp","2":"0","3":"AF243782"},{"1":"MT_16172_bp","2":"0","3":"AF243782"},{"1":"MT_16209_bp","2":"0","3":"AF243782"},{"1":"MT_16222_bp","2":"0","3":"AF243782"},{"1":"MT_16270_bp","2":"1","3":"AF243782"},{"1":"MT_16294_bp","2":"0","3":"AF243782"},{"1":"MT_16312_bp","2":"0","3":"AF243782"},{"1":"MT_16327_bp","2":"0","3":"AF243782"},{"1":"MT_16362_bp","2":"0","3":"AF243782"},{"1":"MT_16069_bp","2":"0","3":"AF243783"},{"1":"MT_16086_bp","2":"0","3":"AF243783"},{"1":"MT_16093_bp","2":"0","3":"AF243783"},{"1":"MT_16111_bp","2":"0","3":"AF243783"},{"1":"MT_16124_bp","2":"0","3":"AF243783"},{"1":"MT_16126_bp","2":"1","3":"AF243783"},{"1":"MT_16129_bp","2":"0","3":"AF243783"},{"1":"MT_16144_bp","2":"0","3":"AF243783"},{"1":"MT_16153_bp","2":"1","3":"AF243783"},{"1":"MT_16172_bp","2":"0","3":"AF243783"},{"1":"MT_16209_bp","2":"0","3":"AF243783"},{"1":"MT_16222_bp","2":"0","3":"AF243783"},{"1":"MT_16270_bp","2":"0","3":"AF243783"},{"1":"MT_16294_bp","2":"1","3":"AF243783"},{"1":"MT_16312_bp","2":"0","3":"AF243783"},{"1":"MT_16327_bp","2":"0","3":"AF243783"},{"1":"MT_16362_bp","2":"0","3":"AF243783"},{"1":"MT_16069_bp","2":"0","3":"AF243784"},{"1":"MT_16086_bp","2":"0","3":"AF243784"},{"1":"MT_16093_bp","2":"0","3":"AF243784"},{"1":"MT_16111_bp","2":"0","3":"AF243784"},{"1":"MT_16124_bp","2":"0","3":"AF243784"},{"1":"MT_16126_bp","2":"0","3":"AF243784"},{"1":"MT_16129_bp","2":"0","3":"AF243784"},{"1":"MT_16144_bp","2":"0","3":"AF243784"},{"1":"MT_16153_bp","2":"0","3":"AF243784"},{"1":"MT_16172_bp","2":"0","3":"AF243784"},{"1":"MT_16209_bp","2":"0","3":"AF243784"},{"1":"MT_16222_bp","2":"0","3":"AF243784"},{"1":"MT_16270_bp","2":"0","3":"AF243784"},{"1":"MT_16294_bp","2":"0","3":"AF243784"},{"1":"MT_16312_bp","2":"0","3":"AF243784"},{"1":"MT_16327_bp","2":"0","3":"AF243784"},{"1":"MT_16362_bp","2":"0","3":"AF243784"},{"1":"MT_16069_bp","2":"1","3":"AF243785"},{"1":"MT_16086_bp","2":"0","3":"AF243785"},{"1":"MT_16093_bp","2":"0","3":"AF243785"},{"1":"MT_16111_bp","2":"0","3":"AF243785"},{"1":"MT_16124_bp","2":"0","3":"AF243785"},{"1":"MT_16126_bp","2":"1","3":"AF243785"},{"1":"MT_16129_bp","2":"0","3":"AF243785"},{"1":"MT_16144_bp","2":"0","3":"AF243785"},{"1":"MT_16153_bp","2":"0","3":"AF243785"},{"1":"MT_16172_bp","2":"0","3":"AF243785"},{"1":"MT_16209_bp","2":"0","3":"AF243785"},{"1":"MT_16222_bp","2":"0","3":"AF243785"},{"1":"MT_16270_bp","2":"0","3":"AF243785"},{"1":"MT_16294_bp","2":"0","3":"AF243785"},{"1":"MT_16312_bp","2":"0","3":"AF243785"},{"1":"MT_16327_bp","2":"0","3":"AF243785"},{"1":"MT_16362_bp","2":"0","3":"AF243785"},{"1":"MT_16069_bp","2":"0","3":"AF243786"},{"1":"MT_16086_bp","2":"0","3":"AF243786"},{"1":"MT_16093_bp","2":"0","3":"AF243786"},{"1":"MT_16111_bp","2":"0","3":"AF243786"},{"1":"MT_16124_bp","2":"1","3":"AF243786"},{"1":"MT_16126_bp","2":"0","3":"AF243786"},{"1":"MT_16129_bp","2":"0","3":"AF243786"},{"1":"MT_16144_bp","2":"0","3":"AF243786"},{"1":"MT_16153_bp","2":"0","3":"AF243786"},{"1":"MT_16172_bp","2":"0","3":"AF243786"},{"1":"MT_16209_bp","2":"0","3":"AF243786"},{"1":"MT_16222_bp","2":"0","3":"AF243786"},{"1":"MT_16270_bp","2":"0","3":"AF243786"},{"1":"MT_16294_bp","2":"0","3":"AF243786"},{"1":"MT_16312_bp","2":"0","3":"AF243786"},{"1":"MT_16327_bp","2":"0","3":"AF243786"},{"1":"MT_16362_bp","2":"0","3":"AF243786"},{"1":"MT_16069_bp","2":"0","3":"AF243787"},{"1":"MT_16086_bp","2":"0","3":"AF243787"},{"1":"MT_16093_bp","2":"0","3":"AF243787"},{"1":"MT_16111_bp","2":"0","3":"AF243787"},{"1":"MT_16124_bp","2":"0","3":"AF243787"},{"1":"MT_16126_bp","2":"0","3":"AF243787"},{"1":"MT_16129_bp","2":"0","3":"AF243787"},{"1":"MT_16144_bp","2":"0","3":"AF243787"},{"1":"MT_16153_bp","2":"0","3":"AF243787"},{"1":"MT_16172_bp","2":"0","3":"AF243787"},{"1":"MT_16209_bp","2":"0","3":"AF243787"},{"1":"MT_16222_bp","2":"0","3":"AF243787"},{"1":"MT_16270_bp","2":"0","3":"AF243787"},{"1":"MT_16294_bp","2":"0","3":"AF243787"},{"1":"MT_16312_bp","2":"0","3":"AF243787"},{"1":"MT_16327_bp","2":"0","3":"AF243787"},{"1":"MT_16362_bp","2":"0","3":"AF243787"},{"1":"MT_16069_bp","2":"0","3":"AF243788"},{"1":"MT_16086_bp","2":"0","3":"AF243788"},{"1":"MT_16093_bp","2":"0","3":"AF243788"},{"1":"MT_16111_bp","2":"0","3":"AF243788"},{"1":"MT_16124_bp","2":"0","3":"AF243788"},{"1":"MT_16126_bp","2":"1","3":"AF243788"},{"1":"MT_16129_bp","2":"0","3":"AF243788"},{"1":"MT_16144_bp","2":"0","3":"AF243788"},{"1":"MT_16153_bp","2":"0","3":"AF243788"},{"1":"MT_16172_bp","2":"0","3":"AF243788"},{"1":"MT_16209_bp","2":"0","3":"AF243788"},{"1":"MT_16222_bp","2":"0","3":"AF243788"},{"1":"MT_16270_bp","2":"0","3":"AF243788"},{"1":"MT_16294_bp","2":"1","3":"AF243788"},{"1":"MT_16312_bp","2":"0","3":"AF243788"},{"1":"MT_16327_bp","2":"0","3":"AF243788"},{"1":"MT_16362_bp","2":"1","3":"AF243788"},{"1":"MT_16069_bp","2":"0","3":"AF243789"},{"1":"MT_16086_bp","2":"0","3":"AF243789"},{"1":"MT_16093_bp","2":"1","3":"AF243789"},{"1":"MT_16111_bp","2":"0","3":"AF243789"},{"1":"MT_16124_bp","2":"0","3":"AF243789"},{"1":"MT_16126_bp","2":"0","3":"AF243789"},{"1":"MT_16129_bp","2":"0","3":"AF243789"},{"1":"MT_16144_bp","2":"0","3":"AF243789"},{"1":"MT_16153_bp","2":"0","3":"AF243789"},{"1":"MT_16172_bp","2":"0","3":"AF243789"},{"1":"MT_16209_bp","2":"0","3":"AF243789"},{"1":"MT_16222_bp","2":"0","3":"AF243789"},{"1":"MT_16270_bp","2":"0","3":"AF243789"},{"1":"MT_16294_bp","2":"0","3":"AF243789"},{"1":"MT_16312_bp","2":"0","3":"AF243789"},{"1":"MT_16327_bp","2":"0","3":"AF243789"},{"1":"MT_16362_bp","2":"0","3":"AF243789"},{"1":"MT_16069_bp","2":"0","3":"AF243790"},{"1":"MT_16086_bp","2":"0","3":"AF243790"},{"1":"MT_16093_bp","2":"0","3":"AF243790"},{"1":"MT_16111_bp","2":"0","3":"AF243790"},{"1":"MT_16124_bp","2":"0","3":"AF243790"},{"1":"MT_16126_bp","2":"0","3":"AF243790"},{"1":"MT_16129_bp","2":"0","3":"AF243790"},{"1":"MT_16144_bp","2":"0","3":"AF243790"},{"1":"MT_16153_bp","2":"0","3":"AF243790"},{"1":"MT_16172_bp","2":"0","3":"AF243790"},{"1":"MT_16209_bp","2":"0","3":"AF243790"},{"1":"MT_16222_bp","2":"0","3":"AF243790"},{"1":"MT_16270_bp","2":"0","3":"AF243790"},{"1":"MT_16294_bp","2":"0","3":"AF243790"},{"1":"MT_16312_bp","2":"0","3":"AF243790"},{"1":"MT_16327_bp","2":"0","3":"AF243790"},{"1":"MT_16362_bp","2":"0","3":"AF243790"},{"1":"MT_16069_bp","2":"0","3":"AF243791"},{"1":"MT_16086_bp","2":"1","3":"AF243791"},{"1":"MT_16093_bp","2":"0","3":"AF243791"},{"1":"MT_16111_bp","2":"0","3":"AF243791"},{"1":"MT_16124_bp","2":"0","3":"AF243791"},{"1":"MT_16126_bp","2":"0","3":"AF243791"},{"1":"MT_16129_bp","2":"0","3":"AF243791"},{"1":"MT_16144_bp","2":"0","3":"AF243791"},{"1":"MT_16153_bp","2":"0","3":"AF243791"},{"1":"MT_16172_bp","2":"0","3":"AF243791"},{"1":"MT_16209_bp","2":"0","3":"AF243791"},{"1":"MT_16222_bp","2":"0","3":"AF243791"},{"1":"MT_16270_bp","2":"0","3":"AF243791"},{"1":"MT_16294_bp","2":"0","3":"AF243791"},{"1":"MT_16312_bp","2":"0","3":"AF243791"},{"1":"MT_16327_bp","2":"0","3":"AF243791"},{"1":"MT_16362_bp","2":"0","3":"AF243791"},{"1":"MT_16069_bp","2":"0","3":"AF243792"},{"1":"MT_16086_bp","2":"0","3":"AF243792"},{"1":"MT_16093_bp","2":"0","3":"AF243792"},{"1":"MT_16111_bp","2":"0","3":"AF243792"},{"1":"MT_16124_bp","2":"0","3":"AF243792"},{"1":"MT_16126_bp","2":"0","3":"AF243792"},{"1":"MT_16129_bp","2":"0","3":"AF243792"},{"1":"MT_16144_bp","2":"0","3":"AF243792"},{"1":"MT_16153_bp","2":"0","3":"AF243792"},{"1":"MT_16172_bp","2":"0","3":"AF243792"},{"1":"MT_16209_bp","2":"0","3":"AF243792"},{"1":"MT_16222_bp","2":"0","3":"AF243792"},{"1":"MT_16270_bp","2":"1","3":"AF243792"},{"1":"MT_16294_bp","2":"0","3":"AF243792"},{"1":"MT_16312_bp","2":"0","3":"AF243792"},{"1":"MT_16327_bp","2":"0","3":"AF243792"},{"1":"MT_16362_bp","2":"0","3":"AF243792"},{"1":"MT_16069_bp","2":"0","3":"AF243793"},{"1":"MT_16086_bp","2":"0","3":"AF243793"},{"1":"MT_16093_bp","2":"0","3":"AF243793"},{"1":"MT_16111_bp","2":"0","3":"AF243793"},{"1":"MT_16124_bp","2":"0","3":"AF243793"},{"1":"MT_16126_bp","2":"0","3":"AF243793"},{"1":"MT_16129_bp","2":"0","3":"AF243793"},{"1":"MT_16144_bp","2":"0","3":"AF243793"},{"1":"MT_16153_bp","2":"0","3":"AF243793"},{"1":"MT_16172_bp","2":"0","3":"AF243793"},{"1":"MT_16209_bp","2":"0","3":"AF243793"},{"1":"MT_16222_bp","2":"0","3":"AF243793"},{"1":"MT_16270_bp","2":"0","3":"AF243793"},{"1":"MT_16294_bp","2":"0","3":"AF243793"},{"1":"MT_16312_bp","2":"0","3":"AF243793"},{"1":"MT_16327_bp","2":"0","3":"AF243793"},{"1":"MT_16362_bp","2":"0","3":"AF243793"},{"1":"MT_16069_bp","2":"0","3":"AF243794"},{"1":"MT_16086_bp","2":"0","3":"AF243794"},{"1":"MT_16093_bp","2":"0","3":"AF243794"},{"1":"MT_16111_bp","2":"0","3":"AF243794"},{"1":"MT_16124_bp","2":"0","3":"AF243794"},{"1":"MT_16126_bp","2":"0","3":"AF243794"},{"1":"MT_16129_bp","2":"0","3":"AF243794"},{"1":"MT_16144_bp","2":"0","3":"AF243794"},{"1":"MT_16153_bp","2":"0","3":"AF243794"},{"1":"MT_16172_bp","2":"0","3":"AF243794"},{"1":"MT_16209_bp","2":"0","3":"AF243794"},{"1":"MT_16222_bp","2":"0","3":"AF243794"},{"1":"MT_16270_bp","2":"0","3":"AF243794"},{"1":"MT_16294_bp","2":"0","3":"AF243794"},{"1":"MT_16312_bp","2":"0","3":"AF243794"},{"1":"MT_16327_bp","2":"0","3":"AF243794"},{"1":"MT_16362_bp","2":"0","3":"AF243794"},{"1":"MT_16069_bp","2":"1","3":"AF243795"},{"1":"MT_16086_bp","2":"0","3":"AF243795"},{"1":"MT_16093_bp","2":"0","3":"AF243795"},{"1":"MT_16111_bp","2":"0","3":"AF243795"},{"1":"MT_16124_bp","2":"0","3":"AF243795"},{"1":"MT_16126_bp","2":"1","3":"AF243795"},{"1":"MT_16129_bp","2":"0","3":"AF243795"},{"1":"MT_16144_bp","2":"0","3":"AF243795"},{"1":"MT_16153_bp","2":"0","3":"AF243795"},{"1":"MT_16172_bp","2":"0","3":"AF243795"},{"1":"MT_16209_bp","2":"0","3":"AF243795"},{"1":"MT_16222_bp","2":"1","3":"AF243795"},{"1":"MT_16270_bp","2":"0","3":"AF243795"},{"1":"MT_16294_bp","2":"0","3":"AF243795"},{"1":"MT_16312_bp","2":"0","3":"AF243795"},{"1":"MT_16327_bp","2":"0","3":"AF243795"},{"1":"MT_16362_bp","2":"0","3":"AF243795"},{"1":"MT_16069_bp","2":"0","3":"AF243796"},{"1":"MT_16086_bp","2":"0","3":"AF243796"},{"1":"MT_16093_bp","2":"0","3":"AF243796"},{"1":"MT_16111_bp","2":"0","3":"AF243796"},{"1":"MT_16124_bp","2":"0","3":"AF243796"},{"1":"MT_16126_bp","2":"1","3":"AF243796"},{"1":"MT_16129_bp","2":"0","3":"AF243796"},{"1":"MT_16144_bp","2":"0","3":"AF243796"},{"1":"MT_16153_bp","2":"0","3":"AF243796"},{"1":"MT_16172_bp","2":"0","3":"AF243796"},{"1":"MT_16209_bp","2":"0","3":"AF243796"},{"1":"MT_16222_bp","2":"0","3":"AF243796"},{"1":"MT_16270_bp","2":"0","3":"AF243796"},{"1":"MT_16294_bp","2":"0","3":"AF243796"},{"1":"MT_16312_bp","2":"0","3":"AF243796"},{"1":"MT_16327_bp","2":"0","3":"AF243796"},{"1":"MT_16362_bp","2":"1","3":"AF243796"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+<p><br />
+</p>
+<div id="selected-columns-included" class="section level3">
+<h3>Selected columns included</h3>
+<p><br />
+</p>
+<p>Select only the columns that will make the dataframe compatible with
+the dcast function of the reshape2 library. Reshape package has
+functions dcast and melt. In this part, we change from the long format
+to the wide format using the dcast() function in R. This chunk was being
+evaluated before I started the PRS analysis</p>
+<p><br />
+</p>
+<p>Use function dcast</p>
+<pre class="r"><code>library(maditr)
+mt_selected &lt;- mt_extracted %&gt;% dplyr::select(sample, pos, genotype)
+library(reshape2)
+mt_dcast_gt &lt;- dcast(mt_selected, sample ~ pos)</code></pre>
+<pre><code>## Warning in dcast(mt_selected, sample ~ pos): The dcast generic in data.table
+## has been passed a data.frame and will attempt to redirect to the relevant
+## reshape2 method; please note that reshape2 is superseded and is no longer
+## actively developed, and this redirection is now deprecated. Please do this
+## redirection yourself like reshape2::dcast(mt_selected). In the next version,
+## this warning will become an error.</code></pre>
+<pre><code>## Using &#39;genotype&#39; as value column. Use &#39;value.var&#39; to override</code></pre>
+<pre class="r"><code>mt_dcast_gt</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":["sample"],"name":[1],"type":["chr"],"align":["left"]},{"label":["MT_16069_bp"],"name":[2],"type":["int"],"align":["right"]},{"label":["MT_16086_bp"],"name":[3],"type":["int"],"align":["right"]},{"label":["MT_16093_bp"],"name":[4],"type":["int"],"align":["right"]},{"label":["MT_16111_bp"],"name":[5],"type":["int"],"align":["right"]},{"label":["MT_16124_bp"],"name":[6],"type":["int"],"align":["right"]},{"label":["MT_16126_bp"],"name":[7],"type":["int"],"align":["right"]},{"label":["MT_16129_bp"],"name":[8],"type":["int"],"align":["right"]},{"label":["MT_16144_bp"],"name":[9],"type":["int"],"align":["right"]},{"label":["MT_16153_bp"],"name":[10],"type":["int"],"align":["right"]},{"label":["MT_16172_bp"],"name":[11],"type":["int"],"align":["right"]},{"label":["MT_16209_bp"],"name":[12],"type":["int"],"align":["right"]},{"label":["MT_16222_bp"],"name":[13],"type":["int"],"align":["right"]},{"label":["MT_16270_bp"],"name":[14],"type":["int"],"align":["right"]},{"label":["MT_16294_bp"],"name":[15],"type":["int"],"align":["right"]},{"label":["MT_16312_bp"],"name":[16],"type":["int"],"align":["right"]},{"label":["MT_16327_bp"],"name":[17],"type":["int"],"align":["right"]},{"label":["MT_16362_bp"],"name":[18],"type":["int"],"align":["right"]}],"data":[{"1":"AF243634","2":"0","3":"0","4":"0","5":"0","6":"0","7":"1","8":"0","9":"0","10":"0","11":"0","12":"0","13":"0","14":"1","15":"0","16":"0","17":"0","18":"0"},{"1":"AF243635","2":"0","3":"0","4":"0","5":"0","6":"0","7":"0","8":"0","9":"0","10":"0","11":"0","12":"0","13":"0","14":"0","15":"0","16":"0","17":"1","18":"0"},{"1":"AF243636","2":"0","3":"0","4":"0","5":"0","6":"0","7":"0","8":"0","9":"0","10":"0","11":"0","12":"0","13":"0","14":"0","15":"1","16":"0","17":"0","18":"0"},{"1":"AF243637","2":"0","3":"0","4":"0","5":"0","6":"0","7":"0","8":"0","9":"0","10":"0","11":"0","12":"0","13":"0","14":"0","15":"0","16":"0","17":"1","18":"0"},{"1":"AF243638","2":"0","3":"0","4":"0","5":"0","6":"0","7":"0","8":"1","9":"0","10":"0","11":"1","12":"0","13":"0","14":"0","15":"0","16":"0","17":"0","18":"0"},{"1":"AF243639","2":"0","3":"0","4":"0","5":"0","6":"0","7":"0","8":"0","9":"0","10":"0","11":"0","12":"0","13":"0","14":"0","15":"1","16":"0","17":"0","18":"0"},{"1":"AF243640","2":"0","3":"0","4":"1","5":"0","6":"1","7":"0","8":"0","9":"0","10":"0","11":"0","12":"0","13":"0","14":"0","15":"0","16":"0","17":"0","18":"0"},{"1":"AF243641","2":"0","3":"0","4":"0","5":"0","6":"0","7":"0","8":"0","9":"0","10":"0","11":"0","12":"0","13":"0","14":"0","15":"0","16":"0","17":"1","18":"0"},{"1":"AF243642","2":"0","3":"0","4":"0","5":"0","6":"0","7":"0","8":"0","9":"0","10":"0","11":"0","12":"0","13":"0","14":"0","15":"0","16":"0","17":"0","18":"0"},{"1":"AF243643","2":"0","3":"0","4":"0","5":"0","6":"0","7":"0","8":"0","9":"0","10":"0","11":"0","12":"0","13":"0","14":"0","15":"1","16":"0","17":"0","18":"0"},{"1":"AF243644","2":"0","3":"0","4":"0","5":"0","6":"0","7":"0","8":"1","9":"0","10":"0","11":"0","12":"0","13":"0","14":"0","15":"1","16":"0","17":"0","18":"0"},{"1":"AF243645","2":"0","3":"0","4":"1","5":"0","6":"0","7":"0","8":"1","9":"0","10":"0","11":"0","12":"0","13":"0","14":"0","15":"1","16":"0","17":"0","18":"0"},{"1":"AF243646","2":"0","3":"0","4":"0","5":"0","6":"0","7":"0","8":"0","9":"0","10":"0","11":"0","12":"0","13":"0","14":"0","15":"1","16":"0","17":"0","18":"0"},{"1":"AF243647","2":"0","3":"0","4":"0","5":"0","6":"0","7":"0","8":"1","9":"0","10":"0","11":"1","12":"0","13":"0","14":"0","15":"0","16":"0","17":"0","18":"0"},{"1":"AF243648","2":"0","3":"0","4":"0","5":"0","6":"1","7":"0","8":"0","9":"0","10":"0","11":"0","12":"0","13":"0","14":"0","15":"0","16":"0","17":"0","18":"0"},{"1":"AF243649","2":"0","3":"0","4":"0","5":"0","6":"0","7":"0","8":"0","9":"0","10":"0","11":"1","12":"0","13":"0","14":"0","15":"0","16":"0","17":"1","18":"0"},{"1":"AF243650","2":"0","3":"0","4":"0","5":"0","6":"0","7":"0","8":"0","9":"0","10":"0","11":"0","12":"0","13":"0","14":"0","15":"1","16":"0","17":"0","18":"0"},{"1":"AF243780","2":"0","3":"0","4":"0","5":"0","6":"0","7":"0","8":"0","9":"0","10":"0","11":"0","12":"0","13":"0","14":"0","15":"0","16":"0","17":"0","18":"0"},{"1":"AF243781","2":"0","3":"0","4":"0","5":"0","6":"0","7":"0","8":"0","9":"0","10":"0","11":"0","12":"0","13":"0","14":"0","15":"0","16":"0","17":"0","18":"0"},{"1":"AF243782","2":"0","3":"0","4":"0","5":"0","6":"0","7":"0","8":"0","9":"1","10":"0","11":"0","12":"0","13":"0","14":"1","15":"0","16":"0","17":"0","18":"0"},{"1":"AF243783","2":"0","3":"0","4":"0","5":"0","6":"0","7":"1","8":"0","9":"0","10":"1","11":"0","12":"0","13":"0","14":"0","15":"1","16":"0","17":"0","18":"0"},{"1":"AF243784","2":"0","3":"0","4":"0","5":"0","6":"0","7":"0","8":"0","9":"0","10":"0","11":"0","12":"0","13":"0","14":"0","15":"0","16":"0","17":"0","18":"0"},{"1":"AF243785","2":"1","3":"0","4":"0","5":"0","6":"0","7":"1","8":"0","9":"0","10":"0","11":"0","12":"0","13":"0","14":"0","15":"0","16":"0","17":"0","18":"0"},{"1":"AF243786","2":"0","3":"0","4":"0","5":"0","6":"1","7":"0","8":"0","9":"0","10":"0","11":"0","12":"0","13":"0","14":"0","15":"0","16":"0","17":"0","18":"0"},{"1":"AF243787","2":"0","3":"0","4":"0","5":"0","6":"0","7":"0","8":"0","9":"0","10":"0","11":"0","12":"0","13":"0","14":"0","15":"0","16":"0","17":"0","18":"0"},{"1":"AF243788","2":"0","3":"0","4":"0","5":"0","6":"0","7":"1","8":"0","9":"0","10":"0","11":"0","12":"0","13":"0","14":"0","15":"1","16":"0","17":"0","18":"1"},{"1":"AF243789","2":"0","3":"0","4":"1","5":"0","6":"0","7":"0","8":"0","9":"0","10":"0","11":"0","12":"0","13":"0","14":"0","15":"0","16":"0","17":"0","18":"0"},{"1":"AF243790","2":"0","3":"0","4":"0","5":"0","6":"0","7":"0","8":"0","9":"0","10":"0","11":"0","12":"0","13":"0","14":"0","15":"0","16":"0","17":"0","18":"0"},{"1":"AF243791","2":"0","3":"1","4":"0","5":"0","6":"0","7":"0","8":"0","9":"0","10":"0","11":"0","12":"0","13":"0","14":"0","15":"0","16":"0","17":"0","18":"0"},{"1":"AF243792","2":"0","3":"0","4":"0","5":"0","6":"0","7":"0","8":"0","9":"0","10":"0","11":"0","12":"0","13":"0","14":"1","15":"0","16":"0","17":"0","18":"0"},{"1":"AF243793","2":"0","3":"0","4":"0","5":"0","6":"0","7":"0","8":"0","9":"0","10":"0","11":"0","12":"0","13":"0","14":"0","15":"0","16":"0","17":"0","18":"0"},{"1":"AF243794","2":"0","3":"0","4":"0","5":"0","6":"0","7":"0","8":"0","9":"0","10":"0","11":"0","12":"0","13":"0","14":"0","15":"0","16":"0","17":"0","18":"0"},{"1":"AF243795","2":"1","3":"0","4":"0","5":"0","6":"0","7":"1","8":"0","9":"0","10":"0","11":"0","12":"0","13":"1","14":"0","15":"0","16":"0","17":"0","18":"0"},{"1":"AF243796","2":"0","3":"0","4":"0","5":"0","6":"0","7":"1","8":"0","9":"0","10":"0","11":"0","12":"0","13":"0","14":"0","15":"0","16":"0","17":"0","18":"1"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+<p><br />
+</p>
+<p>this chunk needs to call the metadataIDs object:</p>
+<pre class="r"><code>metadataIDs &lt;- read.table(&quot;data/metadataIDs.txt&quot;)
+names(metadataIDs)[1]&lt;-paste(&quot;GenBankID&quot;)
+names(metadataIDs)[2]&lt;-paste(&quot;sampleName&quot;)
+names(metadataIDs)[3]&lt;-paste(&quot;origin&quot;)</code></pre>
+<p><br />
+</p>
+<p>Merge mt_dcast_gt and Metadata</p>
+<pre class="r"><code>library(data.table)
+
+dt1         &lt;- data.table(mt_dcast_gt , key = &quot;sample&quot;) 
+dt2         &lt;- data.table(metadataIDs, key = &quot;GenBankID&quot;)
+joined_df_1 &lt;- dt1[dt2]
+mt_dcast_gt_lab &lt;- joined_df_1
+mt_dcast_gt_lab &lt;- mt_dcast_gt_lab %&gt;% dplyr::relocate(origin, .after = sample)
+mt_dcast_gt_lab &lt;- mt_dcast_gt_lab %&gt;% dplyr::select(-c(sampleName))
+names(mt_dcast_gt_lab)[1]&lt;-paste(&quot;fastaID&quot;)
+head(mt_dcast_gt_lab)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":["fastaID"],"name":[1],"type":["chr"],"align":["left"]},{"label":["origin"],"name":[2],"type":["chr"],"align":["left"]},{"label":["MT_16069_bp"],"name":[3],"type":["int"],"align":["right"]},{"label":["MT_16086_bp"],"name":[4],"type":["int"],"align":["right"]},{"label":["MT_16093_bp"],"name":[5],"type":["int"],"align":["right"]},{"label":["MT_16111_bp"],"name":[6],"type":["int"],"align":["right"]},{"label":["MT_16124_bp"],"name":[7],"type":["int"],"align":["right"]},{"label":["MT_16126_bp"],"name":[8],"type":["int"],"align":["right"]},{"label":["MT_16129_bp"],"name":[9],"type":["int"],"align":["right"]},{"label":["MT_16144_bp"],"name":[10],"type":["int"],"align":["right"]},{"label":["MT_16153_bp"],"name":[11],"type":["int"],"align":["right"]},{"label":["MT_16172_bp"],"name":[12],"type":["int"],"align":["right"]},{"label":["MT_16209_bp"],"name":[13],"type":["int"],"align":["right"]},{"label":["MT_16222_bp"],"name":[14],"type":["int"],"align":["right"]},{"label":["MT_16270_bp"],"name":[15],"type":["int"],"align":["right"]},{"label":["MT_16294_bp"],"name":[16],"type":["int"],"align":["right"]},{"label":["MT_16312_bp"],"name":[17],"type":["int"],"align":["right"]},{"label":["MT_16327_bp"],"name":[18],"type":["int"],"align":["right"]},{"label":["MT_16362_bp"],"name":[19],"type":["int"],"align":["right"]}],"data":[{"1":"AF243634","2":"African","3":"0","4":"0","5":"0","6":"0","7":"0","8":"1","9":"0","10":"0","11":"0","12":"0","13":"0","14":"0","15":"1","16":"0","17":"0","18":"0","19":"0"},{"1":"AF243635","2":"African","3":"0","4":"0","5":"0","6":"0","7":"0","8":"0","9":"0","10":"0","11":"0","12":"0","13":"0","14":"0","15":"0","16":"0","17":"0","18":"1","19":"0"},{"1":"AF243636","2":"African","3":"0","4":"0","5":"0","6":"0","7":"0","8":"0","9":"0","10":"0","11":"0","12":"0","13":"0","14":"0","15":"0","16":"1","17":"0","18":"0","19":"0"},{"1":"AF243637","2":"African","3":"0","4":"0","5":"0","6":"0","7":"0","8":"0","9":"0","10":"0","11":"0","12":"0","13":"0","14":"0","15":"0","16":"0","17":"0","18":"1","19":"0"},{"1":"AF243638","2":"African","3":"0","4":"0","5":"0","6":"0","7":"0","8":"0","9":"1","10":"0","11":"0","12":"1","13":"0","14":"0","15":"0","16":"0","17":"0","18":"0","19":"0"},{"1":"AF243639","2":"African","3":"0","4":"0","5":"0","6":"0","7":"0","8":"0","9":"0","10":"0","11":"0","12":"0","13":"0","14":"0","15":"0","16":"1","17":"0","18":"0","19":"0"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+<p><br />
+</p>
+</div>
+<div id="visualize-table" class="section level3">
+<h3>2.1. Visualize Table</h3>
+<p><br />
+</p>
+<p>Take a look at table with genotypes changed</p>
+<p>This chunk was being evaluated before I started the PRS analysis</p>
+<pre class="r"><code>kable(mt_dcast_gt_lab, caption=&quot;Genotype Table&quot;) %&gt;%
+  kable_styling(&quot;striped&quot;, full_width = F, font_size = 12) %&gt;%
+  scroll_box(width = &quot;100%&quot;, height = &quot;600px&quot;)</code></pre>
+<div
+style="border: 1px solid #ddd; padding: 0px; overflow-y: scroll; height:600px; overflow-x: scroll; width:100%; ">
+<table class="table table-striped" style="font-size: 12px; width: auto !important; margin-left: auto; margin-right: auto;">
+<caption style="font-size: initial !important;">
+Genotype Table
+</caption>
+<thead>
+<tr>
+<th style="text-align:left;position: sticky; top:0; background-color: #FFFFFF;">
+fastaID
+</th>
+<th style="text-align:left;position: sticky; top:0; background-color: #FFFFFF;">
+origin
+</th>
+<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
+MT_16069_bp
+</th>
+<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
+MT_16086_bp
+</th>
+<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
+MT_16093_bp
+</th>
+<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
+MT_16111_bp
+</th>
+<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
+MT_16124_bp
+</th>
+<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
+MT_16126_bp
+</th>
+<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
+MT_16129_bp
+</th>
+<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
+MT_16144_bp
+</th>
+<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
+MT_16153_bp
+</th>
+<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
+MT_16172_bp
+</th>
+<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
+MT_16209_bp
+</th>
+<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
+MT_16222_bp
+</th>
+<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
+MT_16270_bp
+</th>
+<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
+MT_16294_bp
+</th>
+<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
+MT_16312_bp
+</th>
+<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
+MT_16327_bp
+</th>
+<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
+MT_16362_bp
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+AF243634
+</td>
+<td style="text-align:left;">
+African
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+AF243635
+</td>
+<td style="text-align:left;">
+African
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+0
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+AF243636
+</td>
+<td style="text-align:left;">
+African
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+AF243637
+</td>
+<td style="text-align:left;">
+African
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+0
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+AF243638
+</td>
+<td style="text-align:left;">
+African
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+AF243639
+</td>
+<td style="text-align:left;">
+African
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+AF243640
+</td>
+<td style="text-align:left;">
+African
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+AF243641
+</td>
+<td style="text-align:left;">
+African
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+0
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+AF243642
+</td>
+<td style="text-align:left;">
+African
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+AF243643
+</td>
+<td style="text-align:left;">
+African
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+AF243644
+</td>
+<td style="text-align:left;">
+African
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+AF243645
+</td>
+<td style="text-align:left;">
+African
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+AF243646
+</td>
+<td style="text-align:left;">
+African
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+AF243647
+</td>
+<td style="text-align:left;">
+African
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+AF243648
+</td>
+<td style="text-align:left;">
+African
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+AF243649
+</td>
+<td style="text-align:left;">
+African
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+0
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+AF243650
+</td>
+<td style="text-align:left;">
+African
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+AF243780
+</td>
+<td style="text-align:left;">
+European
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+AF243781
+</td>
+<td style="text-align:left;">
+European
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+AF243782
+</td>
+<td style="text-align:left;">
+European
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+AF243783
+</td>
+<td style="text-align:left;">
+European
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+AF243784
+</td>
+<td style="text-align:left;">
+European
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+AF243785
+</td>
+<td style="text-align:left;">
+European
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+AF243786
+</td>
+<td style="text-align:left;">
+European
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+AF243787
+</td>
+<td style="text-align:left;">
+European
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+AF243788
+</td>
+<td style="text-align:left;">
+European
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+AF243789
+</td>
+<td style="text-align:left;">
+European
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+AF243790
+</td>
+<td style="text-align:left;">
+European
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+AF243791
+</td>
+<td style="text-align:left;">
+European
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+AF243792
+</td>
+<td style="text-align:left;">
+European
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+AF243793
+</td>
+<td style="text-align:left;">
+European
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+AF243794
+</td>
+<td style="text-align:left;">
+European
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+AF243795
+</td>
+<td style="text-align:left;">
+European
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+AF243796
+</td>
+<td style="text-align:left;">
+European
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p><br />
+</p>
+<pre class="r"><code>write.table(mt_dcast_gt_lab,
+            file = &quot;./data/mt_dcast_gt_lab.txt&quot;,
+            sep = &quot;\t&quot;,
+            row=F,
+            quote = F,
+            col.names = T)</code></pre>
+<p><br />
+</p>
+</div>
+</div>
+<div id="references" class="section level2">
+<h2>3. References</h2>
+<p><br />
+</p>
+<div id="refs">
+
+</div>
+<p><br />
+</p>
+</div>
+<div id="session-info" class="section level2">
+<h2>4. Session Info</h2>
+<p><br />
+</p>
+<pre class="r"><code>sessionInfo()</code></pre>
+<pre><code>## R version 4.4.1 (2024-06-14)
+## Platform: aarch64-apple-darwin20
+## Running under: macOS Big Sur 11.4
+## 
+## Matrix products: default
+## BLAS:   /Library/Frameworks/R.framework/Versions/4.4-arm64/Resources/lib/libRblas.0.dylib 
+## LAPACK: /Library/Frameworks/R.framework/Versions/4.4-arm64/Resources/lib/libRlapack.dylib;  LAPACK version 3.12.0
+## 
+## locale:
+## [1] en_US.UTF-8/en_US.UTF-8/en_US.UTF-8/C/en_US.UTF-8/en_US.UTF-8
+## 
+## time zone: America/Chicago
+## tzcode source: internal
+## 
+## attached base packages:
+## [1] stats     graphics  grDevices utils     datasets  methods   base     
+## 
+## other attached packages:
+## [1] data.table_1.16.0 reshape2_1.4.4    tibble_3.2.1      stringr_1.5.1    
+## [5] dplyr_1.1.4       kableExtra_1.4.0  maditr_0.8.4      ape_5.8          
+## 
+## loaded via a namespace (and not attached):
+##  [1] jsonlite_1.8.9    highr_0.11        crayon_1.5.3      compiler_4.4.1   
+##  [5] tidyselect_1.2.1  Rcpp_1.0.13       xml2_1.3.6        parallel_4.4.1   
+##  [9] jquerylib_0.1.4   systemfonts_1.1.0 scales_1.3.0      yaml_2.3.10      
+## [13] fastmap_1.2.0     lattice_0.22-6    plyr_1.8.9        R6_2.5.1         
+## [17] generics_0.1.3    knitr_1.48        munsell_0.5.1     svglite_2.1.3    
+## [21] bslib_0.8.0       pillar_1.9.0      rlang_1.1.4       utf8_1.2.4       
+## [25] cachem_1.1.0      stringi_1.8.4     xfun_0.48         sass_0.4.9       
+## [29] viridisLite_0.4.2 cli_3.6.3         withr_3.0.1       magrittr_2.0.3   
+## [33] digest_0.6.37     grid_4.4.1        rstudioapi_0.16.0 fontawesome_0.5.2
+## [37] lifecycle_1.0.4   nlme_3.1-166      vctrs_0.6.5       evaluate_1.0.0   
+## [41] glue_1.8.0        fansi_1.0.6       colorspace_2.1-1  rmarkdown_2.28   
+## [45] pkgconfig_2.0.3   tools_4.4.1       htmltools_0.5.8.1</code></pre>
+</div>
+
+
+
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open');
+  });
+});
+</script>
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,3133 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+<meta name="author" content="Gepoliano Chaves" />
+
+
+<title>Binary Logistic Regression</title>
+
+<script src="site_libs/header-attrs-2.28/header-attrs.js"></script>
+<script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/lumen.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<style>h1 {font-size: 34px;}
+       h1.title {font-size: 38px;}
+       h2 {font-size: 30px;}
+       h3 {font-size: 24px;}
+       h4 {font-size: 18px;}
+       h5 {font-size: 16px;}
+       h6 {font-size: 12px;}
+       code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
+       pre:not([class]) { background-color: white }</style>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<link href="site_libs/highlightjs-9.12.0/default.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+<link href="site_libs/pagedtable-1.1/css/pagedtable.css" rel="stylesheet" />
+<script src="site_libs/pagedtable-1.1/js/pagedtable.js"></script>
+<script src="site_libs/kePrint-0.0.1/kePrint.js"></script>
+<link href="site_libs/lightable-0.0.1/lightable.css" rel="stylesheet" />
+<link href="site_libs/font-awesome-6.4.2/css/all.min.css" rel="stylesheet" />
+<link href="site_libs/font-awesome-6.4.2/css/v4-shims.min.css" rel="stylesheet" />
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+<style type="text/css">code{white-space: pre;}</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+
+
+<style type="text/css">
+/* for pandoc --citeproc since 2.11 */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+}
+.hanging div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}
+</style>
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+details > summary > p:only-child {
+  display: inline;
+}
+pre code {
+  padding: 0;
+}
+</style>
+
+
+<style type="text/css">
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #adb5bd;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script type="text/javascript">
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark the anchor link active (and if it's in a dropdown, also mark that active)
+  var dropdown = menuAnchor.closest('li.dropdown');
+  if (window.bootstrap) { // Bootstrap 4+
+    menuAnchor.addClass('active');
+    dropdown.find('> .dropdown-toggle').addClass('active');
+  } else { // Bootstrap 3
+    menuAnchor.parent().addClass('active');
+    dropdown.addClass('active');
+  }
+
+  // Navbar adjustments
+  var navHeight = $(".navbar").first().height() + 15;
+  var style = document.createElement('style');
+  var pt = "padding-top: " + navHeight + "px; ";
+  var mt = "margin-top: -" + navHeight + "px; ";
+  var css = "";
+  // offset scroll position for anchor links (for fixed navbar)
+  for (var i = 1; i <= 6; i++) {
+    css += ".section h" + i + "{ " + pt + mt + "}\n";
+  }
+  style.innerHTML = "body {" + pt + "padding-bottom: 40px; }\n" + css;
+  document.head.appendChild(style);
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before, .tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "\e259";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "\e258";
+  font-family: 'Glyphicons Halflings';
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+
+
+<div class="navbar navbar-inverse  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-bs-toggle="collapse" data-target="#navbar" data-bs-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">Gerenciamento Genômico e Algorítmico de Fenótipos, Riscos, Diagnósticos e Prognósticos em Dados de Doenças em Brasileiros</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">
+    <span class="fa fa-home"></span>
+     
+    Home
+  </a>
+</li>
+<li>
+  <a href="quokka-bilby.html">
+    <span class="fa fa-solid fa-circle-info"></span>
+     
+    Sobre nós
+  </a>
+</li>
+<li>
+  <a href="codigo.html">
+    <span class="fa fa-solid fa-laptop-file"></span>
+     
+    Códigos
+  </a>
+</li>
+<li>
+  <a href="PmD.html">
+    <span class="fa fa-solid fa-people-arrows"></span>
+     
+    PmD
+  </a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div id="header">
+
+
+
+<h1 class="title toc-ignore">Binary Logistic Regression</h1>
+<h4 class="author">Gepoliano Chaves</h4>
+<h4 class="date">June 24th, 2024</h4>
+
+</div>
+
+<div id="TOC">
+<ul>
+<li><a href="#summary" id="toc-summary">Summary</a>
+<ul>
+<li><a href="#load-data" id="toc-load-data">1. Load data</a>
+<ul>
+<li><a href="#running-time" id="toc-running-time">Running Time</a></li>
+<li><a href="#finally-taking-a-look-into-the-target-variable"
+id="toc-finally-taking-a-look-into-the-target-variable">Finally taking a
+look into the target variable</a></li>
+</ul></li>
+<li><a href="#building-the-model" id="toc-building-the-model">2.
+Building the Model</a>
+<ul>
+<li><a href="#interpreting-logistic-regression-output"
+id="toc-interpreting-logistic-regression-output">Interpreting Logistic
+Regression Output</a></li>
+<li><a href="#predicting-dependent-variabley-in-test-dataset"
+id="toc-predicting-dependent-variabley-in-test-dataset">Predicting
+Dependent Variable(Y) in Test Dataset</a></li>
+</ul></li>
+<li><a href="#evaluating-logistic-regression-model"
+id="toc-evaluating-logistic-regression-model">3. Evaluating Logistic
+Regression Model</a>
+<ul>
+<li><a
+href="#converting-probability-to-class-values-in-the-training-dataset"
+id="toc-converting-probability-to-class-values-in-the-training-dataset">Converting
+probability to class values in the training dataset</a></li>
+<li><a
+href="#training-dataset-converting-from-probability-to-class-values"
+id="toc-training-dataset-converting-from-probability-to-class-values">Training
+dataset converting from probability to class values</a></li>
+<li><a href="#accuracy" id="toc-accuracy">3.1 Accuracy</a></li>
+<li><a href="#misclassification-rate"
+id="toc-misclassification-rate">3.2. Misclassification Rate</a></li>
+<li><a href="#true-positive-rate-recall-or-sensitivity"
+id="toc-true-positive-rate-recall-or-sensitivity">3.3. True Positive
+Rate – Recall or Sensitivity</a></li>
+<li><a href="#true-negative-rate" id="toc-true-negative-rate">3.4. True
+Negative Rate</a></li>
+<li><a href="#precision" id="toc-precision">3.5. Precision</a></li>
+<li><a href="#calculating-f-score"
+id="toc-calculating-f-score">Calculating F-Score</a></li>
+</ul></li>
+<li><a href="#roc-curve" id="toc-roc-curve">5. ROC Curve</a>
+<ul>
+<li><a href="#concordance" id="toc-concordance">Concordance</a></li>
+</ul></li>
+<li><a href="#confusion-matrix" id="toc-confusion-matrix">6. Confusion
+matrix</a></li>
+</ul></li>
+<li><a href="#references" id="toc-references">References</a></li>
+<li><a href="#session-info" id="toc-session-info">Session Info</a></li>
+</ul>
+</div>
+
+<p><br />
+</p>
+<div id="summary" class="section level1">
+<h1>Summary</h1>
+<p><br />
+</p>
+<p>This pipeline classifies the origin of the genotype based on the
+genotype information extracted from VCF files using a binary logistic
+regression model. In section 3.3 below, I discuss a potential approach
+to improve the Sensitivity rates of this framework using the divide and
+conquer approach. The solution includes using genomic regions in ranges
+or intervals instead of SNPs. In other words, we can use a range of SNPs
+as the genotypes, instead of a single SNP as the genotype. IN this way
+the Machine Learning algorithm will have a chance to look at several
+ranges or a range of base-pairs instead of a single reagion of a SNP.
+This might be a solution to the sensitivity problem. Because of the
+problem I faced running the for loop, the genotypes were constructed
+appending the extraction of the vcf files. This notebook is based on the
+tutorial from RBloggers (2020).</p>
+<p><br />
+</p>
+<div id="load-data" class="section level2">
+<h2>1. Load data</h2>
+<p><br />
+</p>
+<div id="running-time" class="section level3">
+<h3>Running Time</h3>
+<p><br />
+</p>
+<p>The chunk below is used to calculate the time necessary to run this
+notebook.</p>
+<pre class="r"><code>start_time &lt;- Sys.time()</code></pre>
+<p><br />
+</p>
+<p>Load libraries with functions necessary to input data for the present
+analysis.</p>
+<pre class="r"><code>library(expss)
+library(dplyr)
+library(kableExtra)
+library(ggplot2)
+library(caret)
+library(pROC)</code></pre>
+<p><br />
+</p>
+<p>Load data that was created by appending the genotypes from the vcf
+files.</p>
+<pre class="r"><code>mt_features_df &lt;- read.table(&quot;./data/mt_dcast_gt_lab.txt&quot;, header = T)
+dim(mt_features_df)</code></pre>
+<pre><code>## [1] 34 19</code></pre>
+<p><br />
+</p>
+<p>Look at features in the mitochondria genotype object. Each column is
+a feature. In R, columns are called variables. In R, a table can be
+called a data-frame.</p>
+<pre class="r"><code>kable(mt_features_df, caption=&quot;Mitochondrial Features&quot;) %&gt;%
+  kable_styling(&quot;striped&quot;, full_width = F, font_size = 12) %&gt;%
+  scroll_box(width = &quot;100%&quot;, height = &quot;600px&quot;)</code></pre>
+<div
+style="border: 1px solid #ddd; padding: 0px; overflow-y: scroll; height:600px; overflow-x: scroll; width:100%; ">
+<table class="table table-striped" style="font-size: 12px; width: auto !important; margin-left: auto; margin-right: auto;">
+<caption style="font-size: initial !important;">
+Mitochondrial Features
+</caption>
+<thead>
+<tr>
+<th style="text-align:left;position: sticky; top:0; background-color: #FFFFFF;">
+fastaID
+</th>
+<th style="text-align:left;position: sticky; top:0; background-color: #FFFFFF;">
+origin
+</th>
+<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
+MT_16069_bp
+</th>
+<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
+MT_16086_bp
+</th>
+<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
+MT_16093_bp
+</th>
+<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
+MT_16111_bp
+</th>
+<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
+MT_16124_bp
+</th>
+<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
+MT_16126_bp
+</th>
+<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
+MT_16129_bp
+</th>
+<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
+MT_16144_bp
+</th>
+<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
+MT_16153_bp
+</th>
+<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
+MT_16172_bp
+</th>
+<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
+MT_16209_bp
+</th>
+<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
+MT_16222_bp
+</th>
+<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
+MT_16270_bp
+</th>
+<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
+MT_16294_bp
+</th>
+<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
+MT_16312_bp
+</th>
+<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
+MT_16327_bp
+</th>
+<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
+MT_16362_bp
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+AF243634
+</td>
+<td style="text-align:left;">
+African
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+AF243635
+</td>
+<td style="text-align:left;">
+African
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+0
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+AF243636
+</td>
+<td style="text-align:left;">
+African
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+AF243637
+</td>
+<td style="text-align:left;">
+African
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+0
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+AF243638
+</td>
+<td style="text-align:left;">
+African
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+AF243639
+</td>
+<td style="text-align:left;">
+African
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+AF243640
+</td>
+<td style="text-align:left;">
+African
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+AF243641
+</td>
+<td style="text-align:left;">
+African
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+0
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+AF243642
+</td>
+<td style="text-align:left;">
+African
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+AF243643
+</td>
+<td style="text-align:left;">
+African
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+AF243644
+</td>
+<td style="text-align:left;">
+African
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+AF243645
+</td>
+<td style="text-align:left;">
+African
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+AF243646
+</td>
+<td style="text-align:left;">
+African
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+AF243647
+</td>
+<td style="text-align:left;">
+African
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+AF243648
+</td>
+<td style="text-align:left;">
+African
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+AF243649
+</td>
+<td style="text-align:left;">
+African
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+0
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+AF243650
+</td>
+<td style="text-align:left;">
+African
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+AF243780
+</td>
+<td style="text-align:left;">
+European
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+AF243781
+</td>
+<td style="text-align:left;">
+European
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+AF243782
+</td>
+<td style="text-align:left;">
+European
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+AF243783
+</td>
+<td style="text-align:left;">
+European
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+AF243784
+</td>
+<td style="text-align:left;">
+European
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+AF243785
+</td>
+<td style="text-align:left;">
+European
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+AF243786
+</td>
+<td style="text-align:left;">
+European
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+AF243787
+</td>
+<td style="text-align:left;">
+European
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+AF243788
+</td>
+<td style="text-align:left;">
+European
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+AF243789
+</td>
+<td style="text-align:left;">
+European
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+AF243790
+</td>
+<td style="text-align:left;">
+European
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+AF243791
+</td>
+<td style="text-align:left;">
+European
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+AF243792
+</td>
+<td style="text-align:left;">
+European
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+AF243793
+</td>
+<td style="text-align:left;">
+European
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+AF243794
+</td>
+<td style="text-align:left;">
+European
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+AF243795
+</td>
+<td style="text-align:left;">
+European
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+AF243796
+</td>
+<td style="text-align:left;">
+European
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p><br />
+</p>
+<p>Make origin a factor</p>
+<pre class="r"><code>mt_features_df$origin &lt;- as.factor(mt_features_df$origin)
+# mt_features_df &lt;- mt_features_df %&gt;% select(-c(&quot;GenBankID&quot;))
+mt_features_df &lt;- mt_features_df %&gt;% select(-c(&quot;fastaID&quot;))</code></pre>
+<p><br />
+</p>
+</div>
+<div id="finally-taking-a-look-into-the-target-variable"
+class="section level3">
+<h3>Finally taking a look into the target variable</h3>
+<p><br />
+</p>
+<pre class="r"><code>ggplot(mt_features_df, aes(MT_16069_bp)) +
+  geom_histogram(aes(fill = origin), color = &quot;black&quot;, binwidth = 0.1)</code></pre>
+<p><img src="05-B-2-binary-logistic-regression-appended_files/figure-html/unnamed-chunk-6-1.png" width="672" /></p>
+<p><br />
+</p>
+</div>
+</div>
+<div id="building-the-model" class="section level2">
+<h2>2. Building the Model</h2>
+<p><br />
+</p>
+<p>Let’s create a partition of the dataset. We are splitting the data
+into train and test. We are partitioning 60% of the samples to the train
+group and 40% to the test group.</p>
+<p>To solve the genotype error, I read the <span
+class="citation">Stackoverflow (2021)</span> reference. To deal with
+levels that I was not familiar in the dataset, I read the <span
+class="citation">Stackoverflow (2014)</span> reference.</p>
+<pre class="r"><code>set.seed(2015)
+index &lt;- createDataPartition(mt_features_df$origin, p = .60, list = FALSE)
+class(index)</code></pre>
+<pre><code>## [1] &quot;matrix&quot; &quot;array&quot;</code></pre>
+<pre class="r"><code>index</code></pre>
+<pre><code>##       Resample1
+##  [1,]         1
+##  [2,]         2
+##  [3,]         4
+##  [4,]         6
+##  [5,]         7
+##  [6,]         8
+##  [7,]         9
+##  [8,]        10
+##  [9,]        11
+## [10,]        12
+## [11,]        14
+## [12,]        18
+## [13,]        19
+## [14,]        20
+## [15,]        21
+## [16,]        25
+## [17,]        26
+## [18,]        27
+## [19,]        28
+## [20,]        31
+## [21,]        32
+## [22,]        33</code></pre>
+<pre class="r"><code>train_mt &lt;- mt_features_df[index, ]
+dim(train_mt)</code></pre>
+<pre><code>## [1] 22 18</code></pre>
+<pre class="r"><code>train_mt</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["origin"],"name":[1],"type":["fct"],"align":["left"]},{"label":["MT_16069_bp"],"name":[2],"type":["int"],"align":["right"]},{"label":["MT_16086_bp"],"name":[3],"type":["int"],"align":["right"]},{"label":["MT_16093_bp"],"name":[4],"type":["int"],"align":["right"]},{"label":["MT_16111_bp"],"name":[5],"type":["int"],"align":["right"]},{"label":["MT_16124_bp"],"name":[6],"type":["int"],"align":["right"]},{"label":["MT_16126_bp"],"name":[7],"type":["int"],"align":["right"]},{"label":["MT_16129_bp"],"name":[8],"type":["int"],"align":["right"]},{"label":["MT_16144_bp"],"name":[9],"type":["int"],"align":["right"]},{"label":["MT_16153_bp"],"name":[10],"type":["int"],"align":["right"]},{"label":["MT_16172_bp"],"name":[11],"type":["int"],"align":["right"]},{"label":["MT_16209_bp"],"name":[12],"type":["int"],"align":["right"]},{"label":["MT_16222_bp"],"name":[13],"type":["int"],"align":["right"]},{"label":["MT_16270_bp"],"name":[14],"type":["int"],"align":["right"]},{"label":["MT_16294_bp"],"name":[15],"type":["int"],"align":["right"]},{"label":["MT_16312_bp"],"name":[16],"type":["int"],"align":["right"]},{"label":["MT_16327_bp"],"name":[17],"type":["int"],"align":["right"]},{"label":["MT_16362_bp"],"name":[18],"type":["int"],"align":["right"]}],"data":[{"1":"African","2":"0","3":"0","4":"0","5":"0","6":"0","7":"1","8":"0","9":"0","10":"0","11":"0","12":"0","13":"0","14":"1","15":"0","16":"0","17":"0","18":"0","_rn_":"1"},{"1":"African","2":"0","3":"0","4":"0","5":"0","6":"0","7":"0","8":"0","9":"0","10":"0","11":"0","12":"0","13":"0","14":"0","15":"0","16":"0","17":"1","18":"0","_rn_":"2"},{"1":"African","2":"0","3":"0","4":"0","5":"0","6":"0","7":"0","8":"0","9":"0","10":"0","11":"0","12":"0","13":"0","14":"0","15":"0","16":"0","17":"1","18":"0","_rn_":"4"},{"1":"African","2":"0","3":"0","4":"0","5":"0","6":"0","7":"0","8":"0","9":"0","10":"0","11":"0","12":"0","13":"0","14":"0","15":"1","16":"0","17":"0","18":"0","_rn_":"6"},{"1":"African","2":"0","3":"0","4":"1","5":"0","6":"1","7":"0","8":"0","9":"0","10":"0","11":"0","12":"0","13":"0","14":"0","15":"0","16":"0","17":"0","18":"0","_rn_":"7"},{"1":"African","2":"0","3":"0","4":"0","5":"0","6":"0","7":"0","8":"0","9":"0","10":"0","11":"0","12":"0","13":"0","14":"0","15":"0","16":"0","17":"1","18":"0","_rn_":"8"},{"1":"African","2":"0","3":"0","4":"0","5":"0","6":"0","7":"0","8":"0","9":"0","10":"0","11":"0","12":"0","13":"0","14":"0","15":"0","16":"0","17":"0","18":"0","_rn_":"9"},{"1":"African","2":"0","3":"0","4":"0","5":"0","6":"0","7":"0","8":"0","9":"0","10":"0","11":"0","12":"0","13":"0","14":"0","15":"1","16":"0","17":"0","18":"0","_rn_":"10"},{"1":"African","2":"0","3":"0","4":"0","5":"0","6":"0","7":"0","8":"1","9":"0","10":"0","11":"0","12":"0","13":"0","14":"0","15":"1","16":"0","17":"0","18":"0","_rn_":"11"},{"1":"African","2":"0","3":"0","4":"1","5":"0","6":"0","7":"0","8":"1","9":"0","10":"0","11":"0","12":"0","13":"0","14":"0","15":"1","16":"0","17":"0","18":"0","_rn_":"12"},{"1":"African","2":"0","3":"0","4":"0","5":"0","6":"0","7":"0","8":"1","9":"0","10":"0","11":"1","12":"0","13":"0","14":"0","15":"0","16":"0","17":"0","18":"0","_rn_":"14"},{"1":"European","2":"0","3":"0","4":"0","5":"0","6":"0","7":"0","8":"0","9":"0","10":"0","11":"0","12":"0","13":"0","14":"0","15":"0","16":"0","17":"0","18":"0","_rn_":"18"},{"1":"European","2":"0","3":"0","4":"0","5":"0","6":"0","7":"0","8":"0","9":"0","10":"0","11":"0","12":"0","13":"0","14":"0","15":"0","16":"0","17":"0","18":"0","_rn_":"19"},{"1":"European","2":"0","3":"0","4":"0","5":"0","6":"0","7":"0","8":"0","9":"1","10":"0","11":"0","12":"0","13":"0","14":"1","15":"0","16":"0","17":"0","18":"0","_rn_":"20"},{"1":"European","2":"0","3":"0","4":"0","5":"0","6":"0","7":"1","8":"0","9":"0","10":"1","11":"0","12":"0","13":"0","14":"0","15":"1","16":"0","17":"0","18":"0","_rn_":"21"},{"1":"European","2":"0","3":"0","4":"0","5":"0","6":"0","7":"0","8":"0","9":"0","10":"0","11":"0","12":"0","13":"0","14":"0","15":"0","16":"0","17":"0","18":"0","_rn_":"25"},{"1":"European","2":"0","3":"0","4":"0","5":"0","6":"0","7":"1","8":"0","9":"0","10":"0","11":"0","12":"0","13":"0","14":"0","15":"1","16":"0","17":"0","18":"1","_rn_":"26"},{"1":"European","2":"0","3":"0","4":"1","5":"0","6":"0","7":"0","8":"0","9":"0","10":"0","11":"0","12":"0","13":"0","14":"0","15":"0","16":"0","17":"0","18":"0","_rn_":"27"},{"1":"European","2":"0","3":"0","4":"0","5":"0","6":"0","7":"0","8":"0","9":"0","10":"0","11":"0","12":"0","13":"0","14":"0","15":"0","16":"0","17":"0","18":"0","_rn_":"28"},{"1":"European","2":"0","3":"0","4":"0","5":"0","6":"0","7":"0","8":"0","9":"0","10":"0","11":"0","12":"0","13":"0","14":"0","15":"0","16":"0","17":"0","18":"0","_rn_":"31"},{"1":"European","2":"0","3":"0","4":"0","5":"0","6":"0","7":"0","8":"0","9":"0","10":"0","11":"0","12":"0","13":"0","14":"0","15":"0","16":"0","17":"0","18":"0","_rn_":"32"},{"1":"European","2":"1","3":"0","4":"0","5":"0","6":"0","7":"1","8":"0","9":"0","10":"0","11":"0","12":"0","13":"1","14":"0","15":"0","16":"0","17":"0","18":"0","_rn_":"33"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+<p><br />
+</p>
+<p>Look at counts per category</p>
+<pre class="r"><code>cross_cases(train_mt, origin)</code></pre>
+<table class="gmisc_table" style="border-collapse: collapse; margin-top: 1em; margin-bottom: 1em;">
+<thead>
+<tr>
+<th style="border-bottom: 1px solid grey; font-weight: 900; border-top: 2px solid grey; text-align: center;">
+</th>
+<th style="font-weight: 900; border-bottom: 1px solid grey; border-top: 2px solid grey; text-align: center;">
+ #Total 
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td colspan="2" style="font-weight: 900;">
+ origin 
+</td>
+</tr>
+<tr>
+<td style="text-align: left;">
+   African 
+</td>
+<td style="text-align: right;">
+11
+</td>
+</tr>
+<tr>
+<td style="text-align: left;">
+   European 
+</td>
+<td style="text-align: right;">
+11
+</td>
+</tr>
+<tr>
+<td style="border-bottom: 2px solid grey; text-align: left;">
+   #Total cases 
+</td>
+<td style="border-bottom: 2px solid grey; text-align: right;">
+22
+</td>
+</tr>
+</tbody>
+</table>
+<p><br />
+</p>
+<p>Build test dataset</p>
+<pre class="r"><code>test_mt &lt;- mt_features_df[-index, ]
+dim(test_mt)</code></pre>
+<pre><code>## [1] 12 18</code></pre>
+<pre class="r"><code>test_mt</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["origin"],"name":[1],"type":["fct"],"align":["left"]},{"label":["MT_16069_bp"],"name":[2],"type":["int"],"align":["right"]},{"label":["MT_16086_bp"],"name":[3],"type":["int"],"align":["right"]},{"label":["MT_16093_bp"],"name":[4],"type":["int"],"align":["right"]},{"label":["MT_16111_bp"],"name":[5],"type":["int"],"align":["right"]},{"label":["MT_16124_bp"],"name":[6],"type":["int"],"align":["right"]},{"label":["MT_16126_bp"],"name":[7],"type":["int"],"align":["right"]},{"label":["MT_16129_bp"],"name":[8],"type":["int"],"align":["right"]},{"label":["MT_16144_bp"],"name":[9],"type":["int"],"align":["right"]},{"label":["MT_16153_bp"],"name":[10],"type":["int"],"align":["right"]},{"label":["MT_16172_bp"],"name":[11],"type":["int"],"align":["right"]},{"label":["MT_16209_bp"],"name":[12],"type":["int"],"align":["right"]},{"label":["MT_16222_bp"],"name":[13],"type":["int"],"align":["right"]},{"label":["MT_16270_bp"],"name":[14],"type":["int"],"align":["right"]},{"label":["MT_16294_bp"],"name":[15],"type":["int"],"align":["right"]},{"label":["MT_16312_bp"],"name":[16],"type":["int"],"align":["right"]},{"label":["MT_16327_bp"],"name":[17],"type":["int"],"align":["right"]},{"label":["MT_16362_bp"],"name":[18],"type":["int"],"align":["right"]}],"data":[{"1":"African","2":"0","3":"0","4":"0","5":"0","6":"0","7":"0","8":"0","9":"0","10":"0","11":"0","12":"0","13":"0","14":"0","15":"1","16":"0","17":"0","18":"0","_rn_":"3"},{"1":"African","2":"0","3":"0","4":"0","5":"0","6":"0","7":"0","8":"1","9":"0","10":"0","11":"1","12":"0","13":"0","14":"0","15":"0","16":"0","17":"0","18":"0","_rn_":"5"},{"1":"African","2":"0","3":"0","4":"0","5":"0","6":"0","7":"0","8":"0","9":"0","10":"0","11":"0","12":"0","13":"0","14":"0","15":"1","16":"0","17":"0","18":"0","_rn_":"13"},{"1":"African","2":"0","3":"0","4":"0","5":"0","6":"1","7":"0","8":"0","9":"0","10":"0","11":"0","12":"0","13":"0","14":"0","15":"0","16":"0","17":"0","18":"0","_rn_":"15"},{"1":"African","2":"0","3":"0","4":"0","5":"0","6":"0","7":"0","8":"0","9":"0","10":"0","11":"1","12":"0","13":"0","14":"0","15":"0","16":"0","17":"1","18":"0","_rn_":"16"},{"1":"African","2":"0","3":"0","4":"0","5":"0","6":"0","7":"0","8":"0","9":"0","10":"0","11":"0","12":"0","13":"0","14":"0","15":"1","16":"0","17":"0","18":"0","_rn_":"17"},{"1":"European","2":"0","3":"0","4":"0","5":"0","6":"0","7":"0","8":"0","9":"0","10":"0","11":"0","12":"0","13":"0","14":"0","15":"0","16":"0","17":"0","18":"0","_rn_":"22"},{"1":"European","2":"1","3":"0","4":"0","5":"0","6":"0","7":"1","8":"0","9":"0","10":"0","11":"0","12":"0","13":"0","14":"0","15":"0","16":"0","17":"0","18":"0","_rn_":"23"},{"1":"European","2":"0","3":"0","4":"0","5":"0","6":"1","7":"0","8":"0","9":"0","10":"0","11":"0","12":"0","13":"0","14":"0","15":"0","16":"0","17":"0","18":"0","_rn_":"24"},{"1":"European","2":"0","3":"1","4":"0","5":"0","6":"0","7":"0","8":"0","9":"0","10":"0","11":"0","12":"0","13":"0","14":"0","15":"0","16":"0","17":"0","18":"0","_rn_":"29"},{"1":"European","2":"0","3":"0","4":"0","5":"0","6":"0","7":"0","8":"0","9":"0","10":"0","11":"0","12":"0","13":"0","14":"1","15":"0","16":"0","17":"0","18":"0","_rn_":"30"},{"1":"European","2":"0","3":"0","4":"0","5":"0","6":"0","7":"1","8":"0","9":"0","10":"0","11":"0","12":"0","13":"0","14":"0","15":"0","16":"0","17":"0","18":"1","_rn_":"34"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+<p><br />
+</p>
+<p>Training the model</p>
+<pre class="r"><code>logistic_model_mt &lt;- glm(origin ~ ., family = binomial(), train_mt)</code></pre>
+<pre><code>## Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred</code></pre>
+<pre class="r"><code># mod2$xlevels[[&quot;y&quot;]] &lt;- union(mod2$xlevels[[&quot;y&quot;]], levels(test$y))</code></pre>
+<p><br />
+</p>
+<p>Checking the model</p>
+<pre class="r"><code>summary(logistic_model_mt)</code></pre>
+<pre><code>## 
+## Call:
+## glm(formula = origin ~ ., family = binomial(), data = train_mt)
+## 
+## Coefficients: (6 not defined because of singularities)
+##               Estimate Std. Error z value Pr(&gt;|z|)  
+## (Intercept)  1.792e+00  1.080e+00   1.659   0.0971 .
+## MT_16069_bp -2.336e+01  4.622e+04  -0.001   0.9996  
+## MT_16086_bp         NA         NA      NA       NA  
+## MT_16093_bp  1.889e+01  1.874e+04   0.001   0.9992  
+## MT_16111_bp         NA         NA      NA       NA  
+## MT_16124_bp -4.224e+01  3.472e+04  -0.001   0.9990  
+## MT_16126_bp  4.313e+01  3.580e+04   0.001   0.9990  
+## MT_16129_bp -1.800e+01  3.361e+04  -0.001   0.9996  
+## MT_16144_bp  8.626e+01  5.469e+04   0.002   0.9987  
+## MT_16153_bp  2.169e-10  4.134e+04   0.000   1.0000  
+## MT_16172_bp -5.362e+00  4.454e+04   0.000   0.9999  
+## MT_16209_bp         NA         NA      NA       NA  
+## MT_16222_bp         NA         NA      NA       NA  
+## MT_16270_bp -6.649e+01  4.622e+04  -0.001   0.9989  
+## MT_16294_bp -2.336e+01  2.067e+04  -0.001   0.9991  
+## MT_16312_bp         NA         NA      NA       NA  
+## MT_16327_bp -2.336e+01  1.688e+04  -0.001   0.9989  
+## MT_16362_bp         NA         NA      NA       NA  
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## (Dispersion parameter for binomial family taken to be 1)
+## 
+##     Null deviance: 30.4985  on 21  degrees of freedom
+## Residual deviance:  5.7416  on 10  degrees of freedom
+## AIC: 29.742
+## 
+## Number of Fisher Scoring iterations: 20</code></pre>
+<p><br />
+</p>
+<div id="interpreting-logistic-regression-output"
+class="section level3">
+<h3>Interpreting Logistic Regression Output</h3>
+<p><br />
+</p>
+<pre class="r"><code>Sigmoid function, p = exp(-0.591532)/(1+exp(-0.591532))</code></pre>
+<p><br />
+</p>
+</div>
+<div id="predicting-dependent-variabley-in-test-dataset"
+class="section level3">
+<h3>Predicting Dependent Variable(Y) in Test Dataset</h3>
+<p><br />
+</p>
+<pre class="r"><code># Predicting in the test dataset
+pred_prob_mt &lt;- predict(logistic_model_mt, test_mt, type=&quot;response&quot;)</code></pre>
+<pre><code>## Warning in predict.lm(object, newdata, se.fit, scale = 1, type = if (type == :
+## prediction from rank-deficient fit; attr(*, &quot;non-estim&quot;) has doubtful cases</code></pre>
+<pre class="r"><code>pred_prob_mt</code></pre>
+<pre><code>##            3            5           13           15           16           17 
+## 4.305023e-10 4.305023e-10 4.305023e-10 2.220446e-16 2.019853e-12 4.305023e-10 
+##           22           23           24           29           30           34 
+## 8.571429e-01 1.000000e+00 2.220446e-16 8.571429e-01 2.220446e-16 1.000000e+00 
+## attr(,&quot;non-estim&quot;)
+## 23 29 30 
+##  8 10 11</code></pre>
+<p><br />
+</p>
+<div id="constructing-the-predictions-dataframe" class="section level4">
+<h4>Constructing the predictions dataframe</h4>
+<ul>
+<li><p>This is based on notebook confusion-table.Rmd</p></li>
+<li><p>pred_prob, from above, is a factor</p></li>
+</ul>
+<pre class="r"><code>predictions_mt &lt;- cbind(data.frame(train_preds=pred_prob_mt, 
+                                test_mt$origin))
+predictions_mt</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["train_preds"],"name":[1],"type":["dbl"],"align":["right"]},{"label":["test_mt.origin"],"name":[2],"type":["fct"],"align":["left"]}],"data":[{"1":"4.305023e-10","2":"African","_rn_":"3"},{"1":"4.305023e-10","2":"African","_rn_":"5"},{"1":"4.305023e-10","2":"African","_rn_":"13"},{"1":"2.220446e-16","2":"African","_rn_":"15"},{"1":"2.019853e-12","2":"African","_rn_":"16"},{"1":"4.305023e-10","2":"African","_rn_":"17"},{"1":"8.571429e-01","2":"European","_rn_":"22"},{"1":"1.000000e+00","2":"European","_rn_":"23"},{"1":"2.220446e-16","2":"European","_rn_":"24"},{"1":"8.571429e-01","2":"European","_rn_":"29"},{"1":"2.220446e-16","2":"European","_rn_":"30"},{"1":"1.000000e+00","2":"European","_rn_":"34"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+<p>Then the confusion matrix can be calculated</p>
+<pre class="r"><code>cm &lt;- caret::confusionMatrix(predictions_mt$train_preds, predictions_mt$test_mt.origin)</code></pre>
+<p>This is the error</p>
+<pre class="r"><code>Error in `match.arg()`:
+! &#39;arg&#39; should be one of &quot;link&quot;, &quot;response&quot;, &quot;terms&quot;
+Backtrace:
+ 1. stats::predict(logistic_model_mt, test_mt, type = &quot;raw&quot;)
+ 2. stats::predict.glm(logistic_model_mt, test_mt, type = &quot;raw&quot;)
+ 3. base::match.arg(type)
+Execution halted</code></pre>
+<p><br />
+</p>
+</div>
+</div>
+</div>
+<div id="evaluating-logistic-regression-model" class="section level2">
+<h2>3. Evaluating Logistic Regression Model</h2>
+<p><br />
+</p>
+<div id="converting-probability-to-class-values-in-the-training-dataset"
+class="section level3">
+<h3>Converting probability to class values in the training dataset</h3>
+<p><br />
+</p>
+<p>It does not make sense the labels to be America or Africa for this
+notebook since here we are using currently, Amerindian and European
+genotypes of mitochondrial Brazilian sequences. Therefore I am
+commenting on that line that uses the probability value to set the
+labels up. To update the labels I will make America the Amerindian label
+and Africa the European label. My first impression was that the accuracy
+increased significantly.</p>
+<pre class="r"><code># Converting from probability to actual output
+# train_mt$pred_class &lt;- ifelse(logistic_model_mt$fitted.values &gt;= 0.5, &quot;America&quot;, &quot;Africa&quot;)
+train_mt$pred_class &lt;- ifelse(logistic_model_mt$fitted.values &gt;= 0.5, &quot;Amerindian&quot;, &quot;European&quot;)
+dim(train_mt)</code></pre>
+<pre><code>## [1] 22 19</code></pre>
+<pre class="r"><code>train_mt</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["origin"],"name":[1],"type":["fct"],"align":["left"]},{"label":["MT_16069_bp"],"name":[2],"type":["int"],"align":["right"]},{"label":["MT_16086_bp"],"name":[3],"type":["int"],"align":["right"]},{"label":["MT_16093_bp"],"name":[4],"type":["int"],"align":["right"]},{"label":["MT_16111_bp"],"name":[5],"type":["int"],"align":["right"]},{"label":["MT_16124_bp"],"name":[6],"type":["int"],"align":["right"]},{"label":["MT_16126_bp"],"name":[7],"type":["int"],"align":["right"]},{"label":["MT_16129_bp"],"name":[8],"type":["int"],"align":["right"]},{"label":["MT_16144_bp"],"name":[9],"type":["int"],"align":["right"]},{"label":["MT_16153_bp"],"name":[10],"type":["int"],"align":["right"]},{"label":["MT_16172_bp"],"name":[11],"type":["int"],"align":["right"]},{"label":["MT_16209_bp"],"name":[12],"type":["int"],"align":["right"]},{"label":["MT_16222_bp"],"name":[13],"type":["int"],"align":["right"]},{"label":["MT_16270_bp"],"name":[14],"type":["int"],"align":["right"]},{"label":["MT_16294_bp"],"name":[15],"type":["int"],"align":["right"]},{"label":["MT_16312_bp"],"name":[16],"type":["int"],"align":["right"]},{"label":["MT_16327_bp"],"name":[17],"type":["int"],"align":["right"]},{"label":["MT_16362_bp"],"name":[18],"type":["int"],"align":["right"]},{"label":["pred_class"],"name":[19],"type":["chr"],"align":["left"]}],"data":[{"1":"African","2":"0","3":"0","4":"0","5":"0","6":"0","7":"1","8":"0","9":"0","10":"0","11":"0","12":"0","13":"0","14":"1","15":"0","16":"0","17":"0","18":"0","19":"European","_rn_":"1"},{"1":"African","2":"0","3":"0","4":"0","5":"0","6":"0","7":"0","8":"0","9":"0","10":"0","11":"0","12":"0","13":"0","14":"0","15":"0","16":"0","17":"1","18":"0","19":"European","_rn_":"2"},{"1":"African","2":"0","3":"0","4":"0","5":"0","6":"0","7":"0","8":"0","9":"0","10":"0","11":"0","12":"0","13":"0","14":"0","15":"0","16":"0","17":"1","18":"0","19":"European","_rn_":"4"},{"1":"African","2":"0","3":"0","4":"0","5":"0","6":"0","7":"0","8":"0","9":"0","10":"0","11":"0","12":"0","13":"0","14":"0","15":"1","16":"0","17":"0","18":"0","19":"European","_rn_":"6"},{"1":"African","2":"0","3":"0","4":"1","5":"0","6":"1","7":"0","8":"0","9":"0","10":"0","11":"0","12":"0","13":"0","14":"0","15":"0","16":"0","17":"0","18":"0","19":"European","_rn_":"7"},{"1":"African","2":"0","3":"0","4":"0","5":"0","6":"0","7":"0","8":"0","9":"0","10":"0","11":"0","12":"0","13":"0","14":"0","15":"0","16":"0","17":"1","18":"0","19":"European","_rn_":"8"},{"1":"African","2":"0","3":"0","4":"0","5":"0","6":"0","7":"0","8":"0","9":"0","10":"0","11":"0","12":"0","13":"0","14":"0","15":"0","16":"0","17":"0","18":"0","19":"Amerindian","_rn_":"9"},{"1":"African","2":"0","3":"0","4":"0","5":"0","6":"0","7":"0","8":"0","9":"0","10":"0","11":"0","12":"0","13":"0","14":"0","15":"1","16":"0","17":"0","18":"0","19":"European","_rn_":"10"},{"1":"African","2":"0","3":"0","4":"0","5":"0","6":"0","7":"0","8":"1","9":"0","10":"0","11":"0","12":"0","13":"0","14":"0","15":"1","16":"0","17":"0","18":"0","19":"European","_rn_":"11"},{"1":"African","2":"0","3":"0","4":"1","5":"0","6":"0","7":"0","8":"1","9":"0","10":"0","11":"0","12":"0","13":"0","14":"0","15":"1","16":"0","17":"0","18":"0","19":"European","_rn_":"12"},{"1":"African","2":"0","3":"0","4":"0","5":"0","6":"0","7":"0","8":"1","9":"0","10":"0","11":"1","12":"0","13":"0","14":"0","15":"0","16":"0","17":"0","18":"0","19":"European","_rn_":"14"},{"1":"European","2":"0","3":"0","4":"0","5":"0","6":"0","7":"0","8":"0","9":"0","10":"0","11":"0","12":"0","13":"0","14":"0","15":"0","16":"0","17":"0","18":"0","19":"Amerindian","_rn_":"18"},{"1":"European","2":"0","3":"0","4":"0","5":"0","6":"0","7":"0","8":"0","9":"0","10":"0","11":"0","12":"0","13":"0","14":"0","15":"0","16":"0","17":"0","18":"0","19":"Amerindian","_rn_":"19"},{"1":"European","2":"0","3":"0","4":"0","5":"0","6":"0","7":"0","8":"0","9":"1","10":"0","11":"0","12":"0","13":"0","14":"1","15":"0","16":"0","17":"0","18":"0","19":"Amerindian","_rn_":"20"},{"1":"European","2":"0","3":"0","4":"0","5":"0","6":"0","7":"1","8":"0","9":"0","10":"1","11":"0","12":"0","13":"0","14":"0","15":"1","16":"0","17":"0","18":"0","19":"Amerindian","_rn_":"21"},{"1":"European","2":"0","3":"0","4":"0","5":"0","6":"0","7":"0","8":"0","9":"0","10":"0","11":"0","12":"0","13":"0","14":"0","15":"0","16":"0","17":"0","18":"0","19":"Amerindian","_rn_":"25"},{"1":"European","2":"0","3":"0","4":"0","5":"0","6":"0","7":"1","8":"0","9":"0","10":"0","11":"0","12":"0","13":"0","14":"0","15":"1","16":"0","17":"0","18":"1","19":"Amerindian","_rn_":"26"},{"1":"European","2":"0","3":"0","4":"1","5":"0","6":"0","7":"0","8":"0","9":"0","10":"0","11":"0","12":"0","13":"0","14":"0","15":"0","16":"0","17":"0","18":"0","19":"Amerindian","_rn_":"27"},{"1":"European","2":"0","3":"0","4":"0","5":"0","6":"0","7":"0","8":"0","9":"0","10":"0","11":"0","12":"0","13":"0","14":"0","15":"0","16":"0","17":"0","18":"0","19":"Amerindian","_rn_":"28"},{"1":"European","2":"0","3":"0","4":"0","5":"0","6":"0","7":"0","8":"0","9":"0","10":"0","11":"0","12":"0","13":"0","14":"0","15":"0","16":"0","17":"0","18":"0","19":"Amerindian","_rn_":"31"},{"1":"European","2":"0","3":"0","4":"0","5":"0","6":"0","7":"0","8":"0","9":"0","10":"0","11":"0","12":"0","13":"0","14":"0","15":"0","16":"0","17":"0","18":"0","19":"Amerindian","_rn_":"32"},{"1":"European","2":"1","3":"0","4":"0","5":"0","6":"0","7":"1","8":"0","9":"0","10":"0","11":"0","12":"0","13":"1","14":"0","15":"0","16":"0","17":"0","18":"0","19":"Amerindian","_rn_":"33"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+<pre class="r"><code># Generating the classification table
+ctab_train_mt &lt;- table(train_mt$origin, train_mt$pred_class)
+ctab_train_mt</code></pre>
+<pre><code>##           
+##            Amerindian European
+##   African           1       10
+##   European         11        0</code></pre>
+<p><br />
+</p>
+</div>
+<div id="training-dataset-converting-from-probability-to-class-values"
+class="section level3">
+<h3>Training dataset converting from probability to class values</h3>
+<p><br />
+</p>
+<pre class="r"><code># Converting from probability to actual output
+# test_mt$pred_class &lt;- ifelse(pred_prob_mt &gt;= 0.5, &quot;America&quot;, &quot;Africa&quot;)
+test_mt$pred_class &lt;- ifelse(pred_prob_mt &gt;= 0.5, &quot;Amerindian&quot;, &quot;European&quot;)
+
+# Generating the classification table
+ctab_test_mt &lt;- table(test_mt$origin, test_mt$pred_class)
+ctab_test_mt</code></pre>
+<pre><code>##           
+##            Amerindian European
+##   African           0        6
+##   European          4        2</code></pre>
+<p><br />
+</p>
+</div>
+<div id="accuracy" class="section level3">
+<h3>3.1 Accuracy</h3>
+<p><br />
+</p>
+<p><span class="math display">\[\begin{align*}
+
+Accuracy &amp; = \frac{TP + TN}{TN + FP + FN + TP} \\
+
+\end{align*}\]</span></p>
+<p><br />
+</p>
+<p>Accuracy in Training dataset</p>
+<pre class="r"><code>accuracy_train_mt &lt;- sum(diag(ctab_train_mt))/sum(ctab_train_mt)*100
+accuracy_train_mt</code></pre>
+<pre><code>## [1] 4.545455</code></pre>
+<p><br />
+</p>
+<p>Accuracy in Test dataset</p>
+<pre class="r"><code>accuracy_test_mt &lt;- sum(diag(ctab_test_mt))/sum(ctab_test_mt)*100
+accuracy_test_mt</code></pre>
+<pre><code>## [1] 16.66667</code></pre>
+<p><br />
+</p>
+<p>A model is considered fairly good if the model accuracy is greater
+than 70%.</p>
+<p><br />
+</p>
+</div>
+<div id="misclassification-rate" class="section level3">
+<h3>3.2. Misclassification Rate</h3>
+<p><br />
+</p>
+<p><span class="math display">\[\begin{align*}
+
+Misclassification  Rate &amp; = \frac{FP+FN}{TN + FP + FN + TP} \\
+
+\end{align*}\]</span></p>
+<p><br />
+</p>
+</div>
+<div id="true-positive-rate-recall-or-sensitivity"
+class="section level3">
+<h3>3.3. True Positive Rate – Recall or Sensitivity</h3>
+<p><br />
+</p>
+<p><span class="math display">\[\begin{align*}
+
+Sensitivity &amp; = \frac{TP}{FN + TP} \\
+
+\end{align*}\]</span></p>
+<p><br />
+</p>
+<p>Recall in Train dataset</p>
+<pre class="r"><code>Recall &lt;- (ctab_train_mt[2, 2]/sum(ctab_train_mt[2, ]))*100
+Recall</code></pre>
+<pre><code>## [1] 0</code></pre>
+<pre class="r"><code>ctab_test_mt</code></pre>
+<pre><code>##           
+##            Amerindian European
+##   African           0        6
+##   European          4        2</code></pre>
+<p><br />
+</p>
+<p>Recall in Test dataset</p>
+<pre class="r"><code>Recall_test &lt;- (ctab_test_mt[2, 2]/sum(ctab_test_mt[2, ]))*100
+Recall_test</code></pre>
+<p><br />
+</p>
+<p>One potential direction to improve sensitivity in the train and test
+datasets is to use haplogroups instead of SNPs. Take for example the
+Huntington’s disease (HD) diagnosis. A person is positive if they have
+more than 35 CAG repeats. If for example we take a haplogroup of range
+of 50 bp, we can classify people with 40 CAG repeats as positive whereas
+individuals that have the haplogroup with less than 40 repeats are
+negative for HD.</p>
+<p>Using this approach we can divide the genome into smaller segments
+and the algorithm will have to only work in these segments. We can
+therefore, use the divide and conquer approach to diagnose the disease
+using genotype information.</p>
+<p><br />
+</p>
+</div>
+<div id="true-negative-rate" class="section level3">
+<h3>3.4. True Negative Rate</h3>
+<p><br />
+</p>
+<p><span class="math display">\[\begin{align*}
+
+TNR &amp; = \frac{TN}{TN + FP} \\
+
+\end{align*}\]</span></p>
+<p><br />
+</p>
+<p>TNR in Train dataset</p>
+<pre class="r"><code>TNR &lt;- (ctab_train_mt[1, 1]/sum(ctab_train_mt[1, ]))*100
+TNR</code></pre>
+<pre><code>## [1] 9.090909</code></pre>
+<p><br />
+</p>
+</div>
+<div id="precision" class="section level3">
+<h3>3.5. Precision</h3>
+<p><br />
+</p>
+<p><span class="math display">\[\begin{align*}
+
+TNR &amp; = \frac{TP}{FP + TP} \\
+
+\end{align*}\]</span></p>
+<p><br />
+</p>
+<pre class="r"><code># Precision = TP/FP + TP
+
+
+# Precision in Train dataset
+Precision &lt;- (ctab_train_mt[2, 2]/sum(ctab_train_mt[, 2]))*100
+Precision</code></pre>
+<pre><code>## [1] 0</code></pre>
+<p><br />
+</p>
+</div>
+<div id="calculating-f-score" class="section level3">
+<h3>Calculating F-Score</h3>
+<p><br />
+</p>
+<pre class="r"><code>F_Score &lt;- (2 * Precision * Recall / (Precision + Recall))/100
+F_Score</code></pre>
+<p><br />
+</p>
+</div>
+</div>
+<div id="roc-curve" class="section level2">
+<h2>5. ROC Curve</h2>
+<p><br />
+</p>
+<pre class="r"><code>roc_mt &lt;- roc(train_mt$origin, logistic_model_mt$fitted.values)</code></pre>
+<pre><code>## Setting levels: control = African, case = European</code></pre>
+<pre><code>## Setting direction: controls &lt; cases</code></pre>
+<pre class="r"><code>roc_mt</code></pre>
+<pre><code>## 
+## Call:
+## roc.default(response = train_mt$origin, predictor = logistic_model_mt$fitted.values)
+## 
+## Data: logistic_model_mt$fitted.values in 11 controls (train_mt$origin African) &lt; 11 cases (train_mt$origin European).
+## Area under the curve: 0.9752</code></pre>
+<pre class="r"><code>plot.roc(roc_mt)</code></pre>
+<p><img src="05-B-2-binary-logistic-regression-appended_files/figure-html/unnamed-chunk-24-1.png" width="672" /></p>
+<pre class="r"><code>auc(roc_mt)</code></pre>
+<pre><code>## Area under the curve: 0.9752</code></pre>
+<p><br />
+</p>
+<p>Note that per the <span class="citation">Wikipedia (2024)</span>
+article, our classifier shows better results than random guess, which is
+a good start.</p>
+<p><br />
+</p>
+<p>This is a reference for high AUC ROC but low sensitivity: <a
+href="https://stackoverflow.com/questions/38387913/reason-of-having-high-auc-and-low-accuracy-in-a-balanced-dataset"
+class="uri">https://stackoverflow.com/questions/38387913/reason-of-having-high-auc-and-low-accuracy-in-a-balanced-dataset</a></p>
+<p><br />
+</p>
+<div id="concordance" class="section level3">
+<h3>Concordance</h3>
+<p><br />
+</p>
+<pre class="r numberLines"><code>library(InformationValue)</code></pre>
+<pre><code>## 
+## Attaching package: &#39;InformationValue&#39;</code></pre>
+<pre><code>## The following objects are masked from &#39;package:caret&#39;:
+## 
+##     confusionMatrix, precision, sensitivity, specificity</code></pre>
+<pre class="r numberLines"><code>Concordance(logistic_model_mt$y,logistic_model_mt$fitted.values)</code></pre>
+<pre><code>## $Concordance
+## [1] 0.9504132
+## 
+## $Discordance
+## [1] 0.04958678
+## 
+## $Tied
+## [1] -5.551115e-17
+## 
+## $Pairs
+## [1] 121</code></pre>
+<p><br />
+</p>
+</div>
+</div>
+<div id="confusion-matrix" class="section level2">
+<h2>6. Confusion matrix</h2>
+<p><br />
+</p>
+<p>In this reference for the Confusion Matrix according to <span
+class="citation">CARET (2023)</span>, we can find the equations for
+sensitivity and accuracy.</p>
+<p><br />
+</p>
+</div>
+</div>
+<div id="references" class="section level1">
+<h1>References</h1>
+<p><br />
+</p>
+<div id="refs" class="references csl-bib-body hanging-indent">
+<div id="ref-CARET2023" class="csl-entry">
+CARET. 2023. <em>confusionMatrix: Create a Confusion Matrix</em>. <a
+href="https://rdrr.io/cran/caret/man/confusionMatrix.html">https://rdrr.io/cran/caret/man/confusionMatrix.html</a>.
+</div>
+<div id="ref-stackOverflow2014" class="csl-entry">
+Stackoverflow. 2014. <em>"Factor Has New Levels" Error for Variable i’m
+Not Using</em>. <a
+href="https://stackoverflow.com/questions/22315394/factor-has-new-levels-error-for-variable-im-not-using">https://stackoverflow.com/questions/22315394/factor-has-new-levels-error-for-variable-im-not-using</a>.
+</div>
+<div id="ref-stackOverflow2021genotypes" class="csl-entry">
+———. 2021. <a
+href="https://stackoverflow.com/questions/65896181/glm-error-in-evalfamilyinitialize-y-values-must-be-0-y-1-but-values-a">https://stackoverflow.com/questions/65896181/glm-error-in-evalfamilyinitialize-y-values-must-be-0-y-1-but-values-a</a>.
+</div>
+<div id="ref-Wikipedia2024roc" class="csl-entry">
+Wikipedia. 2024. <em>Receiver Operating Characteristic</em>. <a
+href="https://en.wikipedia.org/wiki/Receiver_operating_characteristic">https://en.wikipedia.org/wiki/Receiver_operating_characteristic</a>.
+</div>
+</div>
+<p><br />
+</p>
+</div>
+<div id="session-info" class="section level1">
+<h1>Session Info</h1>
+<p><br />
+</p>
+<pre class="r"><code>sessionInfo()</code></pre>
+<pre><code>## R version 4.4.1 (2024-06-14)
+## Platform: aarch64-apple-darwin20
+## Running under: macOS Big Sur 11.4
+## 
+## Matrix products: default
+## BLAS:   /Library/Frameworks/R.framework/Versions/4.4-arm64/Resources/lib/libRblas.0.dylib 
+## LAPACK: /Library/Frameworks/R.framework/Versions/4.4-arm64/Resources/lib/libRlapack.dylib;  LAPACK version 3.12.0
+## 
+## locale:
+## [1] en_US.UTF-8/en_US.UTF-8/en_US.UTF-8/C/en_US.UTF-8/en_US.UTF-8
+## 
+## time zone: America/Chicago
+## tzcode source: internal
+## 
+## attached base packages:
+## [1] stats     graphics  grDevices utils     datasets  methods   base     
+## 
+## other attached packages:
+##  [1] InformationValue_1.2.3 pROC_1.18.5            caret_6.0-94          
+##  [4] lattice_0.22-6         expss_0.11.6           lubridate_1.9.3       
+##  [7] forcats_1.0.0          purrr_1.0.2            readr_2.1.5           
+## [10] tidyr_1.3.1            ggplot2_3.5.1          tidyverse_2.0.0       
+## [13] microdatasus_2.3.3     data.table_1.16.0      reshape2_1.4.4        
+## [16] tibble_3.2.1           stringr_1.5.1          dplyr_1.1.4           
+## [19] kableExtra_1.4.0       maditr_0.8.4           ape_5.8               
+## 
+## loaded via a namespace (and not attached):
+##  [1] tidyselect_1.2.1     viridisLite_0.4.2    timeDate_4041.110   
+##  [4] farver_2.1.2         fastmap_1.2.0        digest_0.6.37       
+##  [7] rpart_4.1.23         timechange_0.3.0     lifecycle_1.0.4     
+## [10] survival_3.7-0       magrittr_2.0.3       compiler_4.4.1      
+## [13] rlang_1.1.4          sass_0.4.9           tools_4.4.1         
+## [16] utf8_1.2.4           yaml_2.3.10          knitr_1.48          
+## [19] labeling_0.4.3       htmlwidgets_1.6.4    plyr_1.8.9          
+## [22] xml2_1.3.6           withr_3.0.1          stats4_4.4.1        
+## [25] nnet_7.3-19          grid_4.4.1           fansi_1.0.6         
+## [28] future_1.34.0        colorspace_2.1-1     globals_0.16.3      
+## [31] scales_1.3.0         iterators_1.0.14     MASS_7.3-61         
+## [34] cli_3.6.3            rmarkdown_2.28       crayon_1.5.3        
+## [37] generics_0.1.3       future.apply_1.11.2  rstudioapi_0.16.0   
+## [40] tzdb_0.4.0           cachem_1.1.0         splines_4.4.1       
+## [43] parallel_4.4.1       matrixStats_1.4.1    vctrs_0.6.5         
+## [46] hardhat_1.4.0        Matrix_1.7-0         jsonlite_1.8.9      
+## [49] hms_1.1.3            htmlTable_2.4.3      listenv_0.9.1       
+## [52] systemfonts_1.1.0    foreach_1.5.2        fontawesome_0.5.2   
+## [55] gower_1.0.1          jquerylib_0.1.4      recipes_1.1.0       
+## [58] parallelly_1.38.0    glue_1.8.0           codetools_0.2-20    
+## [61] stringi_1.8.4        gtable_0.3.5         munsell_0.5.1       
+## [64] pillar_1.9.0         htmltools_0.5.8.1    ipred_0.9-15        
+## [67] lava_1.8.0           R6_2.5.1             evaluate_1.0.0      
+## [70] highr_0.11           backports_1.5.0      bslib_0.8.0         
+## [73] class_7.3-22         Rcpp_1.0.13          prodlim_2024.06.25  
+## [76] svglite_2.1.3        nlme_3.1-166         checkmate_2.3.2     
+## [79] xfun_0.48            ModelMetrics_1.2.2.2 pkgconfig_2.0.3</code></pre>
+<p><br />
+</p>
+<pre class="r"><code>end_time &lt;- Sys.time()
+end_time - start_time</code></pre>
+<pre><code>## Time difference of 1.031664 secs</code></pre>
+</div>
+
+
+
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open');
+  });
+});
+</script>
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
