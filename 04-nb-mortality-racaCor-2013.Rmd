@@ -1,0 +1,512 @@
+---
+title: "Accessing the Raça/Cor Variable in DATASUS"
+author: "Gepoliano Chaves"
+date: "October 25th, 2024"
+output:
+  html_document:
+    df_print: paged
+    toc: true
+bibliography: references.bib
+---
+
+\
+
+Para verificação da variável raça/cor foi utilizado o vídeo do Fábio @Rocha2023 como referência.
+
+\
+
+## Load libraries
+
+\
+
+
+```{r load libraries, message=F, warning=F}
+library(microdatasus)
+library(dplyr)
+library(tidyverse)
+library(maditr)
+library(kableExtra)
+```
+
+\
+
+## Coleta e Processamento de dados
+
+\
+
+
+#### Carregando dados processados e calculando tempo para carregar
+
+\
+
+```{r}
+start_time <- Sys.time()
+dados <- readRDS("data/dados_2000_2015.rds")
+end_time <- Sys.time()
+end_time - start_time
+```
+
+\
+
+Recuperando dados todo o Brasil
+
+```{r}
+start_time <- Sys.time()
+data_estados <- readRDS("data/data_estados.rds")
+end_time <- Sys.time()
+end_time - start_time
+```
+
+
+\
+
+## Gráficos de Mortalidade Anual
+
+\
+
+#### Selecionar variáveis e processá-las para obter ano de óbito do paciente
+
+\
+
+Transforma variável DTOBITO usando função dmy criando variável (coluna) YMD em yyyy-mm-dd. Referência: https://rstudio.github.io/cheatsheets/html/lubridate.html
+
+```{r}
+library(lubridate)
+dados_selected <- dados %>%
+  select(contador, RACACOR, DTOBITO, CAUSABAS, DTNASC, IDADE) %>%
+  mutate(YMD = dmy(dados$DTOBITO))
+```
+
+\
+
+Split Each Sample
+
+```{r}
+library(stringr)
+dados_year <- str_split_fixed(dados_selected$YMD, "-", 3)
+```
+
+\
+
+Construct Vector Maintaining parts of interest
+
+```{r}
+split_vector_year <- paste0(dados_year[,1])
+```
+
+\
+
+Add vector to DF, after column of interest. dados_appended pode ser usado para isolar a causa básica.
+
+```{r}
+dados_appended <- add_column(dados_selected, year = split_vector_year, .after = "YMD")
+```
+
+\
+
+#### Agrupar dados pela variável *years* a fim de contar o número anual de indivíduos 
+
+\
+
+Referência: https://dplyr.tidyverse.org/reference/group_by.html
+
+Cálculos com valores anuais totais:
+
+```{r}
+dados_agregados_year <- dados_appended %>%
+  group_by(year) %>%
+  summarise(n = n())
+```
+
+Remover NAs dos dados agregados por ano
+
+```{r}
+dados_agregados_year <- dados_agregados_year[ which(
+  dados_agregados_year$year != "NA"), ]
+```
+
+\
+
+#### Agrupar por raça/cor para calcular percentagem de brancos auto-declarados
+
+use cast() to convert data frame from long to wide format
+
+```{r}
+wide_data_estados <- dcast(data_estados, UF ~ RACACOR)
+```
+
+\
+
+Renomenando colunas
+
+```{r Renomenando colunas}
+names(wide_data_estados)[3] ="branca"
+names(wide_data_estados)[4] ="preta"
+names(wide_data_estados)[5] ="amarela"
+names(wide_data_estados)[6] ="parda"
+names(wide_data_estados)[7] ="indigena"
+```
+
+\
+
+Construindo variável wide_data_estados com total de indivíduos mortos, por todas as causas, em todos os estados:
+
+```{r variável com total de indivíduos mortos, eval=T}
+data_estados_brancos <- wide_data_estados %>%
+  mutate(sum = rowSums(across(c(#"NA",
+                                "branca", "preta", 
+                                "amarela", "parda", "indigena"))))
+```
+
+\
+
+Calcula percentual de pessoas brancas falecidas por estado
+
+```{r Percentual de brancos por estado, eval=T}
+data_estados_brancos_perct <- data_estados_brancos %>%
+  mutate(brancos = branca/sum)
+
+data_estados_raca_perct <- data_estados_brancos %>%
+  mutate(branca_perc = branca/sum)%>%
+  mutate(preta_perc = preta/sum)%>%
+  mutate(amarela_perc = amarela/sum)%>%
+  mutate(parda_perc = parda/sum)
+```
+
+\
+
+### Mortalidade Anual Total
+
+\
+
+```{r}
+library(ggplot2)
+# Basic line plot with points
+ggplot(data=dados_agregados_year, aes(x=year, y=n, group=1)) +
+  geom_line()+
+  geom_point()
+```
+
+\
+
+### Mortalidade Anual Total Usando Variável Raça/Cor
+
+\
+
+Mortalidade anual total (figura acima) e mortalidade anual usando a variável Raça/Cor (figura abaixo) foram feitas usando @STHTDA202408 como referência.
+
+```{r}
+dados_race_year_selcd <- dados_appended %>%
+  select(RACACOR, year)
+
+dados_agrupados_racaCor <- dados_race_year_selcd %>%
+  group_by(RACACOR) %>%
+  summarise(n = n())
+```
+
+
+```{r}
+library(reshape2)
+
+#use cast() to convert data frame from long to wide format
+wide_dados_appended <- dcast(dados_race_year_selcd, year ~ RACACOR)
+# wide_dados_appended <- dcast(dados_race_year_selcd, RACACOR ~ year)
+
+# Melt the data frame
+dados_appended_melted <- melt(wide_dados_appended, id.vars = "year")
+```
+
+\
+
+Obter variável raça/cor como palavras descritivas ao invés de números.
+
+```{r ifelse raca cor para visualização 1, eval=T}
+dados_appended_melted <- dados_appended_melted %>%
+  dplyr::mutate(raca_cor_factor = ifelse(dados_appended_melted$variable == "1", "branca", 
+                                         ifelse(dados_appended_melted$variable == "2", "preta",
+                                                ifelse(dados_appended_melted$variable == "3", "amarela",
+                                                       ifelse(dados_appended_melted$variable == "4", "parda", 
+                                                              ifelse(dados_appended_melted$variable == "5", "indígena",
+                                                                     ifelse(dados_appended_melted$variable == "9", "ignorado","0")))))))
+```
+
+\
+
+Remove NA in year
+
+```{r}
+dados_appended_melted <- dados_appended_melted[ which(
+  dados_appended_melted$year != "NA"), ]
+```
+
+Remove 0 in raça/cor
+
+```{r}
+dados_appended_melted <- dados_appended_melted[ which(
+  dados_appended_melted$raca_cor_factor != "0"), ]
+```
+
+
+Visualizar plot
+
+```{r}
+ggplot(dados_appended_melted, aes(x=year, y=value, group=raca_cor_factor)) +
+  geom_line(aes(linetype=raca_cor_factor))+
+  geom_point()
+
+# wait to change the variable names:
+
+# names(dados_appended_melted)[names(dados_appended_melted) == 'variable'] <- 'RACACOR'
+# names(dados_appended_melted)[names(dados_appended_melted) == 'value'] <- 'n'
+```
+
+\
+
+### Mortalidade Anual Total por Neuroblastoma
+
+\
+
+dados_nb contém o número total de mortes por neuroblastoma ao longo do período 2000-2015:
+
+```{r}
+dados_nb <- dados_appended[ which(
+  dados_appended$CAUSABAS == "C749"), ]
+dim(dados_nb)
+```
+
+\
+
+Então, conta-se o número por ano
+
+```{r}
+dados_agregados_nb_year <- dados_nb %>%
+  group_by(year) %>%
+  summarise(n = n())
+```
+
+\
+
+Então, usando-se o objeto dados_agregados_nb_year plota-se o número de mortes por neuroblastoma por ano:
+
+```{r}
+ggplot(data=dados_agregados_nb_year, aes(x=year, y=n, group=1)) +
+  geom_line()+
+  geom_point()
+```
+
+\
+
+### Mortalidade por Neuroblastoma por estado (2013)
+
+\
+
+dados_estados_nb_2013 contém o número total de mortes por neuroblastoma por estado em 2013:
+
+```{r}
+dados_estados_nb_2013 <- data_estados[ which(
+  data_estados$CAUSABAS == "C749"), ]
+dim(dados_estados_nb_2013)
+```
+
+\
+
+Insert Region Label
+
+```{r}
+dados_estados_nb_2013$Region=ifelse(dados_estados_nb_2013$UF =="MA"
+                                   |dados_estados_nb_2013$UF =="PI"
+                                   |dados_estados_nb_2013$UF =="CE"
+                                   |dados_estados_nb_2013$UF =="RN"
+                                   |dados_estados_nb_2013$UF =="PB"
+                                   |dados_estados_nb_2013$UF =="PE"
+                                   |dados_estados_nb_2013$UF =="AL"
+                                   |dados_estados_nb_2013$UF =="SE"
+                                   |dados_estados_nb_2013$UF =="BA",
+                                   "Northeast",
+                                   ifelse(dados_estados_nb_2013$UF =="RR"
+                                   |dados_estados_nb_2013$UF =="AP"
+                                   |dados_estados_nb_2013$UF =="PA"
+                                   |dados_estados_nb_2013$UF =="AM"
+                                   |dados_estados_nb_2013$UF =="AC"
+                                   |dados_estados_nb_2013$UF =="RO"
+                                   |dados_estados_nb_2013$UF =="TO",
+                                   "North",
+                                   ifelse(dados_estados_nb_2013$UF =="SP"
+                                   |dados_estados_nb_2013$UF =="RJ"
+                                   |dados_estados_nb_2013$UF =="ES"
+                                   |dados_estados_nb_2013$UF =="MG",
+                                   "Southeast",
+                                   ifelse(dados_estados_nb_2013$UF =="MT"
+                                   |dados_estados_nb_2013$UF =="MS"
+                                   |dados_estados_nb_2013$UF =="GO"
+                                   |dados_estados_nb_2013$UF =="DF",
+                                   "Center-West",
+                                   ifelse(dados_estados_nb_2013$UF =="RS"
+                                   |dados_estados_nb_2013$UF =="PR"
+                                   |dados_estados_nb_2013$UF =="SC",
+                                   "South",0)))))
+
+kable(dados_estados_nb_2013, caption="dados_estados_nb_2013") %>%
+  kable_styling("striped", full_width = F, font_size = 12) %>%
+  scroll_box(width = "100%", height = "600px")
+dim(dados_estados_nb_2013)
+```
+
+use cast() to convert data frame from long to wide format
+
+```{r}
+wide_data_nb_2013 <- dcast(dados_estados_nb_2013, UF ~ RACACOR)
+```
+
+\
+
+Renomenando colunas. Interessante notar não parecer haver parda e indígena:
+
+```{r Renomenando colunas em wide_data_nb_2013}
+names(wide_data_nb_2013)[3] ="branca"
+names(wide_data_nb_2013)[4] ="preta"
+names(wide_data_nb_2013)[5] ="amarela"
+# names(wide_data_nb_2013)[6] ="parda"
+# names(wide_data_nb_2013)[7] ="indigena"
+```
+
+\
+
+Construindo variável wide_data_estados com total de indivíduos mortos, por todas as causas, em todos os estados:
+
+```{r variável com total de indivíduos mortos data_nb_2013_estados_brancos, eval=T}
+data_nb_2013_estados_brancos <- wide_data_nb_2013 %>%
+  mutate(sum = rowSums(across(c(#"NA",
+                                "branca", "preta", 
+                                "amarela"#, #"parda", 
+                                #"indigena"
+                                ))))
+```
+
+\
+
+Calcula percentual de pessoas brancas falecidas por estado
+
+```{r Percentual de brancos por estado data_nb_2013_estados_brancos_perct, eval=T}
+data_nb_2013_estados_perct <- data_nb_2013_estados_brancos %>%
+  mutate(branca_perc = branca/sum)%>%
+  mutate(preta_perc = preta/sum)%>%
+  mutate(amarela_perc = amarela/sum)
+
+# data_estados_brancos_perct <- saveRDS(data_nb_2013_estados_perct,
+#                                       file = "../../ReComBio Scientific/geraldo/data/data_nb_2013_estados_perct.rds")
+```
+
+\
+
+## Table
+
+\
+
+```{r}
+kable(dados_nb, caption="dados_nb") %>%
+  kable_styling("striped", full_width = F, font_size = 12) %>%
+  scroll_box(width = "100%", height = "600px")
+dim(dados_nb)
+```
+
+```{r}
+dados_nb_race_year_selcd <- dados_nb %>%
+  select(RACACOR, year)
+
+dados_nb_race_2013_selcd <- dados_estados_nb_2013 %>%
+  select(RACACOR, CAUSABAS)
+```
+
+```{r}
+kable(dados_nb_race_2013_selcd, caption="dados_nb_race_2013_selcd") %>%
+  kable_styling("striped", full_width = F, font_size = 12) %>%
+  scroll_box(width = "100%", height = "600px")
+dim(dados_nb_race_2013_selcd)
+```
+
+\
+
+use cast() to convert data frame from long to wide format
+
+```{r}
+library(reshape2)
+wide_dados_nb_appended <- dcast(dados_nb_race_year_selcd, year ~ RACACOR)
+```
+
+\
+
+Melt the data frame
+
+\
+
+```{r}
+dados_nb_appended_melted <- melt(wide_dados_nb_appended, id.vars = "year")
+```
+
+Obter variável raça/cor como palavras descritivas ao invés de números.
+
+```{r ifelse raca cor para visualização 2, eval=T}
+dados_nb_appended_melted <- dados_nb_appended_melted %>%
+  dplyr::mutate(raca_cor_factor = ifelse(dados_nb_appended_melted$variable == "1", "branca", 
+                                         ifelse(dados_nb_appended_melted$variable == "2", "preta",
+                                                ifelse(dados_nb_appended_melted$variable == "3", "amarela",
+                                                       ifelse(dados_nb_appended_melted$variable == "4", "parda", 
+                                                              ifelse(dados_nb_appended_melted$variable == "5", "indígena",
+                                                                     ifelse(dados_nb_appended_melted$variable == "9", "ignorado","0")))))))
+```
+
+\
+
+Remove NA in year
+
+```{r}
+dados_nb_appended_melted <- dados_nb_appended_melted[ which(
+  dados_nb_appended_melted$year != "NA"), ]
+```
+
+\
+
+Remove 0 in raça/cor
+
+```{r}
+dados_nb_appended_melted <- dados_nb_appended_melted[ which(
+  dados_nb_appended_melted$raca_cor_factor != "0"), ]
+```
+
+\
+
+Visualizar plot
+
+```{r}
+ggplot(dados_nb_appended_melted, aes(x=year, y=value, group=raca_cor_factor, color=raca_cor_factor)) +
+  geom_line(aes(linetype=raca_cor_factor))+
+  geom_point()
+```
+
+\
+
+Stacked Graph
+
+```{r}
+ggplot(dados_nb_appended_melted, aes(fill=raca_cor_factor, y=value, x=year)) + 
+    geom_bar(position="stack", stat="identity")
+```
+
+
+\
+
+Stacked + Graph
+
+```{r}
+ggplot(dados_nb_appended_melted, aes(fill=raca_cor_factor, y=value, x=year)) + 
+    geom_bar(position="fill", stat="identity")
+```
+
+\
+
+## References
+
+<div id="refs"></div>
+
+
