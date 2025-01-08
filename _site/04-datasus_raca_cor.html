@@ -439,7 +439,7 @@ class="section level4">
 dados &lt;- readRDS(&quot;data/dados_2000_2015.rds&quot;)
 end_time &lt;- Sys.time()
 end_time - start_time</code></pre>
-<pre><code>## Time difference of 18.65891 secs</code></pre>
+<pre><code>## Time difference of 18.62773 secs</code></pre>
 <p><br />
 </p>
 <p>Recuperando dados todo o Brasil</p>
@@ -447,7 +447,7 @@ end_time - start_time</code></pre>
 data_estados &lt;- readRDS(&quot;data/data_estados.rds&quot;)
 end_time &lt;- Sys.time()
 end_time - start_time</code></pre>
-<pre><code>## Time difference of 0.294894 secs</code></pre>
+<pre><code>## Time difference of 0.2948558 secs</code></pre>
 <p><br />
 </p>
 </div>
@@ -581,8 +581,7 @@ dados_selected &lt;- dados %&gt;%
   select(contador, RACACOR, DTOBITO, CAUSABAS, DTNASC, IDADE) %&gt;%
   mutate(YMD = dmy(dados$DTOBITO))</code></pre>
 <pre><code>## Warning: There was 1 warning in `mutate()`.
-## ℹ In argument: `YMD =
-##   dmy(dados$DTOBITO)`.
+## ℹ In argument: `YMD = dmy(dados$DTOBITO)`.
 ## Caused by warning:
 ## !  294 failed to parse.</code></pre>
 <pre class="r"><code>library(stringr)
