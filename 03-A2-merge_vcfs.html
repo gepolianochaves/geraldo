@@ -1,0 +1,867 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+<meta name="author" content="Gepoliano Chaves" />
+
+
+<title>Genotype Information Extraction</title>
+
+<script src="site_libs/header-attrs-2.28/header-attrs.js"></script>
+<script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/lumen.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<style>h1 {font-size: 34px;}
+       h1.title {font-size: 38px;}
+       h2 {font-size: 30px;}
+       h3 {font-size: 24px;}
+       h4 {font-size: 18px;}
+       h5 {font-size: 16px;}
+       h6 {font-size: 12px;}
+       code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
+       pre:not([class]) { background-color: white }</style>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<link href="site_libs/highlightjs-9.12.0/default.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+<link href="site_libs/pagedtable-1.1/css/pagedtable.css" rel="stylesheet" />
+<script src="site_libs/pagedtable-1.1/js/pagedtable.js"></script>
+<link href="site_libs/font-awesome-6.4.2/css/all.min.css" rel="stylesheet" />
+<link href="site_libs/font-awesome-6.4.2/css/v4-shims.min.css" rel="stylesheet" />
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+<style type="text/css">code{white-space: pre;}</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+
+
+<style type="text/css">
+/* for pandoc --citeproc since 2.11 */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+}
+.hanging div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}
+</style>
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+details > summary > p:only-child {
+  display: inline;
+}
+pre code {
+  padding: 0;
+}
+</style>
+
+
+<style type="text/css">
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #adb5bd;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script type="text/javascript">
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark the anchor link active (and if it's in a dropdown, also mark that active)
+  var dropdown = menuAnchor.closest('li.dropdown');
+  if (window.bootstrap) { // Bootstrap 4+
+    menuAnchor.addClass('active');
+    dropdown.find('> .dropdown-toggle').addClass('active');
+  } else { // Bootstrap 3
+    menuAnchor.parent().addClass('active');
+    dropdown.addClass('active');
+  }
+
+  // Navbar adjustments
+  var navHeight = $(".navbar").first().height() + 15;
+  var style = document.createElement('style');
+  var pt = "padding-top: " + navHeight + "px; ";
+  var mt = "margin-top: -" + navHeight + "px; ";
+  var css = "";
+  // offset scroll position for anchor links (for fixed navbar)
+  for (var i = 1; i <= 6; i++) {
+    css += ".section h" + i + "{ " + pt + mt + "}\n";
+  }
+  style.innerHTML = "body {" + pt + "padding-bottom: 40px; }\n" + css;
+  document.head.appendChild(style);
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before, .tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "\e259";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "\e258";
+  font-family: 'Glyphicons Halflings';
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+
+
+<div class="navbar navbar-inverse  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-bs-toggle="collapse" data-target="#navbar" data-bs-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">Gerenciamento Genômico e Algorítmico de Fenótipos, Riscos, Diagnósticos e Prognósticos em Dados de Doenças em Brasileiros</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">
+    <span class="fa fa-home"></span>
+     
+    Home
+  </a>
+</li>
+<li>
+  <a href="quokka-bilby.html">
+    <span class="fa fa-solid fa-circle-info"></span>
+     
+    Sobre nós
+  </a>
+</li>
+<li>
+  <a href="codigo.html">
+    <span class="fa fa-solid fa-laptop-file"></span>
+     
+    Códigos
+  </a>
+</li>
+<li>
+  <a href="PmD.html">
+    <span class="fa fa-solid fa-people-arrows"></span>
+     
+    PmD
+  </a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div id="header">
+
+
+
+<h1 class="title toc-ignore">Genotype Information Extraction</h1>
+<h4 class="author">Gepoliano Chaves</h4>
+<h4 class="date">June 24th, 2024</h4>
+
+</div>
+
+<div id="TOC">
+<ul>
+<li><a href="#summary" id="toc-summary">Summary</a></li>
+<li><a href="#load-libraries" id="toc-load-libraries">Load
+libraries</a></li>
+<li><a href="#compressing-and-indexing-vcf-files"
+id="toc-compressing-and-indexing-vcf-files">1. Compressing and indexing
+VCF files</a></li>
+<li><a href="#merging-vcf-files" id="toc-merging-vcf-files">2. Merging
+VCF files</a></li>
+<li><a href="#extract-ped-and-map-from-merged-vcf-file"
+id="toc-extract-ped-and-map-from-merged-vcf-file">3. Extract ped and map
+from merged vcf file</a>
+<ul>
+<li><a href="#bcftools-query-commands"
+id="toc-bcftools-query-commands">3.1 Bcftools query commands</a></li>
+<li><a href="#metadata-sample-ids-in-files"
+id="toc-metadata-sample-ids-in-files">3.2. Metadata Sample IDs in
+Files</a></li>
+</ul></li>
+<li><a href="#references" id="toc-references">6. References</a></li>
+<li><a href="#session-info" id="toc-session-info">7. Session
+Info</a></li>
+</ul>
+</div>
+
+<p><br />
+</p>
+<div id="summary" class="section level2">
+<h2>Summary</h2>
+<p><br />
+</p>
+<p>In this activity we process VCF files to generate a genotype file to
+be used in the machine learning framework.</p>
+<p><br />
+</p>
+</div>
+<div id="load-libraries" class="section level2">
+<h2>Load libraries</h2>
+<p><br />
+</p>
+<pre class="r"><code>library(maditr)
+library(kableExtra)
+library(dplyr)
+library(stringr)
+library(tibble)</code></pre>
+<p>2|6 Associação Biológica.Rmd</p>
+<p><br />
+</p>
+</div>
+<div id="compressing-and-indexing-vcf-files" class="section level2">
+<h2>1. Compressing and indexing VCF files</h2>
+<p><br />
+</p>
+<p>Como a cada amostra corresponde um arquivo VCF, em nossa pipeline,
+precisamos mesclar todos os arquivos VCF correspondentes a todos os
+indivíduos em análise no nosso estudo. A palavra em inglês
+correspondente a mesclar é <em>merge</em>. Nos códigos executados
+abaixo, a palavra <em>merge</em> traz a ideia de que o arquivo que leva
+este nome, é produto de um comando de mesclagem. Para o comando de
+mesclagem que executaremos, é necessário os passos de compressão e
+indexamento, ilustrados abaixo.</p>
+<ul>
+<li>Create folder compIndex to move files that will be compressed and
+indezed</li>
+</ul>
+<pre class="bash"><code>mkdir -p compIndex</code></pre>
+<p>Copy files into compIndex folder:</p>
+<pre class="bash"><code>cp snps_vcf/* compIndex</code></pre>
+<p>Move to compIndex folder:</p>
+<pre class="bash"><code>cd compIndex</code></pre>
+<p>Before bgzip and tabix, run the following command. Need to ask IT why
+I have had to run this command.</p>
+<pre class="bash"><code>source ~/.bashrc</code></pre>
+<p>bgzip</p>
+<pre class="bash"><code>for x in *snps.vcf; do bgzip $x; done</code></pre>
+<p>tabix</p>
+<pre class="bash"><code>for x in *gz; do tabix $x; done</code></pre>
+<p><br />
+</p>
+</div>
+<div id="merging-vcf-files" class="section level2">
+<h2>2. Merging VCF files</h2>
+<p><br />
+</p>
+<p>É necessário mesclar o arquivo VCF proveniente de cada amostra, o
+qual foi comprimido e indexado no código anterior, formando um arquivo
+final, contendo todas as amostras do estudo. Como as amostras usadas
+aqui são provenientes do estudo publicado por Labadorf, o arquivo VCF
+final, contendo as mutações de todas as amostras, foi chamado de
+Labadorf_merged.vcf, indicando a ideia de que este arquivo é proveniente
+de um processo de mesclagem entre todas as amostras. O comando para
+mesclagem dos arquivos VCF, utilizando o software bcftools, está
+indicado abaixo.</p>
+<p>Before merging the vcf files, make sure bcftools is loaded:</p>
+<pre class="bash"><code>module load bcftools</code></pre>
+<p><br />
+</p>
+<p>This for loop generates the pattern that I need, replacing the ? with
+the slash ():</p>
+<pre class="bash"><code>/hb/home/gchaves/results/geraldo/mitochondria/compIndex
+for i in *_snps.vcf.gz; do echo $i; done | sed &#39;s/gz/gz ?/g&#39; | sed -r &#39;s/\?/\\/g&#39;</code></pre>
+<p><br />
+</p>
+<pre class="bash"><code>bcftools merge --missing-to-ref --force-samples \
+AF243627_snps.vcf.gz \
+AF243628_snps.vcf.gz \
+AF243629_snps.vcf.gz \
+AF243630_snps.vcf.gz \
+AF243631_snps.vcf.gz \
+AF243632_snps.vcf.gz \
+AF243633_snps.vcf.gz \
+AF243634_snps.vcf.gz \
+AF243635_snps.vcf.gz \
+AF243636_snps.vcf.gz \
+AF243637_snps.vcf.gz \
+AF243638_snps.vcf.gz \
+AF243639_snps.vcf.gz \
+AF243640_snps.vcf.gz \
+AF243700_snps.vcf.gz \
+AF243701_snps.vcf.gz \
+AF243702_snps.vcf.gz \
+AF243703_snps.vcf.gz \
+AF243704_snps.vcf.gz \
+AF243705_snps.vcf.gz \
+AF243706_snps.vcf.gz \
+AF243707_snps.vcf.gz \
+AF243708_snps.vcf.gz \
+AF243709_snps.vcf.gz \
+AF243780_snps.vcf.gz \
+AF243781_snps.vcf.gz \
+AF243782_snps.vcf.gz \
+AF243783_snps.vcf.gz \
+AF243784_snps.vcf.gz \
+AF243785_snps.vcf.gz \
+AF243786_snps.vcf.gz \
+AF243787_snps.vcf.gz \
+AF243788_snps.vcf.gz \
+AF243789_snps.vcf.gz \
+AF243790_snps.vcf.gz \
+AF243791_snps.vcf.gz \
+AF243792_snps.vcf.gz \
+AF243793_snps.vcf.gz \
+AF243794_snps.vcf.gz \
+AF243795_snps.vcf.gz \
+AF243796_snps.vcf.gz &gt; mt_merged.vcf</code></pre>
+<p><br />
+</p>
+<p>Print number of lines in the merged vcf file</p>
+<pre class="bash"><code>wc -l mt_merged.vcf
+382 mt_merged.vcf</code></pre>
+<p><br />
+</p>
+<p>This should fill the genotypes with the reference, however did not
+work for me.</p>
+<p><a href="https://github.com/samtools/bcftools/issues/402"
+class="uri">https://github.com/samtools/bcftools/issues/402</a></p>
+<pre class="bash"><code>bcftools +setGT mt_merged.vcf -Ob -o filled.bcf -- -t . -n 0</code></pre>
+<pre class="bash"><code>bcftools +missing2ref  mt_merged.vcf -o filled.bcf</code></pre>
+<p>BWA Machine Learning:</p>
+<p><a
+href="https://academic.oup.com/bioinformatics/article/38/9/2404/6543607"
+class="uri">https://academic.oup.com/bioinformatics/article/38/9/2404/6543607</a></p>
+<p><br />
+</p>
+</div>
+<div id="extract-ped-and-map-from-merged-vcf-file"
+class="section level2">
+<h2>3. Extract ped and map from merged vcf file</h2>
+<p><br />
+</p>
+<p>The steps in this session were initially thought for plink downstream
+analysis. The first step here is to move the merged vcf file to another
+folder:</p>
+<pre class="bash"><code>cd ..
+mkdir -p merged_vcf
+mv compIndex/mt_merged.vcf merged_vcf
+cd merged_vcf</code></pre>
+<p><br />
+</p>
+<p>This command can extract the ped and map file but the problem that
+this command won’t work for mtDNA is because this command only works
+with bialelic data, which is not the case for mtDNA.</p>
+<pre class="bash"><code>vcftools --vcf mt_merged.vcf --out mt_plink --plink</code></pre>
+<p><br />
+</p>
+<p>Extract information from merged vcf file</p>
+<p>In the bcftools <span
+class="citation">(<strong>BCFtools2024?</strong>)</span> documentation
+there are a lot of good examples about how to extract genotype
+information with the samples:</p>
+<p><a href="http://www.htslib.org/doc/bcftools.html#query"
+class="uri">http://www.htslib.org/doc/bcftools.html#query</a></p>
+<p>This chunk yields a result for the query option:</p>
+<pre class="bash"><code>bcftools query -f &#39;%CHROM %POS  %REF  %ALT %QUAL\n&#39; mt_merged.vcf</code></pre>
+<p>Modifying chunk from above with chunk from below:</p>
+<pre class="bash"><code>bcftools query -f &#39;%CHROM\t%POS\t%REF\t%ALT[\t%SAMPLE=%GT]\n&#39; mt_merged.vcf</code></pre>
+<p>Compare with chunk above</p>
+<pre class="bash"><code>bcftools query -f &#39;%CHROM\t%POS\t%REF\t%ALT[\t%QUAL]\n&#39; mt_merged.vcf
+bcftools query -f &#39;%CHROM\t%POS\t%REF\t%ALT[\t%FILTER]\n&#39; mt_merged.vcf
+bcftools query -f &#39;%CHROM %POS  %REF  %ALT %QUAL\n&#39; mt_merged.vcf</code></pre>
+<p>Print chromosome, position, ref allele and the first alternate
+allele</p>
+<pre class="bash"><code>bcftools query -f &#39;%CHROM  %POS  %REF  %ALT{0}\n&#39; mt_merged.vcf</code></pre>
+<p>Similar to above, but use tabs instead of spaces, add sample name and
+genotype</p>
+<pre class="bash"><code>bcftools query -f &#39;%CHROM\t%POS\t%REF\t%ALT[\t%SAMPLE=%GT]\n&#39; mt_merged.vcf</code></pre>
+<p>bcftools query -f ’%CHROMhis printed IDs as dots</p>
+<pre class="bash"><code>bcftools query -f &#39;%CHROM\t%POS\t%REF\t%ALT[\t%ID]\n&#39; mt_merged.vcf </code></pre>
+<p>This also did not work: <a
+href="https://github.com/samtools/bcftools/issues/144"
+class="uri">https://github.com/samtools/bcftools/issues/144</a></p>
+<pre class="bash"><code>bcftools query -f &#39;%CHROM %POS[ %IUPACGT]\n&#39; mt_merged.vcf</code></pre>
+<p>Print FORMAT/GT fields followed by FORMAT/GT fields</p>
+<pre class="bash"><code>bcftools query -f &#39;GQ:[ %GQ] \t GT:[ %GT]\n&#39; mt_merged.vcf</code></pre>
+<p>Print only samples with alternate (non-reference) genotypes</p>
+<pre class="bash"><code>bcftools query -f&#39;[%CHROM:%POS %SAMPLE %GT\n]&#39; -i&#39;GT=&quot;alt&quot;&#39; mt_merged.vcf</code></pre>
+<p><br />
+</p>
+<div id="bcftools-query-commands" class="section level3">
+<h3>3.1 Bcftools query commands</h3>
+<p><br />
+</p>
+<p>Commands that worked to extract genotypes</p>
+<pre class="bash"><code>
+cd /hb/home/gchaves/results/geraldo/mitochondria/test
+## This worked:
+bcftools query -f&#39;[%CHROM:%POS:%SAMPLE \n]&#39; AF243780_snps.vcf 
+## This also worked:
+bcftools query -f&#39;[%CHROM:%POS:%SAMPLE \n]&#39; AF243780.bcf
+## This worked as well:
+bcftools query -f&#39;[%CHROM:%POS:%SAMPLE \n]&#39; ../merged_vcf/mt_merged.vcf
+## This did not work:
+bcftools query -f &#39;%CHROM\t%POS\t%REF\t%ALT%SAMPLE \n&#39; ../merged_vcf/mt_merged.vcf
+## But just adding the [], this worked:
+bcftools query -f &#39;[%CHROM\t%POS\t%REF\t%ALT%SAMPLE \n]&#39; ../merged_vcf/mt_merged.vcf</code></pre>
+<p><br />
+</p>
+<div id="extract-genotypes-with-bcftools-query-command"
+class="section level4">
+<h4>3.1.1 Extract genotypes with Bcftools Query Command</h4>
+<p><br />
+</p>
+<p>Note that in the chunk above, it was inputing from the folder above:
+../merged_vcf/ Finally output to the mt_extracted.txt file. The
+mt_extracted.txt file is created using the bcftools query command and
+contains the SNPs that we can work with:</p>
+<pre class="bash"><code>bcftools query -f &#39;[%CHROM\t%POS\t%REF\t%ALT%SAMPLE \n]&#39; mt_merged.vcf  &gt; mt_extracted.txt
+# Try to get genotype information
+bcftools query -f &#39;[%CHROM\t%POS\t%GT\t%PL%SAMPLE \n]&#39; mt_merged.vcf
+bcftools query -f &#39;%CHROM %POS[\t%GT\t%PL]\n&#39;</code></pre>
+<p><br />
+</p>
+<p>Extract all positions from mt_merged.vcf file and print all
+positions</p>
+<pre class="bash"><code>bcftools query -f &#39;pos=%POS\n&#39; mt_merged.vcf | awk -F&#39;=&#39; &#39;{print $2}&#39; &gt; merged_vcf_positions.txt</code></pre>
+<p><br />
+</p>
+<p>This simple for loop looks into all vcf file to look for
+mutation:</p>
+<pre class="bash"><code>for vcf_file in *_snps.vcf; do 
+  echo $vcf_file
+  for position in 16069 16111; do
+    echo $position
+    grep --color $position $vcf_file; done
+    done</code></pre>
+<p><br />
+</p>
+<p>This script is more complex and starts to print all information that
+I want</p>
+<pre class="bash"><code>for vcf_file in *_snps.vcf; do 
+  echo $vcf_file
+  for position in 16069 16111; do
+    if
+      grep --color -q -w $position $vcf_file
+    then
+      echo &quot;position in file&quot;
+    else
+      echo &quot;mutation is not in file&quot;
+    fi
+  done;
+done</code></pre>
+<p><br />
+</p>
+<p>This is more complex and prints almost all information that I want.
+The last column is the name of the vcf file. There is a column in the
+middle that is the genotype column:</p>
+<pre class="bash"><code>for vcf_file in *_snps.vcf; do 
+  #echo $vcf_file
+  for position in 16069 16086 16093 16111; do
+    if
+      grep --color -q -w $position $vcf_file
+    then
+      ref=$(grep -w $position $i | awk &#39;{print $1, $2, $4, $5}&#39;  | awk -F &#39;,&#39; &#39;{print $1}&#39; | awk &#39;{print $3}&#39;) 
+      alt=$(grep -w $position $i | awk &#39;{print $1, $2, $4, $5}&#39;  | awk -F &#39;,&#39; &#39;{print $1}&#39; | awk &#39;{print $4}&#39;) 
+      echo  &quot;MT_&quot;$position&quot;bp&quot; $i&quot;    &quot;$ref&quot;1&quot;$alt &quot;  then is  &quot; $vcf_file
+    else
+      echo  &quot;MT_&quot;$position&quot;bp&quot; $i&quot;    &quot;$ref&quot;0&quot;$ref &quot;  else is  &quot; $vcf_file
+    fi
+  done;
+done</code></pre>
+<p><br />
+</p>
+<p>This script now prints variant name, the genotype of the variant and
+file name:</p>
+<pre class="bash"><code>cd /hb/home/gchaves/results/geraldo/mitochondria/snps_vcf
+for vcf_file in *_snps.vcf; do 
+  for position in 16069 16086 16093 16111 16124; do
+    if
+      grep --color -q -w $position $vcf_file
+    then
+      ref=$(grep -w $position $i | awk &#39;{print $1, $2, $4, $5}&#39;  | awk -F &#39;,&#39; &#39;{print $1}&#39; | awk &#39;{print $3}&#39;) 
+      alt=$(grep -w $position $i | awk &#39;{print $1, $2, $4, $5}&#39;  | awk -F &#39;,&#39; &#39;{print $1}&#39; | awk &#39;{print $4}&#39;) 
+      echo  &quot;MT_&quot;$position&quot;bp&quot; $i&quot;    &quot;$ref&quot;1&quot;$alt &quot;  then is  &quot; $vcf_file
+    else
+      echo  &quot;MT_&quot;$position&quot;bp&quot; $i&quot;    &quot;$ref&quot;0&quot;$ref &quot;  else is  &quot; $vcf_file
+    fi
+  done;
+done | awk -F &#39; &#39; &#39;{print $1, $3, $6}&#39;</code></pre>
+<p><br />
+</p>
+<p>For these positions, it was yielding an error, that I found the
+solution to fix:</p>
+<pre class="bash"><code>cd /hb/home/gchaves/results/geraldo/mitochondria/snps_vcf
+for vcf_file in *_snps.vcf; do 
+  for position in 16069 16086 16093 16111 16124 16126 16129 16144 16153 16172 16209 16222 16270 16294 16312 16327 16362; do
+    if
+      grep --color -q -w $position $vcf_file
+    then
+      ref=$(grep -w $position $i | awk &#39;{print $1, $2, $4, $5}&#39;  | awk -F &#39;,&#39; &#39;{print $1}&#39; | awk &#39;{print $3}&#39;) 
+      alt=$(grep -w $position $i | awk &#39;{print $1, $2, $4, $5}&#39;  | awk -F &#39;,&#39; &#39;{print $1}&#39; | awk &#39;{print $4}&#39;) 
+      echo  &quot;MT_&quot;$position&quot;bp&quot; $i&quot;    &quot;$ref&quot;1&quot;$alt &quot;  then is  &quot; $vcf_file
+    else
+      echo  &quot;MT_&quot;$position&quot;bp&quot; $i&quot;    &quot;$ref&quot;0&quot;$ref &quot;  else is  &quot; $vcf_file
+    fi
+  done;
+done | awk -F &#39; &#39; &#39;{print $1, $3, $6}&#39; | sed &#39;s/T0/0/g&#39; | sed &#39;s/0T/0/g&#39; | sed &#39;s/T1C/1/g&#39; &gt; genotypes2.txt</code></pre>
+<p><br />
+</p>
+<p>Transfer</p>
+<pre class="bash"><code>scp gchaves@hb.ucsc.edu:/hb/home/gchaves/results/geraldo/mitochondria/snps_vcf/genotypes2.txt \
+/Users/gepolianochaves/Desktop/Gepoliano/ReComBio\ Scientific/geraldo/data/genotypes2.txt</code></pre>
+<p><br />
+</p>
+<p>Count number of lines in file extracted from merged VCF:</p>
+<pre class="bash"><code>wc -l mt_extracted.txt 
+1196 mt_extracted.txt</code></pre>
+<p><br />
+</p>
+<p>Count number of lines in file extracted from merged VCF, in
+compIndex:</p>
+<pre class="bash"><code>cd /hb/home/gchaves/results/geraldo/mitochondria/compIndex
+wc -l mt_extracted.txt 
+1734 mt_extracted.txt</code></pre>
+<p><br />
+</p>
+<p>Print vcf file name and vcf sample name</p>
+<pre class="bash"><code>for vcf_file in *vcf; do bcftools query -f &#39;[%CHROM\t%POS\t%REF\t%ALT%SAMPLE \n]&#39; AF243780_snps.vcf | awk &#39;NR==1{print $4}&#39; |  awk -F &quot;&gt;&quot; &#39;{print &quot;1:&quot;$2}&#39;; done</code></pre>
+<p><br />
+</p>
+</div>
+</div>
+<div id="metadata-sample-ids-in-files" class="section level3">
+<h3>3.2. Metadata Sample IDs in Files</h3>
+<p><br />
+</p>
+<p>This part was run in the computational server where fasta sequences
+are located. fasta1.txt is the file that contains the fasta file IDs as
+extracted using the for loop. The for loop is performed in the fasta
+folder maintaining fasta ID only:</p>
+<pre class="bash"><code>cd /hb/home/gchaves/results/geraldo/mitochondria/fasta
+
+for fastaFile in AF*.fasta; do
+  ## Pick just the eight firt letters of the string
+  fastaFileName=${fastaFile:0:8}
+  echo &quot;$fastaFileName&quot;;
+  done &gt; fasta1.txt</code></pre>
+<p><br />
+</p>
+<p>These for loops will generate a number or index associated with each
+fasta file in the same order as in the for loop:</p>
+<pre class="bash"><code>for i in $(seq 1 26);do echo $i;done &gt; fasta.index
+for i in $(seq 1 34);do echo $i;done &gt; fasta.index
+for i in $(seq 1 41);do echo $i;done &gt; fasta.index</code></pre>
+<p><br />
+</p>
+<p>Then we can paste the fasta file names and the fasta file indexes
+together. We create a file with sample names matching GenBank IDs. We
+are naming the file, sampleIDs.txt:</p>
+<pre class="bash"><code>paste fasta1.txt fasta.index | awk -F &quot;\t&quot; &#39;{print $1&quot;\t&quot;$2&quot;:sample_1&quot;}&#39; | sed &#39;s/\t1:sample/\tsample/g&#39; &gt; sampleIDs.txt
+rm fasta1.txt
+rm fasta.index</code></pre>
+<p><br />
+</p>
+<p>Transfer sampleIDs.txt file</p>
+<pre class="bash"><code>scp gchaves@hb.ucsc.edu:/hb/home/gchaves/results/geraldo/mitochondria/fasta/sampleIDs.txt \
+/Users/gepolianochaves/Desktop/Gepoliano/ReComBio\ Scientific/geraldo/data</code></pre>
+<p><br />
+</p>
+<p>We then read the sampleIDs.txt files into R and rename the columns.
+sampleIDs.txt is a match of fasta file names and names given by bwa. In
+the R environment, we will have this as a dataframe matching the fasta
+IDs and the names given by bwa:</p>
+<p>This chunk was being evaluated before I started the PRS analysis</p>
+<pre class="r"><code>sampleIDs &lt;- read.table(&quot;data/sampleIDs.txt&quot;)
+names(sampleIDs)[1]&lt;-paste(&quot;GenBankID&quot;)
+names(sampleIDs)[2]&lt;-paste(&quot;sampleName&quot;)</code></pre>
+<p><br />
+</p>
+<p>We then read the metadata file into R. The metadata file contains the
+labels of the origin or the disease status for each sample. Read
+appended file into R and rename columns</p>
+<p>This chunk was being evaluated before I started the PRS analysis</p>
+<pre class="r"><code>metadataIDs &lt;- read.table(&quot;data/metadataIDs.txt&quot;)
+names(metadataIDs)[1]&lt;-paste(&quot;GenBankID&quot;)
+names(metadataIDs)[2]&lt;-paste(&quot;sampleName&quot;)
+names(metadataIDs)[3]&lt;-paste(&quot;origin&quot;)</code></pre>
+<p><br />
+</p>
+<p>VCF file format:</p>
+<p><a href="https://github.com/samtools/bcftools/issues/956"
+class="uri">https://github.com/samtools/bcftools/issues/956</a></p>
+<p><a href="http://samtools.github.io/hts-specs/VCFv4.3.pdf"
+class="uri">http://samtools.github.io/hts-specs/VCFv4.3.pdf</a></p>
+<p>This command prints these columns: chr, pos, ref&gt;alt</p>
+<pre class="bash"><code>cd /hb/home/gchaves/results/geraldo/mitochondria/compIndex
+awk -F &quot;&lt;*&gt;&quot; &#39;{print $1}&#39; mt_extracted.txt | awk -F &quot;,&quot; &#39;{print $1}&#39; | \
+awk -F &quot;\t&quot; &#39;{print $1&quot;\t&quot;$2&quot;\t&quot;$3&quot;&gt;&quot;$4}&#39; &gt;  file1.txt</code></pre>
+<p><br />
+</p>
+<p>And this part prints the IDs bwa gives to the samples. The bwa IDs
+are saved in the file2.txt file:</p>
+<pre class="bash"><code>cd /hb/home/gchaves/results/geraldo/mitochondria/compIndex
+awk -F &quot;&lt;*&gt;&quot; &#39;{print $2}&#39; mt_extracted.txt |  awk -F &quot;,&quot; &#39;{print $1}&#39; &gt; file2.txt</code></pre>
+<p><br />
+</p>
+<p>We then paste files file1.txt and file2.txt together to create the
+file3.txt</p>
+<pre class="bash"><code>cd /hb/home/gchaves/results/geraldo/mitochondria/compIndex
+paste file2.txt file1.txt &gt; file4.txt</code></pre>
+<p><br />
+</p>
+<p>Now save file4.txt in the local data folder:</p>
+<pre class="bash"><code>scp gchaves@hb.ucsc.edu:/hb/home/gchaves/results/geraldo/mitochondria/compIndex/file4.txt \
+/Users/gepolianochaves/Desktop/Gepoliano/ReComBio\ Scientific/geraldo/data</code></pre>
+<p>Look at the file</p>
+<pre class="bash"><code>cd /Users/gepolianochaves/Desktop/Gepoliano/ReComBio\ Scientific/geraldo/data
+head file4.txt
+wc -l file4.txt</code></pre>
+<p><br />
+</p>
+</div>
+</div>
+<div id="references" class="section level2">
+<h2>6. References</h2>
+<p><br />
+</p>
+<div id="refs">
+
+</div>
+<p><br />
+</p>
+</div>
+<div id="session-info" class="section level2">
+<h2>7. Session Info</h2>
+<p><br />
+</p>
+<pre class="r"><code>sessionInfo()</code></pre>
+<pre><code>## R version 4.4.1 (2024-06-14)
+## Platform: aarch64-apple-darwin20
+## Running under: macOS Big Sur 11.4
+## 
+## Matrix products: default
+## BLAS:   /Library/Frameworks/R.framework/Versions/4.4-arm64/Resources/lib/libRblas.0.dylib 
+## LAPACK: /Library/Frameworks/R.framework/Versions/4.4-arm64/Resources/lib/libRlapack.dylib;  LAPACK version 3.12.0
+## 
+## locale:
+## [1] en_US.UTF-8/en_US.UTF-8/en_US.UTF-8/C/en_US.UTF-8/en_US.UTF-8
+## 
+## time zone: America/Sao_Paulo
+## tzcode source: internal
+## 
+## attached base packages:
+## [1] stats     graphics  grDevices utils     datasets  methods   base     
+## 
+## other attached packages:
+## [1] tibble_3.2.1     stringr_1.5.1    dplyr_1.1.4      kableExtra_1.4.0
+## [5] maditr_0.8.4     ape_5.8         
+## 
+## loaded via a namespace (and not attached):
+##  [1] jsonlite_1.8.9    compiler_4.4.1    tidyselect_1.2.1  Rcpp_1.0.13      
+##  [5] xml2_1.3.6        parallel_4.4.1    jquerylib_0.1.4   systemfonts_1.1.0
+##  [9] scales_1.3.0      yaml_2.3.10       fastmap_1.2.0     lattice_0.22-6   
+## [13] R6_2.5.1          generics_0.1.3    knitr_1.48        munsell_0.5.1    
+## [17] svglite_2.1.3     bslib_0.8.0       pillar_1.9.0      rlang_1.1.4      
+## [21] utf8_1.2.4        cachem_1.1.0      stringi_1.8.4     xfun_0.48        
+## [25] sass_0.4.9        viridisLite_0.4.2 cli_3.6.3         magrittr_2.0.3   
+## [29] digest_0.6.37     grid_4.4.1        rstudioapi_0.16.0 fontawesome_0.5.2
+## [33] lifecycle_1.0.4   nlme_3.1-166      vctrs_0.6.5       evaluate_1.0.0   
+## [37] glue_1.8.0        data.table_1.16.0 fansi_1.0.6       colorspace_2.1-1 
+## [41] rmarkdown_2.28    pkgconfig_2.0.3   tools_4.4.1       htmltools_0.5.8.1</code></pre>
+</div>
+
+
+
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open');
+  });
+});
+</script>
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
