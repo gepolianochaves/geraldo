@@ -52,8 +52,8 @@ Dados genômicos disponibilizados publicamente podem ser integrados ao sistema p
 
 \
 
-[^1]: Proposta submetida ao programa Conhecimento Brasil. Para fins de proteção à propriedade intelectual, é necessário pedir ao autor, acesso de leitor ao documento [Gepoliano Chaves (2025)](https://drive.google.com/file/d/1Rac3MrbXLbjjlKuysTIuFfrtbkzXHMOa/view?usp=sharing).
+[^1]: Proposta submetida ao programa Conhecimento Brasil. Para fins de proteção à propriedade intelectual, é necessário pedir ao autor, acesso de leitor ao [documento].(https://drive.google.com/file/d/1Rac3MrbXLbjjlKuysTIuFfrtbkzXHMOa/view?usp=sharing).
 
-[^2]: Documentação da execução da proposta submetida ao programa Conhecimento Brasil. Para fins de proteção à propriedade intelectual, é necessário pedir ao autor, acesso de leitor ao documento. [Gepoliano Chaves (2025)](https://docs.google.com/document/d/1rukbHikGpDLPJjhaUxF_mc-hV_vS_e8BNLSS4G3qe08/edit?usp=sharing).
+[^2]: Documentação da execução da proposta submetida ao programa Conhecimento Brasil. Para fins de proteção à propriedade intelectual, é necessário pedir ao autor, acesso de leitor ao documento. [documento](https://docs.google.com/document/d/1rukbHikGpDLPJjhaUxF_mc-hV_vS_e8BNLSS4G3qe08/edit?usp=sharing).
 
 
