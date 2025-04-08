@@ -44,7 +44,7 @@ A natureza do trabalho desenvolvido por pesquisadores e profissionais das ciênc
 \
 \
 
-### Integração da pesquisa ômica ao sistema público de saúde brasileiro (SUS)
+### Desenvolvimento de plataforma para integração de dados ôhmicos ao sistema público de saúde brasileiro (SUS)
 
 \
 
