@@ -8,7 +8,7 @@
 
 \
 
-Estudamos a genômica de três das principais doenças mentais que afetam o envelhecimento: Doença de Huntington, Doença de Parkinson e Doença de Alzheimer. Nos seguintes notebooks, a análise computacional da sequência mitocondrial de brasileiros auto-declarados brancos é apresentada em detalhes:
+Estudamos a genômica de três das principais doenças mentais que afetam o envelhecimento: Doença de Huntington, Doença de Parkinson e Doença de Alzheimer. Nos seguintes notebooks, a análise computacional da sequência mitocondrial de brasileiros auto-declarados brancos é apresentada:
 
 * [Variantes genéticas, envelhecimento e saúde mental da população brasileira](07-Phylogenetic-Analyisis_mt_BR.html)
 * [Variant Call Pipeline](02-variant_call_pipeline.html)
@@ -18,11 +18,11 @@ Estudamos a genômica de três das principais doenças mentais que afetam o enve
 
 \
 
-### Oncologia
+### Oncologia (Neuroblastoma)
 
 \
 
-Desenvolvemos uma *framework* para uso de biópsia líquida no diagnóstico e prognóstico de pacientes oncológicos.
+Desenvolvemos uma *framework* para uso de biópsia líquida no diagnóstico e prognóstico de pacientes.
 
 * [Conjuntos de dados de neuroblastoma](08-GSE62564.html)
 * [Algoritmo para classificação de tumores em python](15-shiny-boxplot.html)
