@@ -12,13 +12,13 @@ navbar:
       icon: "fa-solid fa-circle-info"
       href: "quokka-bilby.html"
 
-    - text: "Códigos"
-      icon: "fa-solid fa-laptop-file"
-      href: codigo.html
-
     - text: "PmD"
       icon: "fa-solid fa-people-arrows"
       href: "PmD.html"
+      
+    - text: "Notebooks de Código"
+      icon: "fa-solid fa-laptop-file"
+      href: codigo.html
 
 output:
   html_document:
