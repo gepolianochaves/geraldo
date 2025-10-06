@@ -1,0 +1,99 @@
+---
+  title: "Shiny App for Genealogies"
+  author: "Gepoliano Chaves"
+  date: "April 22nd, 2025"
+  output:
+    html_document:
+      df_print: paged
+      toc: true
+  bibliography: references.bib
+---
+
+
+\
+
+### Load Libraries
+
+
+```{r, warning=F, message=F}
+library("ggenealogy")
+library("dplyr")
+library("readxl")
+library("shiny")
+```
+
+\
+
+### Load Genealogy Dataset
+
+
+Specify sheet with a number or name
+
+```{r}
+brGeneal <- read_excel("../geraldo/data/brGeneal.xlsx", sheet = "Sheet9")
+```
+
+\
+
+### Graphical Object (GO)
+
+
+Generate GO
+
+```{r}
+brIG <- dfToIG(brGeneal)
+```
+
+\
+
+Plot GO
+
+```{r}
+plotAncDes("Afonso III de Portugal", brGeneal, mAnc = 4, mDes = 7, vCol = "blue")
+```
+
+\
+
+### Shiny App
+
+It was necessary to do a Google Search and read about the Shiny textinput() function to build this App:
+
+```{r}
+library("shiny")
+
+ui <- fluidPage(
+  
+  
+  textInput(inputId = "personsName",
+    label = "Informe a person of the history of Brazil: ",
+    value = "Afonso III de Portugal"),
+  plotOutput("ggnealogyTree"),
+  
+
+  
+  
+  
+  
+  sliderInput(inputId = "num",
+    label = "Numbre of ascendent generations",
+    value = 25, min = 1, max = 10)
+  
+  
+  # sliderInput(inputId = "num",
+  #   label = "Choose a number of descendents",
+  #   value = 25, min = 1, max = 10)
+
+  
+)
+
+server <- function(input, output) {
+  output$ggnealogyTree <- renderPlot({
+    plotAncDes(input$personsName, brGeneal, mAnc = input$num, # Colocando parâmetros para mAnc
+               mDes = input$num, # E mDes, aparecem todos os membros da ascendência e descendência.                            
+               vCol = "blue")  
+  })
+}
+shinyApp(ui = ui, server = server)
+```
+
+

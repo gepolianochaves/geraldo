@@ -114,7 +114,7 @@ library("msa")
 Load multi-fasta mtDNA from Brazil.
 
 ```{r}
-mt_brazilian <- readDNAStringSet(file="data/mt_brazilian.fasta")
+mt_brazilian <- readDNAStringSet(file="../data/mt_brazilian.fasta")
 ```
 
 \
