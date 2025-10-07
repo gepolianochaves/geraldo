@@ -1,0 +1,437 @@
+---
+  title: "Binary Logistic Regression"
+  author: "Gepoliano Chaves"
+  date: "June 24th, 2024"
+  output:
+    html_document:
+      df_print: paged
+      toc: true
+  bibliography: references.bib
+---
+
+\
+
+# Summary 
+
+\
+
+This pipeline classifies the origin of the genotype based on the genotype information extracted from VCF files using a binary logistic regression model. In section 3.3 below, I discuss a potential approach to improve the Sensitivity rates of this framework using the divide and conquer approach. The solution includes using genomic regions in ranges or intervals instead of SNPs. In other words, we can use a range of SNPs as the genotypes, instead of a single SNP as the genotype. IN this way the Machine Learning algorithm will have a chance to look at several ranges or a range of base-pairs instead of a single reagion of a SNP. This might be a solution to the sensitivity problem. Because of the problem I faced running the for loop, the genotypes were constructed appending the extraction of the vcf files. This notebook is based on the tutorial from RBloggers (2020). 
+
+\
+
+## 1. Load data
+
+\
+
+### Running Time
+
+\
+
+The chunk below is used to calculate the time necessary to run this notebook.
+
+```{r}
+start_time <- Sys.time()
+```
+
+\
+
+Load libraries with functions necessary to input data for the present analysis.
+
+```{r, warning=F, message=F}
+library(expss)
+library(dplyr)
+library(kableExtra)
+library(ggplot2)
+library(caret)
+library(pROC)
+```
+
+\
+
+Load data that was created by appending the genotypes from the vcf files.
+
+```{r}
+mt_features_df <- read.table("./data/mt_dcast_appended_binary.txt", header = T)
+dim(mt_features_df)
+```
+
+\
+
+Look at features in the mitochondria genotype object. Each column is a feature. In R, columns are called variables. In R, a table can be called a data-frame.
+
+```{r}
+kable(mt_features_df, caption="Mitochondrial Features") %>%
+  kable_styling("striped", full_width = F, font_size = 12) %>%
+  scroll_box(width = "100%", height = "600px")
+```
+
+\
+
+Make origin a factor
+
+```{r}
+mt_features_df$origin <- as.factor(mt_features_df$origin)
+# mt_features_df <- mt_features_df %>% select(-c("GenBankID"))
+mt_features_df <- mt_features_df %>% select(-c("fastaID"))
+```
+
+\
+
+### Finally taking a look into the target variable
+
+\
+
+```{r}
+ggplot(mt_features_df, aes(MT_16069bp)) +
+  geom_histogram(aes(fill = origin), color = "black", binwidth = 0.1)
+```
+
+\
+
+## 2. Building the Model
+
+\
+
+Let's create a partition of the dataset. We are splitting the data into train and test. We are partitioning 60% of the samples to the train group and 40% to the test group.
+
+To solve the genotype error, I read the @stackOverflow2021genotypes reference. To deal with levels that I was not familiar in the dataset, I read the @stackOverflow2014 reference.
+
+
+```{r}
+set.seed(2015)
+index <- createDataPartition(mt_features_df$origin, p = .60, list = FALSE)
+class(index)
+index
+train_mt <- mt_features_df[index, ]
+train_mt
+```
+
+\
+
+Look at counts per category
+
+```{r}
+cross_cases(train_mt, origin)
+```
+
+\
+
+Build test dataset
+
+```{r}
+test_mt <- mt_features_df[-index, ]
+test_mt
+```
+
+\
+
+Training the model
+
+```{r}
+logistic_model_mt <- glm(origin ~ ., family = binomial(), train_mt)
+# mod2$xlevels[["y"]] <- union(mod2$xlevels[["y"]], levels(test$y))
+```
+
+\
+
+Checking the model
+
+```{r}
+summary(logistic_model_mt)
+```
+
+\
+
+### Interpreting Logistic Regression Output
+
+\
+
+```{r, eval=F}
+Sigmoid function, p = exp(-0.591532)/(1+exp(-0.591532))
+```
+
+\
+
+### Predicting Dependent Variable(Y) in Test Dataset
+
+\
+
+```{r}
+# Predicting in the test dataset
+pred_prob_mt <- predict(logistic_model_mt, test_mt, type="response")
+pred_prob_mt
+```
+
+\
+
+#### Constructing the predictions dataframe
+
+* This is based on notebook confusion-table.Rmd
+
+* pred_prob, from above, is a factor
+
+```{r}
+predictions_mt <- cbind(data.frame(train_preds=pred_prob_mt, 
+                                test_mt$origin))
+predictions_mt
+```
+
+Then the confusion matrix can be calculated
+
+```{r, eval=F}
+cm <- caret::confusionMatrix(predictions_mt$train_preds, predictions_mt$test_mt.origin)
+```
+
+This is the error
+
+```{r, eval=F}
+Error in `match.arg()`:
+! 'arg' should be one of "link", "response", "terms"
+Backtrace:
+ 1. stats::predict(logistic_model_mt, test_mt, type = "raw")
+ 2. stats::predict.glm(logistic_model_mt, test_mt, type = "raw")
+ 3. base::match.arg(type)
+Execution halted
+```
+
+\
+
+## 3. Evaluating Logistic Regression Model
+
+\
+
+### Converting probability to class values in the training dataset
+
+\
+
+It does not make sense the labels to be America or Africa for this notebook since here we are using currently, Amerindian and European genotypes of mitochondrial Brazilian sequences. Therefore I am commenting on that line that uses the probability value to set the labels up. To update the labels I will make America the Amerindian label and Africa the European label. My first impression was that the accuracy increased significantly.
+
+```{r Converting probability to class values in the training dataset}
+# Converting from probability to actual output
+# train_mt$pred_class <- ifelse(logistic_model_mt$fitted.values >= 0.5, "America", "Africa")
+train_mt$pred_class <- ifelse(logistic_model_mt$fitted.values >= 0.5, "Amerindian", "European")
+dim(train_mt)
+train_mt
+
+# Generating the classification table
+ctab_train_mt <- table(train_mt$origin, train_mt$pred_class)
+ctab_train_mt
+```
+
+\
+
+### Training dataset converting from probability to class values
+
+\
+
+```{r Training dataset converting from probability to class values, echo=TRUE}
+# Converting from probability to actual output
+# test_mt$pred_class <- ifelse(pred_prob_mt >= 0.5, "America", "Africa")
+test_mt$pred_class <- ifelse(pred_prob_mt >= 0.5, "Amerindian", "European")
+
+# Generating the classification table
+ctab_test_mt <- table(test_mt$origin, test_mt$pred_class)
+ctab_test_mt
+```
+
+\
+
+### 3.1 Accuracy
+
+\
+
+\begin{align*}
+
+Accuracy & = \frac{TP + TN}{TN + FP + FN + TP} \\
+
+\end{align*}
+
+\
+
+Accuracy in Training dataset
+
+```{r}
+accuracy_train_mt <- sum(diag(ctab_train_mt))/sum(ctab_train_mt)*100
+accuracy_train_mt
+```
+
+\
+
+Accuracy in Test dataset
+
+```{r}
+accuracy_test_mt <- sum(diag(ctab_test_mt))/sum(ctab_test_mt)*100
+accuracy_test_mt
+```
+
+\
+
+A model is considered fairly good if the model accuracy is greater than 70%.
+
+\
+
+### 3.2. Misclassification Rate
+
+
+\
+
+\begin{align*}
+
+Misclassification  Rate & = \frac{FP+FN}{TN + FP + FN + TP} \\
+
+\end{align*}
+
+\
+
+### 3.3. True Positive Rate – Recall or Sensitivity
+
+\
+
+\begin{align*}
+
+Sensitivity & = \frac{TP}{FN + TP} \\
+
+\end{align*}
+
+\
+
+Recall in Train dataset
+
+```{r, eval=T}
+Recall <- (ctab_train_mt[2, 2]/sum(ctab_train_mt[2, ]))*100
+Recall
+ctab_test_mt
+```
+
+\
+
+Recall in Test dataset
+
+```{r, eval=F}
+Recall_test <- (ctab_test_mt[2, 2]/sum(ctab_test_mt[2, ]))*100
+Recall_test
+```
+
+\
+
+One potential direction to improve sensitivity in the train and test datasets is to use haplogroups instead of SNPs. Take for example the Huntington's disease (HD) diagnosis. A person is positive if they have more than 35 CAG repeats. If for example we take a haplogroup of range of 50 bp, we can classify people with 40 CAG repeats as positive whereas individuals that have the haplogroup with less than 40 repeats are negative for HD. 
+
+Using this approach we can divide the genome into smaller segments and the algorithm will have to only work in these segments. We can therefore, use the divide and conquer approach to diagnose the disease using genotype information.
+
+\
+
+### 3.4. True Negative Rate
+
+\
+
+\begin{align*}
+
+TNR & = \frac{TN}{TN + FP} \\
+
+\end{align*}
+
+\
+
+TNR in Train dataset
+
+```{r}
+TNR <- (ctab_train_mt[1, 1]/sum(ctab_train_mt[1, ]))*100
+TNR
+```
+
+\
+
+### 3.5. Precision
+
+\
+
+\begin{align*}
+
+TNR & = \frac{TP}{FP + TP} \\
+
+\end{align*}
+
+\
+
+```{r, eval=T}
+# Precision = TP/FP + TP
+
+
+# Precision in Train dataset
+Precision <- (ctab_train_mt[2, 2]/sum(ctab_train_mt[, 2]))*100
+Precision
+```
+
+\
+
+### Calculating F-Score
+
+\
+
+```{r, eval=FALSE}
+F_Score <- (2 * Precision * Recall / (Precision + Recall))/100
+F_Score
+```
+
+\
+
+## 5. ROC Curve
+
+\
+
+```{r}
+roc_mt <- roc(train_mt$origin, logistic_model_mt$fitted.values)
+roc_mt
+plot.roc(roc_mt)
+auc(roc_mt)
+```
+
+\
+
+Note that per the @Wikipedia2024roc article, our classifier shows better results than random guess, which is a good start.
+
+\
+
+### Concordance
+
+\
+
+```{r, attr.source='.numberLines'}
+library(InformationValue)
+Concordance(logistic_model_mt$y,logistic_model_mt$fitted.values)
+```
+
+\
+
+## 6. Confusion matrix
+
+\
+
+In this reference for the Confusion Matrix according to @CARET2023, we can find the equations for sensitivity and accuracy.
+
+\
+
+# References
+
+\
+
+<div id="refs"></div>
+
+\
+
+# Session Info
+
+\
+
+```{r session}
+sessionInfo()
+```
+
+\
+
+```{r}
+end_time <- Sys.time()
+end_time - start_time
+```
+
+

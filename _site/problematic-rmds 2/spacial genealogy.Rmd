@@ -1,0 +1,108 @@
+
+```{r, warning=F, message=F}
+library("ggenealogy")
+library("dplyr")
+library("readxl")
+library(sf)
+library(raster)
+library(leaflet)
+suppressMessages(library(tidyverse))
+library(ggplot2)
+library("readxl")
+
+```
+
+\
+
+```{r, warning=F, message=F}
+brGeneal <- read_excel("../geraldo/data/brGeneal.xlsx", sheet = "Sheet9")
+```
+
+\
+
+```{r}
+plotAncDes("Gepoliano Chaves", brGeneal, mAnc = 4, mDes = 7, vCol = "blue")
+```
+
+\
+
+```{r}
+plotAncDes("Clemente Barbosa da Rocha", brGeneal, mAnc = 2, mDes = 7, vCol = "blue")
+```
+
+\
+
+## 3.2 Converting to spatial dataframe
+
+\
+
+```{r}
+location_df <- brGeneal %>% dplyr::select('child','Latitude', 'Longitude', 'LUCA')
+
+location_df <- location_df[complete.cases(location_df), ]
+
+dat_br <- st_as_sf(
+  location_df,
+  coords = c("Longitude", "Latitude"),
+  crs = 4326
+)
+```
+
+\
+
+# 4 LUCA and Descendents.
+
+\
+
+## 4.1 Define Last Universal Common Ancestor (LUCA).
+
+\
+
+```{r define LUCA}
+dat_br_luca <- dat_br[ which(
+  #dat_br$LUCA == 'Josino de Souza Paes' # |
+  dat_br$LUCA == 'Clemente Barbosa da Rocha' # |
+  # dat_br$LUCA == 'positivo' 
+  ), ]
+```
+
+\
+
+## 4.2 Open Street Map
+
+\
+
+```{r}
+basemap <- leaflet() %>% addTiles()
+basemap %>% addCircleMarkers(data = dat_br_luca,
+                   color = "#990000",
+                   radius = 2)
+```
+
+\
+
+## 4.3 ESRI maps
+
+\
+
+```{r}
+basemap <- leaflet() %>% addProviderTiles("Esri.WorldImagery")
+basemap %>% addCircleMarkers(data = dat_br_luca,
+                   color = "#990000",
+                   radius = 1)
+```
+
+\
+
+## 4.4 CartoDB maps
+
+\
+
+```{r}
+basemap <- leaflet() %>% addProviderTiles("CartoDB.Positron")
+basemap %>% addCircleMarkers(data = dat_br_luca,
+                   color = "#990000",
+                   radius = 1)
+```
+
+
