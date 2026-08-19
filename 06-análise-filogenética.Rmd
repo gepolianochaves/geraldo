@@ -1,0 +1,129 @@
+Load library
+
+```{r}
+library("msa")
+```
+\
+
+Read fasta file
+
+```{r}
+mt_brazilian_capital <- readDNAStringSet(file="./data/mt_brazilian_capital.fasta")
+```
+
+\
+
+Look at the mt_brazilian_capital object
+
+```{r}
+mt_brazilian_capital
+```
+
+\
+
+Align sequences
+
+```{r}
+alignment_mt_brazilian_capital <- msa(mt_brazilian_capital)
+```
+
+\
+
+Visualize alignment object
+
+```{r}
+alignment_mt_brazilian_capital
+```
+
+\
+
+### Distance Matrix and Phylogenetic Tree of Partial Sequence
+
+\
+
+This is necessary so function dist.ml can take the DNA.bin object and process the Distance Matrix. Function dist.ml() is from package phangorn
+
+```{r}
+library("phangorn")
+alignment_mt_brazilian_capital_dist.ml <- dist.ml(as.DNAbin(alignment_mt_brazilian_capital))
+```
+
+\
+
+### Plot distance matrix
+
+\
+Function table.paint() is from package adegenet. Load library adegenet:
+
+```{r}
+library("adegenet")
+dm_alignment_mt_brazilian_capital_dist.ml_df <- as.data.frame(as.matrix(alignment_mt_brazilian_capital_dist.ml))
+table.paint(dm_alignment_mt_brazilian_capital_dist.ml_df, cleg=0, clabel.row=.5, clabel.col=.5)
+```
+
+
+### Construct Phylogenetic Trees
+
+\
+
+Phylogenetic tree UPGMA method
+
+```{r}
+treeUPGMA_dm_alignment_mt_brazilian_capital_dist.ml_df <- upgma(dm_alignment_mt_brazilian_capital_dist.ml_df)
+```
+
+\
+
+### Plot Phylogenetic Tree mtDNA UPGMA
+
+```{r}
+plot(treeUPGMA_dm_alignment_mt_brazilian_capital_dist.ml_df, main="UPGMA", col="red")
+```
+\
+
+
+### Save the plot
+
+```{r}
+library(ggplot2)
+p_treeUPGMA <- plot(treeUPGMA_dm_alignment_mt_brazilian_capital_dist.ml_df, main="UPGMA", col="red")
+
+# Dimensions default to pixels for png()
+png("./figures/treeUPGMA_plot.png", width = 2000, height = 2000, res=100)
+plot(treeUPGMA_dm_alignment_mt_brazilian_capital_dist.ml_df, main="UPGMA", col="red")
+dev.off()
+
+```
+\
+
+### Visualize alignment
+
+
+
+
+```{r}
+library(ggmsa)
+ggmsa(mt_brazilian_capital, 
+      start = 40, end = 70, 
+      char_width = 0.5, 
+      seq_name = T) + geom_seqlogo() + geom_msaBar()
+```
+
+\
+
+Save the plot
+
+```{r}
+# Dimensions default to pixels for png()
+png("./figures/alignment_plot.png", width = 2000, height = 2000, res=150)
+ggmsa(mt_brazilian_capital, 
+      start = 40, end = 70, 
+      char_width = 0.5, 
+      seq_name = T) + geom_seqlogo() + geom_msaBar()
+dev.off()
+```
+
+
+
+
+

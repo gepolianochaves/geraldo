@@ -1,0 +1,1984 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+<meta name="author" content="Gepoliano Chaves" />
+
+
+<title>Accessing the Raça/Cor Variable in DATASUS</title>
+
+<script src="site_libs/header-attrs-2.28/header-attrs.js"></script>
+<script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/lumen.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<style>h1 {font-size: 34px;}
+       h1.title {font-size: 38px;}
+       h2 {font-size: 30px;}
+       h3 {font-size: 24px;}
+       h4 {font-size: 18px;}
+       h5 {font-size: 16px;}
+       h6 {font-size: 12px;}
+       code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
+       pre:not([class]) { background-color: white }</style>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<link href="site_libs/highlightjs-9.12.0/default.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+<link href="site_libs/pagedtable-1.1/css/pagedtable.css" rel="stylesheet" />
+<script src="site_libs/pagedtable-1.1/js/pagedtable.js"></script>
+<script src="site_libs/kePrint-0.0.1/kePrint.js"></script>
+<link href="site_libs/lightable-0.0.1/lightable.css" rel="stylesheet" />
+<link href="site_libs/font-awesome-6.4.2/css/all.min.css" rel="stylesheet" />
+<link href="site_libs/font-awesome-6.4.2/css/v4-shims.min.css" rel="stylesheet" />
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+<style type="text/css">code{white-space: pre;}</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+
+
+<style type="text/css">
+/* for pandoc --citeproc since 2.11 */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+  margin-bottom: 0em;
+}
+.hanging div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}
+</style>
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+details > summary > p:only-child {
+  display: inline;
+}
+pre code {
+  padding: 0;
+}
+</style>
+
+
+<style type="text/css">
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #adb5bd;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script type="text/javascript">
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark the anchor link active (and if it's in a dropdown, also mark that active)
+  var dropdown = menuAnchor.closest('li.dropdown');
+  if (window.bootstrap) { // Bootstrap 4+
+    menuAnchor.addClass('active');
+    dropdown.find('> .dropdown-toggle').addClass('active');
+  } else { // Bootstrap 3
+    menuAnchor.parent().addClass('active');
+    dropdown.addClass('active');
+  }
+
+  // Navbar adjustments
+  var navHeight = $(".navbar").first().height() + 15;
+  var style = document.createElement('style');
+  var pt = "padding-top: " + navHeight + "px; ";
+  var mt = "margin-top: -" + navHeight + "px; ";
+  var css = "";
+  // offset scroll position for anchor links (for fixed navbar)
+  for (var i = 1; i <= 6; i++) {
+    css += ".section h" + i + "{ " + pt + mt + "}\n";
+  }
+  style.innerHTML = "body {" + pt + "padding-bottom: 40px; }\n" + css;
+  document.head.appendChild(style);
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before, .tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "\e259";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "\e258";
+  font-family: 'Glyphicons Halflings';
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+
+
+<div class="navbar navbar-inverse  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-bs-toggle="collapse" data-target="#navbar" data-bs-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">Gerenciamento Genômico e Algorítmico de Fenótipos, Riscos, Diagnósticos e Prognósticos em Dados de Doenças em Brasileiros</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">
+    <span class="fa fa-home"></span>
+     
+    Home
+  </a>
+</li>
+<li>
+  <a href="quokka-bilby.html">
+    <span class="fa fa-solid fa-circle-info"></span>
+     
+    Sobre nós
+  </a>
+</li>
+<li>
+  <a href="PmD.html">
+    <span class="fa fa-solid fa-people-arrows"></span>
+     
+    PmD
+  </a>
+</li>
+<li>
+  <a href="codigo.html">
+    <span class="fa fa-solid fa-laptop-file"></span>
+     
+    Notebooks de Código
+  </a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div id="header">
+
+
+
+<h1 class="title toc-ignore">Accessing the Raça/Cor Variable in
+DATASUS</h1>
+<h4 class="author">Gepoliano Chaves</h4>
+<h4 class="date">May 28th, 2026</h4>
+
+</div>
+
+<div id="TOC">
+<ul>
+<li><a href="#load-libraries" id="toc-load-libraries">Load
+libraries</a></li>
+<li><a href="#coleta-e-processamento-de-dados"
+id="toc-coleta-e-processamento-de-dados">Coleta e Processamento de
+dados</a></li>
+<li><a href="#gr%C3%A1ficos-de-mortalidade-anual"
+id="toc-gráficos-de-mortalidade-anual">Gráficos de Mortalidade Anual</a>
+<ul>
+<li><a href="#mortalidade-anual-total"
+id="toc-mortalidade-anual-total">Mortalidade Anual Total</a></li>
+<li><a href="#mortalidade-anual-total-usando-vari%C3%A1vel-ra%C3%A7acor"
+id="toc-mortalidade-anual-total-usando-variável-raçacor">Mortalidade
+Anual Total Usando Variável Raça/Cor</a></li>
+<li><a href="#mortalidade-anual-total-por-neuroblastoma"
+id="toc-mortalidade-anual-total-por-neuroblastoma">Mortalidade Anual
+Total por Neuroblastoma</a></li>
+</ul></li>
+</ul>
+</div>
+
+<div id="load-libraries" class="section level2">
+<h2>Load libraries</h2>
+<p><br />
+</p>
+<pre class="r"><code>library(microdatasus)
+library(dplyr)
+library(tidyverse)
+library(maditr)
+library(kableExtra)</code></pre>
+</div>
+<div id="coleta-e-processamento-de-dados" class="section level2">
+<h2>Coleta e Processamento de dados</h2>
+<p><br />
+</p>
+<p>SIM-DO é o sistema de informação de mortalidade.</p>
+<pre class="r"><code>dados_ms = fetch_datasus(year_start = 2015,
+                      year_end = 2024,
+                      uf = &quot;MS&quot;,
+                      information_system = &quot;SIM-DO&quot;)</code></pre>
+<p><br />
+</p>
+<p>Save dados_ms only a single time</p>
+<pre class="r"><code>saveRDS(dados_ms, &quot;./data/dados_ms.rds&quot;)</code></pre>
+<p><br />
+</p>
+<p>Load dados_ms</p>
+<pre class="r"><code>dados_ms &lt;- readRDS(&quot;./data/dados_ms.rds&quot;)</code></pre>
+<p><br />
+</p>
+<div id="contagem-de-indivíduos-por-categoria-da-variável-raçacor"
+class="section level4">
+<h4>Contagem de indivíduos por categoria da Variável Raça/Cor</h4>
+<p><br />
+</p>
+<pre class="r"><code>library(expss)
+cross_cases(dados_ms, RACACOR)</code></pre>
+<table class="gmisc_table" style="border-collapse: collapse; margin-top: 1em; margin-bottom: 1em;">
+<thead>
+<tr>
+<th style="border-bottom: 1px solid grey; font-weight: 900; border-top: 2px solid grey; text-align: center;">
+</th>
+<th style="font-weight: 900; border-bottom: 1px solid grey; border-top: 2px solid grey; text-align: center;">
+ #Total 
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td colspan="2" style="font-weight: 900;">
+ RACACOR 
+</td>
+</tr>
+<tr>
+<td style="text-align: left;">
+   1 
+</td>
+<td style="text-align: right;">
+86916
+</td>
+</tr>
+<tr>
+<td style="text-align: left;">
+   2 
+</td>
+<td style="text-align: right;">
+9122
+</td>
+</tr>
+<tr>
+<td style="text-align: left;">
+   3 
+</td>
+<td style="text-align: right;">
+1821
+</td>
+</tr>
+<tr>
+<td style="text-align: left;">
+   4 
+</td>
+<td style="text-align: right;">
+81135
+</td>
+</tr>
+<tr>
+<td style="text-align: left;">
+   5 
+</td>
+<td style="text-align: right;">
+5664
+</td>
+</tr>
+<tr>
+<td style="border-bottom: 2px solid grey; text-align: left;">
+   #Total cases 
+</td>
+<td style="border-bottom: 2px solid grey; text-align: right;">
+184658
+</td>
+</tr>
+</tbody>
+</table>
+<p><br />
+</p>
+</div>
+<div id="constrir-df-com-identificação-racial" class="section level4">
+<h4>Constrir DF com identificação racial</h4>
+<p>numero total de brancos, pardos, pretos, amarelos, indígenas</p>
+<pre class="r"><code>racacor_df &lt;- dados_ms %&gt;% count(RACACOR, sort = TRUE)</code></pre>
+</div>
+<div id="transformar-variável-raçacor" class="section level4">
+<h4>Transformar variável Raça/Cor</h4>
+<p>Transforma coluna com caracteres em nomes de raça/cor</p>
+<pre class="r"><code>racacor_df &lt;- racacor_df %&gt;%
+  dplyr::mutate(raca_cor_factor = ifelse(racacor_df$RACACOR == &quot;1&quot;, &quot;branca&quot;, 
+                                         ifelse(racacor_df$RACACOR == &quot;2&quot;, &quot;preta&quot;,
+                                                ifelse(racacor_df$RACACOR == &quot;3&quot;, &quot;amarela&quot;,
+                                                       ifelse(racacor_df$RACACOR == &quot;4&quot;, &quot;parda&quot;, 
+                                                              ifelse(racacor_df$RACACOR == &quot;5&quot;, &quot;indígena&quot;,
+                                                                     ifelse(racacor_df$RACACOR == &quot;9&quot;, &quot;ignorado&quot;,&quot;0&quot;)))))))</code></pre>
+<p><br />
+</p>
+</div>
+<div id="gráfico-de-barras-por-categoria-da-variável-raçacor"
+class="section level4">
+<h4>Gráfico de barras por categoria da Variável Raça/Cor</h4>
+<p><br />
+</p>
+<p>Nesta parte, poderemos estimar o número de indivíduos sob risco,
+considerando as categorias raciais brasileiras.</p>
+<pre class="r"><code>library(ggplot2)
+# Basic barplot
+ggplot(data=racacor_df, aes(x=raca_cor_factor, y=n)) +
+  geom_bar(stat=&quot;identity&quot;)</code></pre>
+<p><img src="04-datasus_raca_cor_disparity_files/figure-html/barplot-1.png" width="672" /></p>
+<p><br />
+</p>
+</div>
+</div>
+<div id="gráficos-de-mortalidade-anual" class="section level2">
+<h2>Gráficos de Mortalidade Anual</h2>
+<p><br />
+</p>
+<div
+id="selecionar-variáveis-e-processá-las-para-obter-ano-de-óbito-do-paciente"
+class="section level4">
+<h4>Selecionar variáveis e processá-las para obter ano de óbito do
+paciente</h4>
+<p><br />
+</p>
+<p>Transforma variável DTOBITO usando função dmy criando variável
+(coluna) YMD em yyyy-mm-dd. Referência: <a
+href="https://rstudio.github.io/cheatsheets/html/lubridate.html"
+class="uri">https://rstudio.github.io/cheatsheets/html/lubridate.html</a></p>
+<pre class="r"><code>library(lubridate)
+dados_selected &lt;- dados_ms %&gt;%
+  select(CONTADOR, RACACOR, DTOBITO, CAUSABAS, DTNASC, IDADE) %&gt;%
+  mutate(YMD = dmy(dados_ms$DTOBITO))
+
+library(stringr)
+# Split Each Sample
+dados_year &lt;- str_split_fixed(dados_selected$YMD, &quot;-&quot;, 3)
+# Construct Vector Maintaining parts of interest
+split_vector_year &lt;- paste0(dados_year[,1])
+# Add vector to DF, after column of interest
+dados_appended &lt;- add_column(dados_selected, year = split_vector_year, .after = &quot;YMD&quot;)</code></pre>
+<p><br />
+</p>
+<p><br />
+</p>
+</div>
+<div
+id="agrupar-dados-pela-variável-years-a-fim-de-contar-o-número-anual-de-indivíduos"
+class="section level4">
+<h4>Agrupar dados pela variável <em>years</em> a fim de contar o número
+anual de indivíduos</h4>
+<p><br />
+</p>
+<p>Referência: <a
+href="https://dplyr.tidyverse.org/reference/group_by.html"
+class="uri">https://dplyr.tidyverse.org/reference/group_by.html</a></p>
+<p>Cálculos com valores anuais totais:</p>
+<pre class="r"><code>dados_agregados_year &lt;- dados_appended %&gt;%
+  group_by(year) %&gt;%
+  summarise(n = n())</code></pre>
+<pre class="r"><code>dados_agrupados_racaCor &lt;- dados_appended %&gt;%
+  group_by(RACACOR) %&gt;%
+  summarise(n = n())
+
+dados_agregados_racaCor &lt;- dados_appended %&gt;%
+  group_by(year) %&gt;%
+  group_by(RACACOR) %&gt;%
+  summarise(n = n())
+
+
+# dados_agregados_racaCor &lt;- dados_appended %&gt;%
+#   group_by(chr) %&gt;%
+#   summarise(avg = mean(x)) %&gt;%
+#   arrange(chr, .locale = &quot;en&quot;)</code></pre>
+<p>Remover NAs dos dados agregados por ano</p>
+<pre class="r"><code>dados_agregados_year &lt;- dados_agregados_year[ which(
+  dados_agregados_year$year != &quot;NA&quot;), ]</code></pre>
+<p><br />
+</p>
+</div>
+<div id="mortalidade-anual-total" class="section level3">
+<h3>Mortalidade Anual Total</h3>
+<p><br />
+</p>
+<pre class="r"><code>library(ggplot2)
+# Basic line plot with points
+ggplot(data=dados_agregados_year, aes(x=year, y=n, group=1)) +
+  geom_line()+
+  geom_point()</code></pre>
+<p><img src="04-datasus_raca_cor_disparity_files/figure-html/unnamed-chunk-7-1.png" width="672" /></p>
+</div>
+<div id="mortalidade-anual-total-usando-variável-raçacor"
+class="section level3">
+<h3>Mortalidade Anual Total Usando Variável Raça/Cor</h3>
+<p><br />
+</p>
+<p>Mortalidade anual total (figura acima) e mortalidade anual usando a
+variável Raça/Cor (figura abaixo) foram feitas usando <span
+class="citation">STHDA (2024)</span> como referência.</p>
+<pre class="r"><code>dados_race_year_selcd &lt;- dados_appended %&gt;%
+  select(RACACOR, year)
+
+dados_agrupados_racaCor &lt;- dados_race_year_selcd %&gt;%
+  group_by(RACACOR) %&gt;%
+  summarise(n = n())</code></pre>
+<p><br />
+</p>
+<pre class="r"><code>library(reshape2)
+
+#use cast() to convert data frame from long to wide format
+wide_dados_appended &lt;- dcast(dados_race_year_selcd, year ~ RACACOR)</code></pre>
+<pre><code>## Warning in dcast(dados_race_year_selcd, year ~ RACACOR): The dcast generic in
+## data.table has been passed a data.frame and will attempt to redirect to the
+## relevant reshape2 method; please note that reshape2 is superseded and is no
+## longer actively developed, and this redirection is now deprecated. Please do
+## this redirection yourself like reshape2::dcast(dados_race_year_selcd). In the
+## next version, this warning will become an error.</code></pre>
+<pre><code>## Using &#39;year&#39; as value column. Use &#39;value.var&#39; to override</code></pre>
+<pre><code>## Aggregation function missing: defaulting to length</code></pre>
+<pre class="r"><code># wide_dados_appended &lt;- dcast(dados_race_year_selcd, RACACOR ~ year)
+
+# Melt the data frame
+dados_appended_melted &lt;- melt(wide_dados_appended, id.vars = &quot;year&quot;)</code></pre>
+<pre><code>## Warning in melt.default(wide_dados_appended, id.vars = &quot;year&quot;): The melt
+## generic in data.table has been passed a data.frame and will attempt to redirect
+## to the relevant reshape2 method; please note that reshape2 is superseded and is
+## no longer actively developed, and this redirection is now deprecated. To
+## continue using melt methods from reshape2 while both libraries are attached,
+## e.g. melt.list, you can prepend the namespace, i.e.
+## reshape2::melt(wide_dados_appended). In the next version, this warning will
+## become an error.</code></pre>
+<p><br />
+</p>
+<p>Obter variável raça/cor como palavras descritivas ao invés de
+números.</p>
+<pre class="r"><code>dados_appended_melted &lt;- dados_appended_melted %&gt;%
+  dplyr::mutate(raca_cor_factor = ifelse(dados_appended_melted$variable == &quot;1&quot;, &quot;branca&quot;, 
+                                         ifelse(dados_appended_melted$variable == &quot;2&quot;, &quot;preta&quot;,
+                                                ifelse(dados_appended_melted$variable == &quot;3&quot;, &quot;amarela&quot;,
+                                                       ifelse(dados_appended_melted$variable == &quot;4&quot;, &quot;parda&quot;, 
+                                                              ifelse(dados_appended_melted$variable == &quot;5&quot;, &quot;indígena&quot;,
+                                                                     ifelse(dados_appended_melted$variable == &quot;9&quot;, &quot;ignorado&quot;,&quot;0&quot;)))))))</code></pre>
+<p><br />
+</p>
+<p>Remove NA in year</p>
+<pre class="r"><code>dados_appended_melted &lt;- dados_appended_melted[ which(
+  dados_appended_melted$year != &quot;NA&quot;), ]</code></pre>
+<p>Remove 0 in raça/cor</p>
+<pre class="r"><code>dados_appended_melted &lt;- dados_appended_melted[ which(
+  dados_appended_melted$raca_cor_factor != &quot;0&quot;), ]</code></pre>
+<p>Visualizar plot</p>
+<pre class="r"><code>ggplot(dados_appended_melted, aes(x=year, y=value, group=raca_cor_factor)) +
+  geom_line(aes(linetype=raca_cor_factor))+
+  geom_point()</code></pre>
+<p><img src="04-datasus_raca_cor_disparity_files/figure-html/unnamed-chunk-12-1.png" width="672" /></p>
+<pre class="r"><code># wait to change the variable names:
+
+# names(dados_appended_melted)[names(dados_appended_melted) == &#39;variable&#39;] &lt;- &#39;RACACOR&#39;
+# names(dados_appended_melted)[names(dados_appended_melted) == &#39;value&#39;] &lt;- &#39;n&#39;</code></pre>
+<p><br />
+</p>
+</div>
+<div id="mortalidade-anual-total-por-neuroblastoma"
+class="section level3">
+<h3>Mortalidade Anual Total por Neuroblastoma</h3>
+<p><br />
+</p>
+<pre class="r"><code>dados_nb &lt;- dados_appended[ which(
+  dados_appended$CAUSABAS == &quot;C749&quot;), ]
+dim(dados_nb)</code></pre>
+<pre><code>## [1] 40  8</code></pre>
+<pre class="r"><code># dados_estados_nb_2013 &lt;- data_estados[ which(
+#   data_estados$CAUSABAS == &quot;C749&quot;), ]
+# dim(dados_estados_nb_2013)
+
+dados_agregados_nb_year &lt;- dados_nb %&gt;%
+  group_by(year) %&gt;%
+  summarise(n = n())
+
+ggplot(data=dados_agregados_nb_year, aes(x=year, y=n, group=1)) +
+  geom_line()+
+  geom_point()</code></pre>
+<p><img src="04-datasus_raca_cor_disparity_files/figure-html/unnamed-chunk-13-1.png" width="672" /></p>
+<pre class="r"><code>kable(dados_nb, caption=&quot;dados_nb&quot;) %&gt;%
+  kable_styling(&quot;striped&quot;, full_width = F, font_size = 12) %&gt;%
+  scroll_box(width = &quot;100%&quot;, height = &quot;600px&quot;)</code></pre>
+<div
+style="border: 1px solid #ddd; padding: 0px; overflow-y: scroll; height:600px; overflow-x: scroll; width:100%; ">
+<table class="table table-striped" style="font-size: 12px; width: auto !important; margin-left: auto; margin-right: auto;">
+<caption style="font-size: initial !important;">
+dados_nb
+</caption>
+<thead>
+<tr>
+<th style="text-align:left;position: sticky; top:0; background-color: #FFFFFF;">
+</th>
+<th style="text-align:left;position: sticky; top:0; background-color: #FFFFFF;">
+CONTADOR
+</th>
+<th style="text-align:left;position: sticky; top:0; background-color: #FFFFFF;">
+RACACOR
+</th>
+<th style="text-align:left;position: sticky; top:0; background-color: #FFFFFF;">
+DTOBITO
+</th>
+<th style="text-align:left;position: sticky; top:0; background-color: #FFFFFF;">
+CAUSABAS
+</th>
+<th style="text-align:left;position: sticky; top:0; background-color: #FFFFFF;">
+DTNASC
+</th>
+<th style="text-align:left;position: sticky; top:0; background-color: #FFFFFF;">
+IDADE
+</th>
+<th style="text-align:left;position: sticky; top:0; background-color: #FFFFFF;">
+YMD
+</th>
+<th style="text-align:left;position: sticky; top:0; background-color: #FFFFFF;">
+year
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+3561…3561
+</td>
+<td style="text-align:left;">
+3561
+</td>
+<td style="text-align:left;">
+1
+</td>
+<td style="text-align:left;">
+08022015
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+28111962
+</td>
+<td style="text-align:left;">
+452
+</td>
+<td style="text-align:left;">
+2015-02-08
+</td>
+<td style="text-align:left;">
+2015
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+8019…8019
+</td>
+<td style="text-align:left;">
+8019
+</td>
+<td style="text-align:left;">
+4
+</td>
+<td style="text-align:left;">
+18072015
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+13032000
+</td>
+<td style="text-align:left;">
+415
+</td>
+<td style="text-align:left;">
+2015-07-18
+</td>
+<td style="text-align:left;">
+2015
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+9129…9129
+</td>
+<td style="text-align:left;">
+9129
+</td>
+<td style="text-align:left;">
+1
+</td>
+<td style="text-align:left;">
+17022015
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+24031975
+</td>
+<td style="text-align:left;">
+439
+</td>
+<td style="text-align:left;">
+2015-02-17
+</td>
+<td style="text-align:left;">
+2015
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+12844…12844
+</td>
+<td style="text-align:left;">
+12844
+</td>
+<td style="text-align:left;">
+4
+</td>
+<td style="text-align:left;">
+06092015
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+14101980
+</td>
+<td style="text-align:left;">
+434
+</td>
+<td style="text-align:left;">
+2015-09-06
+</td>
+<td style="text-align:left;">
+2015
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+15329…15329
+</td>
+<td style="text-align:left;">
+15329
+</td>
+<td style="text-align:left;">
+1
+</td>
+<td style="text-align:left;">
+01122015
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+18051977
+</td>
+<td style="text-align:left;">
+438
+</td>
+<td style="text-align:left;">
+2015-12-01
+</td>
+<td style="text-align:left;">
+2015
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+4075…19532
+</td>
+<td style="text-align:left;">
+4075
+</td>
+<td style="text-align:left;">
+4
+</td>
+<td style="text-align:left;">
+01042016
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+07081929
+</td>
+<td style="text-align:left;">
+486
+</td>
+<td style="text-align:left;">
+2016-04-01
+</td>
+<td style="text-align:left;">
+2016
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+4886…20343
+</td>
+<td style="text-align:left;">
+4886
+</td>
+<td style="text-align:left;">
+4
+</td>
+<td style="text-align:left;">
+17042016
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+08062011
+</td>
+<td style="text-align:left;">
+404
+</td>
+<td style="text-align:left;">
+2016-04-17
+</td>
+<td style="text-align:left;">
+2016
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+9372…24829
+</td>
+<td style="text-align:left;">
+9372
+</td>
+<td style="text-align:left;">
+1
+</td>
+<td style="text-align:left;">
+16072016
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+01022006
+</td>
+<td style="text-align:left;">
+410
+</td>
+<td style="text-align:left;">
+2016-07-16
+</td>
+<td style="text-align:left;">
+2016
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+15777…31234
+</td>
+<td style="text-align:left;">
+15777
+</td>
+<td style="text-align:left;">
+1
+</td>
+<td style="text-align:left;">
+08122016
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+17031941
+</td>
+<td style="text-align:left;">
+475
+</td>
+<td style="text-align:left;">
+2016-12-08
+</td>
+<td style="text-align:left;">
+2016
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+16744…32201
+</td>
+<td style="text-align:left;">
+16744
+</td>
+<td style="text-align:left;">
+1
+</td>
+<td style="text-align:left;">
+31122016
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+26112009
+</td>
+<td style="text-align:left;">
+407
+</td>
+<td style="text-align:left;">
+2016-12-31
+</td>
+<td style="text-align:left;">
+2016
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+708…32914
+</td>
+<td style="text-align:left;">
+708
+</td>
+<td style="text-align:left;">
+1
+</td>
+<td style="text-align:left;">
+12022017
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+15111954
+</td>
+<td style="text-align:left;">
+462
+</td>
+<td style="text-align:left;">
+2017-02-12
+</td>
+<td style="text-align:left;">
+2017
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+4659…36865
+</td>
+<td style="text-align:left;">
+4659
+</td>
+<td style="text-align:left;">
+1
+</td>
+<td style="text-align:left;">
+25042017
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+09042014
+</td>
+<td style="text-align:left;">
+403
+</td>
+<td style="text-align:left;">
+2017-04-25
+</td>
+<td style="text-align:left;">
+2017
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+5826…38032
+</td>
+<td style="text-align:left;">
+5826
+</td>
+<td style="text-align:left;">
+1
+</td>
+<td style="text-align:left;">
+21062017
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+17041935
+</td>
+<td style="text-align:left;">
+482
+</td>
+<td style="text-align:left;">
+2017-06-21
+</td>
+<td style="text-align:left;">
+2017
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+8903…41109
+</td>
+<td style="text-align:left;">
+8903
+</td>
+<td style="text-align:left;">
+4
+</td>
+<td style="text-align:left;">
+22072017
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+24011992
+</td>
+<td style="text-align:left;">
+425
+</td>
+<td style="text-align:left;">
+2017-07-22
+</td>
+<td style="text-align:left;">
+2017
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+9228…41434
+</td>
+<td style="text-align:left;">
+9228
+</td>
+<td style="text-align:left;">
+4
+</td>
+<td style="text-align:left;">
+29102017
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+06121949
+</td>
+<td style="text-align:left;">
+467
+</td>
+<td style="text-align:left;">
+2017-10-29
+</td>
+<td style="text-align:left;">
+2017
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+12768…44974
+</td>
+<td style="text-align:left;">
+12768
+</td>
+<td style="text-align:left;">
+4
+</td>
+<td style="text-align:left;">
+19092017
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+02021977
+</td>
+<td style="text-align:left;">
+440
+</td>
+<td style="text-align:left;">
+2017-09-19
+</td>
+<td style="text-align:left;">
+2017
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+3454…51614
+</td>
+<td style="text-align:left;">
+348488
+</td>
+<td style="text-align:left;">
+1
+</td>
+<td style="text-align:left;">
+06022018
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+24101958
+</td>
+<td style="text-align:left;">
+459
+</td>
+<td style="text-align:left;">
+2018-02-06
+</td>
+<td style="text-align:left;">
+2018
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+3465…51625
+</td>
+<td style="text-align:left;">
+348499
+</td>
+<td style="text-align:left;">
+1
+</td>
+<td style="text-align:left;">
+23022018
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+02031985
+</td>
+<td style="text-align:left;">
+432
+</td>
+<td style="text-align:left;">
+2018-02-23
+</td>
+<td style="text-align:left;">
+2018
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+7745…55905
+</td>
+<td style="text-align:left;">
+352823
+</td>
+<td style="text-align:left;">
+1
+</td>
+<td style="text-align:left;">
+23042018
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+27091974
+</td>
+<td style="text-align:left;">
+443
+</td>
+<td style="text-align:left;">
+2018-04-23
+</td>
+<td style="text-align:left;">
+2018
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+10705…58865
+</td>
+<td style="text-align:left;">
+355823
+</td>
+<td style="text-align:left;">
+1
+</td>
+<td style="text-align:left;">
+07052018
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+19021923
+</td>
+<td style="text-align:left;">
+495
+</td>
+<td style="text-align:left;">
+2018-05-07
+</td>
+<td style="text-align:left;">
+2018
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+12122…60282
+</td>
+<td style="text-align:left;">
+357252
+</td>
+<td style="text-align:left;">
+4
+</td>
+<td style="text-align:left;">
+28082018
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+22032008
+</td>
+<td style="text-align:left;">
+410
+</td>
+<td style="text-align:left;">
+2018-08-28
+</td>
+<td style="text-align:left;">
+2018
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+3388…68148
+</td>
+<td style="text-align:left;">
+261139
+</td>
+<td style="text-align:left;">
+4
+</td>
+<td style="text-align:left;">
+15062019
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+10112008
+</td>
+<td style="text-align:left;">
+410
+</td>
+<td style="text-align:left;">
+2019-06-15
+</td>
+<td style="text-align:left;">
+2019
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+4239…68999
+</td>
+<td style="text-align:left;">
+351729
+</td>
+<td style="text-align:left;">
+4
+</td>
+<td style="text-align:left;">
+27012019
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+07072011
+</td>
+<td style="text-align:left;">
+407
+</td>
+<td style="text-align:left;">
+2019-01-27
+</td>
+<td style="text-align:left;">
+2019
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+8282…73042
+</td>
+<td style="text-align:left;">
+651704
+</td>
+<td style="text-align:left;">
+4
+</td>
+<td style="text-align:left;">
+02042019
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+16071966
+</td>
+<td style="text-align:left;">
+452
+</td>
+<td style="text-align:left;">
+2019-04-02
+</td>
+<td style="text-align:left;">
+2019
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+8567…73327
+</td>
+<td style="text-align:left;">
+671119
+</td>
+<td style="text-align:left;">
+1
+</td>
+<td style="text-align:left;">
+10082019
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+18041992
+</td>
+<td style="text-align:left;">
+427
+</td>
+<td style="text-align:left;">
+2019-08-10
+</td>
+<td style="text-align:left;">
+2019
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+9911…74671
+</td>
+<td style="text-align:left;">
+799494
+</td>
+<td style="text-align:left;">
+4
+</td>
+<td style="text-align:left;">
+11122019
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+29062015
+</td>
+<td style="text-align:left;">
+404
+</td>
+<td style="text-align:left;">
+2019-12-11
+</td>
+<td style="text-align:left;">
+2019
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+16017…80777
+</td>
+<td style="text-align:left;">
+1295135
+</td>
+<td style="text-align:left;">
+4
+</td>
+<td style="text-align:left;">
+31122019
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+12082014
+</td>
+<td style="text-align:left;">
+405
+</td>
+<td style="text-align:left;">
+2019-12-31
+</td>
+<td style="text-align:left;">
+2019
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+5419…86994
+</td>
+<td style="text-align:left;">
+514509
+</td>
+<td style="text-align:left;">
+1
+</td>
+<td style="text-align:left;">
+28042020
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+03031947
+</td>
+<td style="text-align:left;">
+473
+</td>
+<td style="text-align:left;">
+2020-04-28
+</td>
+<td style="text-align:left;">
+2020
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+16716…98291
+</td>
+<td style="text-align:left;">
+1371299
+</td>
+<td style="text-align:left;">
+1
+</td>
+<td style="text-align:left;">
+20112020
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+02051939
+</td>
+<td style="text-align:left;">
+481
+</td>
+<td style="text-align:left;">
+2020-11-20
+</td>
+<td style="text-align:left;">
+2020
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+11835…112461
+</td>
+<td style="text-align:left;">
+832786
+</td>
+<td style="text-align:left;">
+4
+</td>
+<td style="text-align:left;">
+11062021
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+12111947
+</td>
+<td style="text-align:left;">
+473
+</td>
+<td style="text-align:left;">
+2021-06-11
+</td>
+<td style="text-align:left;">
+2021
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+544…126219
+</td>
+<td style="text-align:left;">
+30654
+</td>
+<td style="text-align:left;">
+4
+</td>
+<td style="text-align:left;">
+06042022
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+18081941
+</td>
+<td style="text-align:left;">
+480
+</td>
+<td style="text-align:left;">
+2022-04-06
+</td>
+<td style="text-align:left;">
+2022
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+7694…133369
+</td>
+<td style="text-align:left;">
+554320
+</td>
+<td style="text-align:left;">
+1
+</td>
+<td style="text-align:left;">
+10032022
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+29122018
+</td>
+<td style="text-align:left;">
+403
+</td>
+<td style="text-align:left;">
+2022-03-10
+</td>
+<td style="text-align:left;">
+2022
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+11317…136992
+</td>
+<td style="text-align:left;">
+845048
+</td>
+<td style="text-align:left;">
+1
+</td>
+<td style="text-align:left;">
+09072022
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+04072018
+</td>
+<td style="text-align:left;">
+404
+</td>
+<td style="text-align:left;">
+2022-07-09
+</td>
+<td style="text-align:left;">
+2022
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+14498…140173
+</td>
+<td style="text-align:left;">
+1067996
+</td>
+<td style="text-align:left;">
+1
+</td>
+<td style="text-align:left;">
+26082022
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+26031972
+</td>
+<td style="text-align:left;">
+450
+</td>
+<td style="text-align:left;">
+2022-08-26
+</td>
+<td style="text-align:left;">
+2022
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+15518…141193
+</td>
+<td style="text-align:left;">
+1167695
+</td>
+<td style="text-align:left;">
+1
+</td>
+<td style="text-align:left;">
+20082022
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+27021948
+</td>
+<td style="text-align:left;">
+474
+</td>
+<td style="text-align:left;">
+2022-08-20
+</td>
+<td style="text-align:left;">
+2022
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+3226…149335
+</td>
+<td style="text-align:left;">
+260153
+</td>
+<td style="text-align:left;">
+1
+</td>
+<td style="text-align:left;">
+10032023
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+09012018
+</td>
+<td style="text-align:left;">
+405
+</td>
+<td style="text-align:left;">
+2023-03-10
+</td>
+<td style="text-align:left;">
+2023
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+18972…165081
+</td>
+<td style="text-align:left;">
+1416606
+</td>
+<td style="text-align:left;">
+4
+</td>
+<td style="text-align:left;">
+19122023
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+26081945
+</td>
+<td style="text-align:left;">
+478
+</td>
+<td style="text-align:left;">
+2023-12-19
+</td>
+<td style="text-align:left;">
+2023
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1514…167261
+</td>
+<td style="text-align:left;">
+113565
+</td>
+<td style="text-align:left;">
+4
+</td>
+<td style="text-align:left;">
+30012024
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+17022011
+</td>
+<td style="text-align:left;">
+412
+</td>
+<td style="text-align:left;">
+2024-01-30
+</td>
+<td style="text-align:left;">
+2024
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+9996…175743
+</td>
+<td style="text-align:left;">
+795199
+</td>
+<td style="text-align:left;">
+4
+</td>
+<td style="text-align:left;">
+06072024
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+22062018
+</td>
+<td style="text-align:left;">
+406
+</td>
+<td style="text-align:left;">
+2024-07-06
+</td>
+<td style="text-align:left;">
+2024
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+14190…179937
+</td>
+<td style="text-align:left;">
+1102838
+</td>
+<td style="text-align:left;">
+4
+</td>
+<td style="text-align:left;">
+15092024
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+06082002
+</td>
+<td style="text-align:left;">
+422
+</td>
+<td style="text-align:left;">
+2024-09-15
+</td>
+<td style="text-align:left;">
+2024
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<pre class="r"><code>dim(dados_nb)</code></pre>
+<pre><code>## [1] 40  8</code></pre>
+<pre class="r"><code>dados_nb_race_year_selcd &lt;- dados_nb %&gt;%
+  select(RACACOR, year)
+
+# dados_nb_race_2013_selcd &lt;- dados_estados_nb_2013 %&gt;%
+#   select(RACACOR, CAUSABAS)</code></pre>
+<p><br />
+</p>
+<p>use cast() to convert data frame from long to wide format</p>
+<pre class="r"><code>library(reshape2)
+wide_dados_nb_appended &lt;- dcast(dados_nb_race_year_selcd, year ~ RACACOR)</code></pre>
+<pre><code>## Warning in dcast(dados_nb_race_year_selcd, year ~ RACACOR): The dcast generic
+## in data.table has been passed a data.frame and will attempt to redirect to the
+## relevant reshape2 method; please note that reshape2 is superseded and is no
+## longer actively developed, and this redirection is now deprecated. Please do
+## this redirection yourself like reshape2::dcast(dados_nb_race_year_selcd). In
+## the next version, this warning will become an error.</code></pre>
+<pre><code>## Using &#39;year&#39; as value column. Use &#39;value.var&#39; to override</code></pre>
+<pre><code>## Aggregation function missing: defaulting to length</code></pre>
+<p><br />
+</p>
+<p>Melt the data frame</p>
+<p><br />
+</p>
+<pre class="r"><code>dados_nb_appended_melted &lt;- melt(wide_dados_nb_appended, id.vars = &quot;year&quot;)</code></pre>
+<pre><code>## Warning in melt.default(wide_dados_nb_appended, id.vars = &quot;year&quot;): The melt
+## generic in data.table has been passed a data.frame and will attempt to redirect
+## to the relevant reshape2 method; please note that reshape2 is superseded and is
+## no longer actively developed, and this redirection is now deprecated. To
+## continue using melt methods from reshape2 while both libraries are attached,
+## e.g. melt.list, you can prepend the namespace, i.e.
+## reshape2::melt(wide_dados_nb_appended). In the next version, this warning will
+## become an error.</code></pre>
+<p>Obter variável raça/cor como palavras descritivas ao invés de
+números.</p>
+<pre class="r"><code>dados_nb_appended_melted &lt;- dados_nb_appended_melted %&gt;%
+  dplyr::mutate(raca_cor_factor = ifelse(dados_nb_appended_melted$variable == &quot;1&quot;, &quot;branca&quot;, 
+                                         ifelse(dados_nb_appended_melted$variable == &quot;2&quot;, &quot;preta&quot;,
+                                                ifelse(dados_nb_appended_melted$variable == &quot;3&quot;, &quot;amarela&quot;,
+                                                       ifelse(dados_nb_appended_melted$variable == &quot;4&quot;, &quot;parda&quot;, 
+                                                              ifelse(dados_nb_appended_melted$variable == &quot;5&quot;, &quot;indígena&quot;,
+                                                                     ifelse(dados_nb_appended_melted$variable == &quot;9&quot;, &quot;ignorado&quot;,&quot;0&quot;)))))))</code></pre>
+<p><br />
+</p>
+<p>Remove NA in year</p>
+<pre class="r"><code>dados_nb_appended_melted &lt;- dados_nb_appended_melted[ which(
+  dados_nb_appended_melted$year != &quot;NA&quot;), ]</code></pre>
+<p><br />
+</p>
+<p>Remove 0 in raça/cor</p>
+<pre class="r"><code>dados_nb_appended_melted &lt;- dados_nb_appended_melted[ which(
+  dados_nb_appended_melted$raca_cor_factor != &quot;0&quot;), ]</code></pre>
+<p><br />
+</p>
+<p>Visualizar plot</p>
+<pre class="r"><code>ggplot(dados_nb_appended_melted, aes(x=year, y=value, group=raca_cor_factor, color=raca_cor_factor)) +
+  geom_line(aes(linetype=raca_cor_factor))+
+  geom_point()</code></pre>
+<p><img src="04-datasus_raca_cor_disparity_files/figure-html/unnamed-chunk-20-1.png" width="672" /></p>
+<p><br />
+</p>
+<p>Stacked Graph</p>
+<pre class="r"><code>ggplot(dados_nb_appended_melted, aes(fill=raca_cor_factor, y=value, x=year)) + 
+    geom_bar(position=&quot;stack&quot;, stat=&quot;identity&quot;)</code></pre>
+<p><img src="04-datasus_raca_cor_disparity_files/figure-html/unnamed-chunk-21-1.png" width="672" /></p>
+<p><br />
+</p>
+<p>Stacked + Graph</p>
+<pre class="r"><code>ggplot(dados_nb_appended_melted, aes(fill=raca_cor_factor, y=value, x=year)) + 
+    geom_bar(position=&quot;fill&quot;, stat=&quot;identity&quot;)</code></pre>
+<p><img src="04-datasus_raca_cor_disparity_files/figure-html/unnamed-chunk-22-1.png" width="672" /></p>
+<div id="refs" class="references csl-bib-body hanging-indent"
+entry-spacing="0">
+<div id="ref-STHTDA202408" class="csl-entry">
+STHDA. 2024. <em>Ggplot2 Line Plot : Quick Start Guide - r Software and
+Data Visualization</em>. <a
+href="http://www.sthda.com/english/wiki/ggplot2-line-plot-quick-start-guide-r-software-and-data-visualization">http://www.sthda.com/english/wiki/ggplot2-line-plot-quick-start-guide-r-software-and-data-visualization</a>.
+</div>
+</div>
+</div>
+</div>
+
+
+
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open');
+  });
+});
+</script>
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,5493 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+<meta name="author" content="Gepoliano Chaves" />
+
+
+<title>Accessing the Raça/Cor Variable in DATASUS</title>
+
+<script src="site_libs/header-attrs-2.28/header-attrs.js"></script>
+<script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/lumen.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<style>h1 {font-size: 34px;}
+       h1.title {font-size: 38px;}
+       h2 {font-size: 30px;}
+       h3 {font-size: 24px;}
+       h4 {font-size: 18px;}
+       h5 {font-size: 16px;}
+       h6 {font-size: 12px;}
+       code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
+       pre:not([class]) { background-color: white }</style>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<link href="site_libs/highlightjs-9.12.0/default.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+<link href="site_libs/pagedtable-1.1/css/pagedtable.css" rel="stylesheet" />
+<script src="site_libs/pagedtable-1.1/js/pagedtable.js"></script>
+<script src="site_libs/kePrint-0.0.1/kePrint.js"></script>
+<link href="site_libs/lightable-0.0.1/lightable.css" rel="stylesheet" />
+<link href="site_libs/font-awesome-6.4.2/css/all.min.css" rel="stylesheet" />
+<link href="site_libs/font-awesome-6.4.2/css/v4-shims.min.css" rel="stylesheet" />
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+<style type="text/css">code{white-space: pre;}</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+
+
+<style type="text/css">
+/* for pandoc --citeproc since 2.11 */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+  margin-bottom: 0em;
+}
+.hanging div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}
+</style>
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+details > summary > p:only-child {
+  display: inline;
+}
+pre code {
+  padding: 0;
+}
+</style>
+
+
+<style type="text/css">
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #adb5bd;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script type="text/javascript">
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark the anchor link active (and if it's in a dropdown, also mark that active)
+  var dropdown = menuAnchor.closest('li.dropdown');
+  if (window.bootstrap) { // Bootstrap 4+
+    menuAnchor.addClass('active');
+    dropdown.find('> .dropdown-toggle').addClass('active');
+  } else { // Bootstrap 3
+    menuAnchor.parent().addClass('active');
+    dropdown.addClass('active');
+  }
+
+  // Navbar adjustments
+  var navHeight = $(".navbar").first().height() + 15;
+  var style = document.createElement('style');
+  var pt = "padding-top: " + navHeight + "px; ";
+  var mt = "margin-top: -" + navHeight + "px; ";
+  var css = "";
+  // offset scroll position for anchor links (for fixed navbar)
+  for (var i = 1; i <= 6; i++) {
+    css += ".section h" + i + "{ " + pt + mt + "}\n";
+  }
+  style.innerHTML = "body {" + pt + "padding-bottom: 40px; }\n" + css;
+  document.head.appendChild(style);
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before, .tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "\e259";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "\e258";
+  font-family: 'Glyphicons Halflings';
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+
+
+<div class="navbar navbar-inverse  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-bs-toggle="collapse" data-target="#navbar" data-bs-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">Gerenciamento Genômico e Algorítmico de Fenótipos, Riscos, Diagnósticos e Prognósticos em Dados de Doenças em Brasileiros</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">
+    <span class="fa fa-home"></span>
+     
+    Home
+  </a>
+</li>
+<li>
+  <a href="quokka-bilby.html">
+    <span class="fa fa-solid fa-circle-info"></span>
+     
+    Sobre nós
+  </a>
+</li>
+<li>
+  <a href="PmD.html">
+    <span class="fa fa-solid fa-people-arrows"></span>
+     
+    PmD
+  </a>
+</li>
+<li>
+  <a href="codigo.html">
+    <span class="fa fa-solid fa-laptop-file"></span>
+     
+    Notebooks de Código
+  </a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div id="header">
+
+
+
+<h1 class="title toc-ignore">Accessing the Raça/Cor Variable in
+DATASUS</h1>
+<h4 class="author">Gepoliano Chaves</h4>
+<h4 class="date">May 28th, 2026</h4>
+
+</div>
+
+<div id="TOC">
+<ul>
+<li><a href="#load-libraries" id="toc-load-libraries">Load
+libraries</a></li>
+<li><a href="#coleta-e-processamento-de-dados"
+id="toc-coleta-e-processamento-de-dados">Coleta e Processamento de
+dados</a></li>
+<li><a href="#gr%C3%A1ficos-de-mortalidade-anual"
+id="toc-gráficos-de-mortalidade-anual">Gráficos de Mortalidade Anual</a>
+<ul>
+<li><a href="#mortalidade-anual-total"
+id="toc-mortalidade-anual-total">Mortalidade Anual Total</a></li>
+<li><a href="#mortalidade-anual-total-usando-vari%C3%A1vel-ra%C3%A7acor"
+id="toc-mortalidade-anual-total-usando-variável-raçacor">Mortalidade
+Anual Total Usando Variável Raça/Cor</a></li>
+<li><a href="#mortalidade-anual-total-por-neuroblastoma"
+id="toc-mortalidade-anual-total-por-neuroblastoma">Mortalidade Anual
+Total por Neuroblastoma</a></li>
+</ul></li>
+</ul>
+</div>
+
+<div id="load-libraries" class="section level2">
+<h2>Load libraries</h2>
+<p><br />
+</p>
+<pre class="r"><code>library(microdatasus)
+library(dplyr)
+library(tidyverse)
+library(maditr)
+library(kableExtra)</code></pre>
+</div>
+<div id="coleta-e-processamento-de-dados" class="section level2">
+<h2>Coleta e Processamento de dados</h2>
+<p><br />
+</p>
+<p>SIM-DO é o sistema de informação de mortalidade.</p>
+<pre class="r"><code>dados_pe = fetch_datasus(year_start = 2015,
+                      year_end = 2024,
+                      uf = &quot;PE&quot;,
+                      information_system = &quot;SIM-DO&quot;)</code></pre>
+<p><br />
+</p>
+<p>Save dados_pe only a single time</p>
+<pre class="r"><code>saveRDS(dados_pe, &quot;./data/dados_pe.rds&quot;)</code></pre>
+<p><br />
+</p>
+<p>Load dados_pe</p>
+<pre class="r"><code>dados_pe &lt;- readRDS(&quot;./data/dados_pe.rds&quot;)</code></pre>
+<p><br />
+</p>
+<div id="contagem-de-indivíduos-por-categoria-da-variável-raçacor"
+class="section level4">
+<h4>Contagem de indivíduos por categoria da Variável Raça/Cor</h4>
+<p><br />
+</p>
+<pre class="r"><code>library(expss)
+cross_cases(dados_pe, RACACOR)</code></pre>
+<table class="gmisc_table" style="border-collapse: collapse; margin-top: 1em; margin-bottom: 1em;">
+<thead>
+<tr>
+<th style="border-bottom: 1px solid grey; font-weight: 900; border-top: 2px solid grey; text-align: center;">
+</th>
+<th style="font-weight: 900; border-bottom: 1px solid grey; border-top: 2px solid grey; text-align: center;">
+ #Total 
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td colspan="2" style="font-weight: 900;">
+ RACACOR 
+</td>
+</tr>
+<tr>
+<td style="text-align: left;">
+   1 
+</td>
+<td style="text-align: right;">
+223468
+</td>
+</tr>
+<tr>
+<td style="text-align: left;">
+   2 
+</td>
+<td style="text-align: right;">
+43221
+</td>
+</tr>
+<tr>
+<td style="text-align: left;">
+   3 
+</td>
+<td style="text-align: right;">
+1413
+</td>
+</tr>
+<tr>
+<td style="text-align: left;">
+   4 
+</td>
+<td style="text-align: right;">
+408019
+</td>
+</tr>
+<tr>
+<td style="text-align: left;">
+   5 
+</td>
+<td style="text-align: right;">
+2196
+</td>
+</tr>
+<tr>
+<td style="border-bottom: 2px solid grey; text-align: left;">
+   #Total cases 
+</td>
+<td style="border-bottom: 2px solid grey; text-align: right;">
+678317
+</td>
+</tr>
+</tbody>
+</table>
+<p><br />
+</p>
+</div>
+<div id="constrir-df-com-identificação-racial" class="section level4">
+<h4>Constrir DF com identificação racial</h4>
+<p>numero total de brancos, pardos, pretos, amarelos, indígenas</p>
+<pre class="r"><code>racacor_df &lt;- dados_pe %&gt;% count(RACACOR, sort = TRUE)</code></pre>
+</div>
+<div id="transformar-variável-raçacor" class="section level4">
+<h4>Transformar variável Raça/Cor</h4>
+<p>Transforma coluna com caracteres em nomes de raça/cor</p>
+<pre class="r"><code>racacor_df &lt;- racacor_df %&gt;%
+  dplyr::mutate(raca_cor_factor = ifelse(racacor_df$RACACOR == &quot;1&quot;, &quot;branca&quot;, 
+                                         ifelse(racacor_df$RACACOR == &quot;2&quot;, &quot;preta&quot;,
+                                                ifelse(racacor_df$RACACOR == &quot;3&quot;, &quot;amarela&quot;,
+                                                       ifelse(racacor_df$RACACOR == &quot;4&quot;, &quot;parda&quot;, 
+                                                              ifelse(racacor_df$RACACOR == &quot;5&quot;, &quot;indígena&quot;,
+                                                                     ifelse(racacor_df$RACACOR == &quot;9&quot;, &quot;ignorado&quot;,&quot;0&quot;)))))))</code></pre>
+<p><br />
+</p>
+</div>
+<div id="gráfico-de-barras-por-categoria-da-variável-raçacor"
+class="section level4">
+<h4>Gráfico de barras por categoria da Variável Raça/Cor</h4>
+<p><br />
+</p>
+<p>Nesta parte, poderemos estimar o número de indivíduos sob risco,
+considerando as categorias raciais brasileiras.</p>
+<pre class="r"><code>library(ggplot2)
+# Basic barplot
+ggplot(data=racacor_df, aes(x=raca_cor_factor, y=n)) +
+  geom_bar(stat=&quot;identity&quot;)</code></pre>
+<p><img src="04-datasus_raca_cor_3_files/figure-html/barplot-1.png" width="672" /></p>
+<p><br />
+</p>
+</div>
+</div>
+<div id="gráficos-de-mortalidade-anual" class="section level2">
+<h2>Gráficos de Mortalidade Anual</h2>
+<p><br />
+</p>
+<div
+id="selecionar-variáveis-e-processá-las-para-obter-ano-de-óbito-do-paciente"
+class="section level4">
+<h4>Selecionar variáveis e processá-las para obter ano de óbito do
+paciente</h4>
+<p><br />
+</p>
+<p>Transforma variável DTOBITO usando função dmy criando variável
+(coluna) YMD em yyyy-mm-dd. Referência: <a
+href="https://rstudio.github.io/cheatsheets/html/lubridate.html"
+class="uri">https://rstudio.github.io/cheatsheets/html/lubridate.html</a></p>
+<pre class="r"><code>library(lubridate)
+dados_selected &lt;- dados_pe %&gt;%
+  select(CONTADOR, RACACOR, DTOBITO, CAUSABAS, DTNASC, IDADE) %&gt;%
+  mutate(YMD = dmy(dados_pe$DTOBITO))
+
+library(stringr)
+# Split Each Sample
+dados_year &lt;- str_split_fixed(dados_selected$YMD, &quot;-&quot;, 3)
+# Construct Vector Maintaining parts of interest
+split_vector_year &lt;- paste0(dados_year[,1])
+# Add vector to DF, after column of interest
+dados_appended &lt;- add_column(dados_selected, year = split_vector_year, .after = &quot;YMD&quot;)</code></pre>
+<p><br />
+</p>
+<p><br />
+</p>
+</div>
+<div
+id="agrupar-dados-pela-variável-years-a-fim-de-contar-o-número-anual-de-indivíduos"
+class="section level4">
+<h4>Agrupar dados pela variável <em>years</em> a fim de contar o número
+anual de indivíduos</h4>
+<p><br />
+</p>
+<p>Referência: <a
+href="https://dplyr.tidyverse.org/reference/group_by.html"
+class="uri">https://dplyr.tidyverse.org/reference/group_by.html</a></p>
+<p>Cálculos com valores anuais totais:</p>
+<pre class="r"><code>dados_agregados_year &lt;- dados_appended %&gt;%
+  group_by(year) %&gt;%
+  summarise(n = n())</code></pre>
+<pre class="r"><code>dados_agrupados_racaCor &lt;- dados_appended %&gt;%
+  group_by(RACACOR) %&gt;%
+  summarise(n = n())
+
+dados_agregados_racaCor &lt;- dados_appended %&gt;%
+  group_by(year) %&gt;%
+  group_by(RACACOR) %&gt;%
+  summarise(n = n())
+
+
+# dados_agregados_racaCor &lt;- dados_appended %&gt;%
+#   group_by(chr) %&gt;%
+#   summarise(avg = mean(x)) %&gt;%
+#   arrange(chr, .locale = &quot;en&quot;)</code></pre>
+<p>Remover NAs dos dados agregados por ano</p>
+<pre class="r"><code>dados_agregados_year &lt;- dados_agregados_year[ which(
+  dados_agregados_year$year != &quot;NA&quot;), ]</code></pre>
+<p><br />
+</p>
+</div>
+<div id="mortalidade-anual-total" class="section level3">
+<h3>Mortalidade Anual Total</h3>
+<p><br />
+</p>
+<pre class="r"><code>library(ggplot2)
+# Basic line plot with points
+ggplot(data=dados_agregados_year, aes(x=year, y=n, group=1)) +
+  geom_line()+
+  geom_point()</code></pre>
+<p><img src="04-datasus_raca_cor_3_files/figure-html/unnamed-chunk-7-1.png" width="672" /></p>
+</div>
+<div id="mortalidade-anual-total-usando-variável-raçacor"
+class="section level3">
+<h3>Mortalidade Anual Total Usando Variável Raça/Cor</h3>
+<p><br />
+</p>
+<p>Mortalidade anual total (figura acima) e mortalidade anual usando a
+variável Raça/Cor (figura abaixo) foram feitas usando <span
+class="citation">STHDA (2024)</span> como referência.</p>
+<pre class="r"><code>dados_race_year_selcd &lt;- dados_appended %&gt;%
+  select(RACACOR, year)
+
+dados_agrupados_racaCor &lt;- dados_race_year_selcd %&gt;%
+  group_by(RACACOR) %&gt;%
+  summarise(n = n())</code></pre>
+<p><br />
+</p>
+<pre class="r"><code>library(reshape2)
+
+#use cast() to convert data frame from long to wide format
+wide_dados_appended &lt;- dcast(dados_race_year_selcd, year ~ RACACOR)</code></pre>
+<pre><code>## Warning in dcast(dados_race_year_selcd, year ~ RACACOR): The dcast generic in
+## data.table has been passed a data.frame and will attempt to redirect to the
+## relevant reshape2 method; please note that reshape2 is superseded and is no
+## longer actively developed, and this redirection is now deprecated. Please do
+## this redirection yourself like reshape2::dcast(dados_race_year_selcd). In the
+## next version, this warning will become an error.</code></pre>
+<pre><code>## Using &#39;year&#39; as value column. Use &#39;value.var&#39; to override</code></pre>
+<pre><code>## Aggregation function missing: defaulting to length</code></pre>
+<pre class="r"><code># wide_dados_appended &lt;- dcast(dados_race_year_selcd, RACACOR ~ year)
+
+# Melt the data frame
+dados_appended_melted &lt;- melt(wide_dados_appended, id.vars = &quot;year&quot;)</code></pre>
+<pre><code>## Warning in melt.default(wide_dados_appended, id.vars = &quot;year&quot;): The melt
+## generic in data.table has been passed a data.frame and will attempt to redirect
+## to the relevant reshape2 method; please note that reshape2 is superseded and is
+## no longer actively developed, and this redirection is now deprecated. To
+## continue using melt methods from reshape2 while both libraries are attached,
+## e.g. melt.list, you can prepend the namespace, i.e.
+## reshape2::melt(wide_dados_appended). In the next version, this warning will
+## become an error.</code></pre>
+<p><br />
+</p>
+<p>Obter variável raça/cor como palavras descritivas ao invés de
+números.</p>
+<pre class="r"><code>dados_appended_melted &lt;- dados_appended_melted %&gt;%
+  dplyr::mutate(raca_cor_factor = ifelse(dados_appended_melted$variable == &quot;1&quot;, &quot;branca&quot;, 
+                                         ifelse(dados_appended_melted$variable == &quot;2&quot;, &quot;preta&quot;,
+                                                ifelse(dados_appended_melted$variable == &quot;3&quot;, &quot;amarela&quot;,
+                                                       ifelse(dados_appended_melted$variable == &quot;4&quot;, &quot;parda&quot;, 
+                                                              ifelse(dados_appended_melted$variable == &quot;5&quot;, &quot;indígena&quot;,
+                                                                     ifelse(dados_appended_melted$variable == &quot;9&quot;, &quot;ignorado&quot;,&quot;0&quot;)))))))</code></pre>
+<p><br />
+</p>
+<p>Remove NA in year</p>
+<pre class="r"><code>dados_appended_melted &lt;- dados_appended_melted[ which(
+  dados_appended_melted$year != &quot;NA&quot;), ]</code></pre>
+<p>Remove 0 in raça/cor</p>
+<pre class="r"><code>dados_appended_melted &lt;- dados_appended_melted[ which(
+  dados_appended_melted$raca_cor_factor != &quot;0&quot;), ]</code></pre>
+<p>Visualizar plot</p>
+<pre class="r"><code>ggplot(dados_appended_melted, aes(x=year, y=value, group=raca_cor_factor)) +
+  geom_line(aes(linetype=raca_cor_factor))+
+  geom_point()</code></pre>
+<p><img src="04-datasus_raca_cor_3_files/figure-html/unnamed-chunk-12-1.png" width="672" /></p>
+<pre class="r"><code># wait to change the variable names:
+
+# names(dados_appended_melted)[names(dados_appended_melted) == &#39;variable&#39;] &lt;- &#39;RACACOR&#39;
+# names(dados_appended_melted)[names(dados_appended_melted) == &#39;value&#39;] &lt;- &#39;n&#39;</code></pre>
+<p><br />
+</p>
+</div>
+<div id="mortalidade-anual-total-por-neuroblastoma"
+class="section level3">
+<h3>Mortalidade Anual Total por Neuroblastoma</h3>
+<p><br />
+</p>
+<pre class="r"><code>dados_nb &lt;- dados_appended[ which(
+  dados_appended$CAUSABAS == &quot;C749&quot;), ]
+dim(dados_nb)</code></pre>
+<pre><code>## [1] 161   8</code></pre>
+<pre class="r"><code># dados_estados_nb_2013 &lt;- data_estados[ which(
+#   data_estados$CAUSABAS == &quot;C749&quot;), ]
+# dim(dados_estados_nb_2013)
+
+dados_agregados_nb_year &lt;- dados_nb %&gt;%
+  group_by(year) %&gt;%
+  summarise(n = n())
+
+ggplot(data=dados_agregados_nb_year, aes(x=year, y=n, group=1)) +
+  geom_line()+
+  geom_point()</code></pre>
+<p><img src="04-datasus_raca_cor_3_files/figure-html/unnamed-chunk-13-1.png" width="672" /></p>
+<pre class="r"><code>kable(dados_nb, caption=&quot;dados_nb&quot;) %&gt;%
+  kable_styling(&quot;striped&quot;, full_width = F, font_size = 12) %&gt;%
+  scroll_box(width = &quot;100%&quot;, height = &quot;600px&quot;)</code></pre>
+<div
+style="border: 1px solid #ddd; padding: 0px; overflow-y: scroll; height:600px; overflow-x: scroll; width:100%; ">
+<table class="table table-striped" style="font-size: 12px; width: auto !important; margin-left: auto; margin-right: auto;">
+<caption style="font-size: initial !important;">
+dados_nb
+</caption>
+<thead>
+<tr>
+<th style="text-align:left;position: sticky; top:0; background-color: #FFFFFF;">
+</th>
+<th style="text-align:left;position: sticky; top:0; background-color: #FFFFFF;">
+CONTADOR
+</th>
+<th style="text-align:left;position: sticky; top:0; background-color: #FFFFFF;">
+RACACOR
+</th>
+<th style="text-align:left;position: sticky; top:0; background-color: #FFFFFF;">
+DTOBITO
+</th>
+<th style="text-align:left;position: sticky; top:0; background-color: #FFFFFF;">
+CAUSABAS
+</th>
+<th style="text-align:left;position: sticky; top:0; background-color: #FFFFFF;">
+DTNASC
+</th>
+<th style="text-align:left;position: sticky; top:0; background-color: #FFFFFF;">
+IDADE
+</th>
+<th style="text-align:left;position: sticky; top:0; background-color: #FFFFFF;">
+YMD
+</th>
+<th style="text-align:left;position: sticky; top:0; background-color: #FFFFFF;">
+year
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+9377…9377
+</td>
+<td style="text-align:left;">
+9377
+</td>
+<td style="text-align:left;">
+4
+</td>
+<td style="text-align:left;">
+07062015
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+12062008
+</td>
+<td style="text-align:left;">
+406
+</td>
+<td style="text-align:left;">
+2015-06-07
+</td>
+<td style="text-align:left;">
+2015
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+9426…9426
+</td>
+<td style="text-align:left;">
+9426
+</td>
+<td style="text-align:left;">
+4
+</td>
+<td style="text-align:left;">
+11062015
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+18122008
+</td>
+<td style="text-align:left;">
+406
+</td>
+<td style="text-align:left;">
+2015-06-11
+</td>
+<td style="text-align:left;">
+2015
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+11040…11040
+</td>
+<td style="text-align:left;">
+11040
+</td>
+<td style="text-align:left;">
+1
+</td>
+<td style="text-align:left;">
+26122015
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+22071949
+</td>
+<td style="text-align:left;">
+466
+</td>
+<td style="text-align:left;">
+2015-12-26
+</td>
+<td style="text-align:left;">
+2015
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+20139…20139
+</td>
+<td style="text-align:left;">
+20139
+</td>
+<td style="text-align:left;">
+4
+</td>
+<td style="text-align:left;">
+16032015
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+23112007
+</td>
+<td style="text-align:left;">
+407
+</td>
+<td style="text-align:left;">
+2015-03-16
+</td>
+<td style="text-align:left;">
+2015
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+20221…20221
+</td>
+<td style="text-align:left;">
+20221
+</td>
+<td style="text-align:left;">
+4
+</td>
+<td style="text-align:left;">
+04042015
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+23072011
+</td>
+<td style="text-align:left;">
+403
+</td>
+<td style="text-align:left;">
+2015-04-04
+</td>
+<td style="text-align:left;">
+2015
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+21120…21120
+</td>
+<td style="text-align:left;">
+21120
+</td>
+<td style="text-align:left;">
+1
+</td>
+<td style="text-align:left;">
+11022015
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+02031999
+</td>
+<td style="text-align:left;">
+415
+</td>
+<td style="text-align:left;">
+2015-02-11
+</td>
+<td style="text-align:left;">
+2015
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+25729…25729
+</td>
+<td style="text-align:left;">
+25729
+</td>
+<td style="text-align:left;">
+4
+</td>
+<td style="text-align:left;">
+06052015
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+05062012
+</td>
+<td style="text-align:left;">
+402
+</td>
+<td style="text-align:left;">
+2015-05-06
+</td>
+<td style="text-align:left;">
+2015
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+44578…44578
+</td>
+<td style="text-align:left;">
+44578
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+12082015
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+11122006
+</td>
+<td style="text-align:left;">
+408
+</td>
+<td style="text-align:left;">
+2015-08-12
+</td>
+<td style="text-align:left;">
+2015
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+44651…44651
+</td>
+<td style="text-align:left;">
+44651
+</td>
+<td style="text-align:left;">
+1
+</td>
+<td style="text-align:left;">
+28082015
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+02092012
+</td>
+<td style="text-align:left;">
+402
+</td>
+<td style="text-align:left;">
+2015-08-28
+</td>
+<td style="text-align:left;">
+2015
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+47571…47571
+</td>
+<td style="text-align:left;">
+47571
+</td>
+<td style="text-align:left;">
+4
+</td>
+<td style="text-align:left;">
+04092015
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+29121939
+</td>
+<td style="text-align:left;">
+475
+</td>
+<td style="text-align:left;">
+2015-09-04
+</td>
+<td style="text-align:left;">
+2015
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+52138…52138
+</td>
+<td style="text-align:left;">
+52138
+</td>
+<td style="text-align:left;">
+4
+</td>
+<td style="text-align:left;">
+22092015
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+07032013
+</td>
+<td style="text-align:left;">
+402
+</td>
+<td style="text-align:left;">
+2015-09-22
+</td>
+<td style="text-align:left;">
+2015
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+53603…53603
+</td>
+<td style="text-align:left;">
+53603
+</td>
+<td style="text-align:left;">
+4
+</td>
+<td style="text-align:left;">
+29102015
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+14112013
+</td>
+<td style="text-align:left;">
+401
+</td>
+<td style="text-align:left;">
+2015-10-29
+</td>
+<td style="text-align:left;">
+2015
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+53706…53706
+</td>
+<td style="text-align:left;">
+53706
+</td>
+<td style="text-align:left;">
+1
+</td>
+<td style="text-align:left;">
+21112015
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+25031958
+</td>
+<td style="text-align:left;">
+457
+</td>
+<td style="text-align:left;">
+2015-11-21
+</td>
+<td style="text-align:left;">
+2015
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+53814…53814
+</td>
+<td style="text-align:left;">
+53814
+</td>
+<td style="text-align:left;">
+4
+</td>
+<td style="text-align:left;">
+19112015
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+22101966
+</td>
+<td style="text-align:left;">
+449
+</td>
+<td style="text-align:left;">
+2015-11-19
+</td>
+<td style="text-align:left;">
+2015
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+55149…55149
+</td>
+<td style="text-align:left;">
+55149
+</td>
+<td style="text-align:left;">
+4
+</td>
+<td style="text-align:left;">
+24112015
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+28021958
+</td>
+<td style="text-align:left;">
+457
+</td>
+<td style="text-align:left;">
+2015-11-24
+</td>
+<td style="text-align:left;">
+2015
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+57874…57874
+</td>
+<td style="text-align:left;">
+57874
+</td>
+<td style="text-align:left;">
+4
+</td>
+<td style="text-align:left;">
+20112015
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+05052009
+</td>
+<td style="text-align:left;">
+406
+</td>
+<td style="text-align:left;">
+2015-11-20
+</td>
+<td style="text-align:left;">
+2015
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+11753…74309
+</td>
+<td style="text-align:left;">
+11753
+</td>
+<td style="text-align:left;">
+4
+</td>
+<td style="text-align:left;">
+25022016
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+24042015
+</td>
+<td style="text-align:left;">
+310
+</td>
+<td style="text-align:left;">
+2016-02-25
+</td>
+<td style="text-align:left;">
+2016
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+18243…80799
+</td>
+<td style="text-align:left;">
+18243
+</td>
+<td style="text-align:left;">
+4
+</td>
+<td style="text-align:left;">
+23032016
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+16022009
+</td>
+<td style="text-align:left;">
+407
+</td>
+<td style="text-align:left;">
+2016-03-23
+</td>
+<td style="text-align:left;">
+2016
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+20868…83424
+</td>
+<td style="text-align:left;">
+20868
+</td>
+<td style="text-align:left;">
+4
+</td>
+<td style="text-align:left;">
+05042016
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+03111953
+</td>
+<td style="text-align:left;">
+462
+</td>
+<td style="text-align:left;">
+2016-04-05
+</td>
+<td style="text-align:left;">
+2016
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+21940…84496
+</td>
+<td style="text-align:left;">
+21940
+</td>
+<td style="text-align:left;">
+4
+</td>
+<td style="text-align:left;">
+10042016
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+20051944
+</td>
+<td style="text-align:left;">
+471
+</td>
+<td style="text-align:left;">
+2016-04-10
+</td>
+<td style="text-align:left;">
+2016
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+24787…87343
+</td>
+<td style="text-align:left;">
+24787
+</td>
+<td style="text-align:left;">
+1
+</td>
+<td style="text-align:left;">
+25042016
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+08032004
+</td>
+<td style="text-align:left;">
+412
+</td>
+<td style="text-align:left;">
+2016-04-25
+</td>
+<td style="text-align:left;">
+2016
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+26211…88767
+</td>
+<td style="text-align:left;">
+26211
+</td>
+<td style="text-align:left;">
+1
+</td>
+<td style="text-align:left;">
+03052016
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+22021998
+</td>
+<td style="text-align:left;">
+418
+</td>
+<td style="text-align:left;">
+2016-05-03
+</td>
+<td style="text-align:left;">
+2016
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+26338…88894
+</td>
+<td style="text-align:left;">
+26338
+</td>
+<td style="text-align:left;">
+4
+</td>
+<td style="text-align:left;">
+04052016
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+09102010
+</td>
+<td style="text-align:left;">
+405
+</td>
+<td style="text-align:left;">
+2016-05-04
+</td>
+<td style="text-align:left;">
+2016
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+28568…91124
+</td>
+<td style="text-align:left;">
+28568
+</td>
+<td style="text-align:left;">
+1
+</td>
+<td style="text-align:left;">
+17052016
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+23061953
+</td>
+<td style="text-align:left;">
+462
+</td>
+<td style="text-align:left;">
+2016-05-17
+</td>
+<td style="text-align:left;">
+2016
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+29568…92124
+</td>
+<td style="text-align:left;">
+29568
+</td>
+<td style="text-align:left;">
+1
+</td>
+<td style="text-align:left;">
+22052016
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+17102007
+</td>
+<td style="text-align:left;">
+408
+</td>
+<td style="text-align:left;">
+2016-05-22
+</td>
+<td style="text-align:left;">
+2016
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+42249…104805
+</td>
+<td style="text-align:left;">
+42249
+</td>
+<td style="text-align:left;">
+2
+</td>
+<td style="text-align:left;">
+05082016
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+02052010
+</td>
+<td style="text-align:left;">
+406
+</td>
+<td style="text-align:left;">
+2016-08-05
+</td>
+<td style="text-align:left;">
+2016
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+45585…108141
+</td>
+<td style="text-align:left;">
+45585
+</td>
+<td style="text-align:left;">
+2
+</td>
+<td style="text-align:left;">
+24082016
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+30042011
+</td>
+<td style="text-align:left;">
+405
+</td>
+<td style="text-align:left;">
+2016-08-24
+</td>
+<td style="text-align:left;">
+2016
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+46418…108974
+</td>
+<td style="text-align:left;">
+46418
+</td>
+<td style="text-align:left;">
+4
+</td>
+<td style="text-align:left;">
+29082016
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+01011958
+</td>
+<td style="text-align:left;">
+458
+</td>
+<td style="text-align:left;">
+2016-08-29
+</td>
+<td style="text-align:left;">
+2016
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+49231…111787
+</td>
+<td style="text-align:left;">
+49231
+</td>
+<td style="text-align:left;">
+1
+</td>
+<td style="text-align:left;">
+16092016
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+09091951
+</td>
+<td style="text-align:left;">
+465
+</td>
+<td style="text-align:left;">
+2016-09-16
+</td>
+<td style="text-align:left;">
+2016
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+51713…114269
+</td>
+<td style="text-align:left;">
+51713
+</td>
+<td style="text-align:left;">
+4
+</td>
+<td style="text-align:left;">
+01102016
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+20011958
+</td>
+<td style="text-align:left;">
+458
+</td>
+<td style="text-align:left;">
+2016-10-01
+</td>
+<td style="text-align:left;">
+2016
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+52563…115119
+</td>
+<td style="text-align:left;">
+52563
+</td>
+<td style="text-align:left;">
+1
+</td>
+<td style="text-align:left;">
+05102016
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+22032013
+</td>
+<td style="text-align:left;">
+403
+</td>
+<td style="text-align:left;">
+2016-10-05
+</td>
+<td style="text-align:left;">
+2016
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+58166…120722
+</td>
+<td style="text-align:left;">
+58166
+</td>
+<td style="text-align:left;">
+2
+</td>
+<td style="text-align:left;">
+09112016
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+11121963
+</td>
+<td style="text-align:left;">
+452
+</td>
+<td style="text-align:left;">
+2016-11-09
+</td>
+<td style="text-align:left;">
+2016
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+58367…120923
+</td>
+<td style="text-align:left;">
+58367
+</td>
+<td style="text-align:left;">
+1
+</td>
+<td style="text-align:left;">
+10112016
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+12042004
+</td>
+<td style="text-align:left;">
+412
+</td>
+<td style="text-align:left;">
+2016-11-10
+</td>
+<td style="text-align:left;">
+2016
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+65844…128400
+</td>
+<td style="text-align:left;">
+65844
+</td>
+<td style="text-align:left;">
+4
+</td>
+<td style="text-align:left;">
+25122016
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+29121962
+</td>
+<td style="text-align:left;">
+453
+</td>
+<td style="text-align:left;">
+2016-12-25
+</td>
+<td style="text-align:left;">
+2016
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+270…129754
+</td>
+<td style="text-align:left;">
+270
+</td>
+<td style="text-align:left;">
+4
+</td>
+<td style="text-align:left;">
+17072017
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+02122003
+</td>
+<td style="text-align:left;">
+413
+</td>
+<td style="text-align:left;">
+2017-07-17
+</td>
+<td style="text-align:left;">
+2017
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1925…131409
+</td>
+<td style="text-align:left;">
+1925
+</td>
+<td style="text-align:left;">
+4
+</td>
+<td style="text-align:left;">
+13072017
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+16022015
+</td>
+<td style="text-align:left;">
+402
+</td>
+<td style="text-align:left;">
+2017-07-13
+</td>
+<td style="text-align:left;">
+2017
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+2427…131911
+</td>
+<td style="text-align:left;">
+2427
+</td>
+<td style="text-align:left;">
+4
+</td>
+<td style="text-align:left;">
+20072017
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+05071946
+</td>
+<td style="text-align:left;">
+471
+</td>
+<td style="text-align:left;">
+2017-07-20
+</td>
+<td style="text-align:left;">
+2017
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+8513…137997
+</td>
+<td style="text-align:left;">
+8513
+</td>
+<td style="text-align:left;">
+4
+</td>
+<td style="text-align:left;">
+21042017
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+09111993
+</td>
+<td style="text-align:left;">
+423
+</td>
+<td style="text-align:left;">
+2017-04-21
+</td>
+<td style="text-align:left;">
+2017
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+14686…144170
+</td>
+<td style="text-align:left;">
+14686
+</td>
+<td style="text-align:left;">
+1
+</td>
+<td style="text-align:left;">
+14052017
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+11032017
+</td>
+<td style="text-align:left;">
+302
+</td>
+<td style="text-align:left;">
+2017-05-14
+</td>
+<td style="text-align:left;">
+2017
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+17588…147072
+</td>
+<td style="text-align:left;">
+17588
+</td>
+<td style="text-align:left;">
+4
+</td>
+<td style="text-align:left;">
+12042017
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+05082014
+</td>
+<td style="text-align:left;">
+402
+</td>
+<td style="text-align:left;">
+2017-04-12
+</td>
+<td style="text-align:left;">
+2017
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+18851…148335
+</td>
+<td style="text-align:left;">
+18851
+</td>
+<td style="text-align:left;">
+4
+</td>
+<td style="text-align:left;">
+10102017
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+20102013
+</td>
+<td style="text-align:left;">
+403
+</td>
+<td style="text-align:left;">
+2017-10-10
+</td>
+<td style="text-align:left;">
+2017
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+20803…150287
+</td>
+<td style="text-align:left;">
+20803
+</td>
+<td style="text-align:left;">
+4
+</td>
+<td style="text-align:left;">
+21032017
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+12072008
+</td>
+<td style="text-align:left;">
+408
+</td>
+<td style="text-align:left;">
+2017-03-21
+</td>
+<td style="text-align:left;">
+2017
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+23061…152545
+</td>
+<td style="text-align:left;">
+23061
+</td>
+<td style="text-align:left;">
+4
+</td>
+<td style="text-align:left;">
+25062017
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+23041953
+</td>
+<td style="text-align:left;">
+464
+</td>
+<td style="text-align:left;">
+2017-06-25
+</td>
+<td style="text-align:left;">
+2017
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+27386…156870
+</td>
+<td style="text-align:left;">
+27386
+</td>
+<td style="text-align:left;">
+1
+</td>
+<td style="text-align:left;">
+03112017
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+15061937
+</td>
+<td style="text-align:left;">
+480
+</td>
+<td style="text-align:left;">
+2017-11-03
+</td>
+<td style="text-align:left;">
+2017
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+31162…160646
+</td>
+<td style="text-align:left;">
+31162
+</td>
+<td style="text-align:left;">
+1
+</td>
+<td style="text-align:left;">
+21072017
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+08081948
+</td>
+<td style="text-align:left;">
+468
+</td>
+<td style="text-align:left;">
+2017-07-21
+</td>
+<td style="text-align:left;">
+2017
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+31944…161428
+</td>
+<td style="text-align:left;">
+31944
+</td>
+<td style="text-align:left;">
+1
+</td>
+<td style="text-align:left;">
+10072017
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+21072008
+</td>
+<td style="text-align:left;">
+408
+</td>
+<td style="text-align:left;">
+2017-07-10
+</td>
+<td style="text-align:left;">
+2017
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+36861…166345
+</td>
+<td style="text-align:left;">
+36861
+</td>
+<td style="text-align:left;">
+4
+</td>
+<td style="text-align:left;">
+27032017
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+21022010
+</td>
+<td style="text-align:left;">
+407
+</td>
+<td style="text-align:left;">
+2017-03-27
+</td>
+<td style="text-align:left;">
+2017
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+39843…169327
+</td>
+<td style="text-align:left;">
+39843
+</td>
+<td style="text-align:left;">
+1
+</td>
+<td style="text-align:left;">
+31012017
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+09072013
+</td>
+<td style="text-align:left;">
+403
+</td>
+<td style="text-align:left;">
+2017-01-31
+</td>
+<td style="text-align:left;">
+2017
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+42096…171580
+</td>
+<td style="text-align:left;">
+42096
+</td>
+<td style="text-align:left;">
+4
+</td>
+<td style="text-align:left;">
+23102017
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+25122007
+</td>
+<td style="text-align:left;">
+409
+</td>
+<td style="text-align:left;">
+2017-10-23
+</td>
+<td style="text-align:left;">
+2017
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+43151…172635
+</td>
+<td style="text-align:left;">
+43151
+</td>
+<td style="text-align:left;">
+4
+</td>
+<td style="text-align:left;">
+17102017
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+28061929
+</td>
+<td style="text-align:left;">
+488
+</td>
+<td style="text-align:left;">
+2017-10-17
+</td>
+<td style="text-align:left;">
+2017
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+45642…175126
+</td>
+<td style="text-align:left;">
+45642
+</td>
+<td style="text-align:left;">
+4
+</td>
+<td style="text-align:left;">
+25082017
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+05071946
+</td>
+<td style="text-align:left;">
+471
+</td>
+<td style="text-align:left;">
+2017-08-25
+</td>
+<td style="text-align:left;">
+2017
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+48743…178227
+</td>
+<td style="text-align:left;">
+48743
+</td>
+<td style="text-align:left;">
+2
+</td>
+<td style="text-align:left;">
+03122017
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+16011963
+</td>
+<td style="text-align:left;">
+454
+</td>
+<td style="text-align:left;">
+2017-12-03
+</td>
+<td style="text-align:left;">
+2017
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+50374…179858
+</td>
+<td style="text-align:left;">
+50374
+</td>
+<td style="text-align:left;">
+4
+</td>
+<td style="text-align:left;">
+02072017
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+18022017
+</td>
+<td style="text-align:left;">
+304
+</td>
+<td style="text-align:left;">
+2017-07-02
+</td>
+<td style="text-align:left;">
+2017
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+53577…183061
+</td>
+<td style="text-align:left;">
+53577
+</td>
+<td style="text-align:left;">
+4
+</td>
+<td style="text-align:left;">
+07122017
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+21121947
+</td>
+<td style="text-align:left;">
+469
+</td>
+<td style="text-align:left;">
+2017-12-07
+</td>
+<td style="text-align:left;">
+2017
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+58705…188189
+</td>
+<td style="text-align:left;">
+58705
+</td>
+<td style="text-align:left;">
+1
+</td>
+<td style="text-align:left;">
+11052017
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+17102007
+</td>
+<td style="text-align:left;">
+409
+</td>
+<td style="text-align:left;">
+2017-05-11
+</td>
+<td style="text-align:left;">
+2017
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+63322…192806
+</td>
+<td style="text-align:left;">
+63322
+</td>
+<td style="text-align:left;">
+1
+</td>
+<td style="text-align:left;">
+10092017
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+09032017
+</td>
+<td style="text-align:left;">
+306
+</td>
+<td style="text-align:left;">
+2017-09-10
+</td>
+<td style="text-align:left;">
+2017
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+4730…198578
+</td>
+<td style="text-align:left;">
+493408
+</td>
+<td style="text-align:left;">
+1
+</td>
+<td style="text-align:left;">
+28012018
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+11021981
+</td>
+<td style="text-align:left;">
+436
+</td>
+<td style="text-align:left;">
+2018-01-28
+</td>
+<td style="text-align:left;">
+2018
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+9101…202949
+</td>
+<td style="text-align:left;">
+497821
+</td>
+<td style="text-align:left;">
+4
+</td>
+<td style="text-align:left;">
+16012018
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+14051993
+</td>
+<td style="text-align:left;">
+424
+</td>
+<td style="text-align:left;">
+2018-01-16
+</td>
+<td style="text-align:left;">
+2018
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+10521…204369
+</td>
+<td style="text-align:left;">
+499259
+</td>
+<td style="text-align:left;">
+4
+</td>
+<td style="text-align:left;">
+02012018
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+05062016
+</td>
+<td style="text-align:left;">
+401
+</td>
+<td style="text-align:left;">
+2018-01-02
+</td>
+<td style="text-align:left;">
+2018
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+12867…206715
+</td>
+<td style="text-align:left;">
+501766
+</td>
+<td style="text-align:left;">
+1
+</td>
+<td style="text-align:left;">
+01022018
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+24012002
+</td>
+<td style="text-align:left;">
+416
+</td>
+<td style="text-align:left;">
+2018-02-01
+</td>
+<td style="text-align:left;">
+2018
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+15828…209676
+</td>
+<td style="text-align:left;">
+504766
+</td>
+<td style="text-align:left;">
+1
+</td>
+<td style="text-align:left;">
+28032018
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+15111927
+</td>
+<td style="text-align:left;">
+490
+</td>
+<td style="text-align:left;">
+2018-03-28
+</td>
+<td style="text-align:left;">
+2018
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+15894…209742
+</td>
+<td style="text-align:left;">
+504833
+</td>
+<td style="text-align:left;">
+1
+</td>
+<td style="text-align:left;">
+24102018
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+16071958
+</td>
+<td style="text-align:left;">
+460
+</td>
+<td style="text-align:left;">
+2018-10-24
+</td>
+<td style="text-align:left;">
+2018
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+17038…210886
+</td>
+<td style="text-align:left;">
+505995
+</td>
+<td style="text-align:left;">
+4
+</td>
+<td style="text-align:left;">
+27032018
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+28012011
+</td>
+<td style="text-align:left;">
+407
+</td>
+<td style="text-align:left;">
+2018-03-27
+</td>
+<td style="text-align:left;">
+2018
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+19075…212923
+</td>
+<td style="text-align:left;">
+508062
+</td>
+<td style="text-align:left;">
+4
+</td>
+<td style="text-align:left;">
+06042018
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+10062014
+</td>
+<td style="text-align:left;">
+403
+</td>
+<td style="text-align:left;">
+2018-04-06
+</td>
+<td style="text-align:left;">
+2018
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+27511…221359
+</td>
+<td style="text-align:left;">
+516566
+</td>
+<td style="text-align:left;">
+4
+</td>
+<td style="text-align:left;">
+18052018
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+19062014
+</td>
+<td style="text-align:left;">
+403
+</td>
+<td style="text-align:left;">
+2018-05-18
+</td>
+<td style="text-align:left;">
+2018
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+27646…221494
+</td>
+<td style="text-align:left;">
+516702
+</td>
+<td style="text-align:left;">
+1
+</td>
+<td style="text-align:left;">
+29072018
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+30111937
+</td>
+<td style="text-align:left;">
+480
+</td>
+<td style="text-align:left;">
+2018-07-29
+</td>
+<td style="text-align:left;">
+2018
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+29784…223632
+</td>
+<td style="text-align:left;">
+645555
+</td>
+<td style="text-align:left;">
+1
+</td>
+<td style="text-align:left;">
+11042018
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+03082016
+</td>
+<td style="text-align:left;">
+401
+</td>
+<td style="text-align:left;">
+2018-04-11
+</td>
+<td style="text-align:left;">
+2018
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+37476…231324
+</td>
+<td style="text-align:left;">
+997260
+</td>
+<td style="text-align:left;">
+1
+</td>
+<td style="text-align:left;">
+08092018
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+07042016
+</td>
+<td style="text-align:left;">
+402
+</td>
+<td style="text-align:left;">
+2018-09-08
+</td>
+<td style="text-align:left;">
+2018
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+44957…238805
+</td>
+<td style="text-align:left;">
+1011523
+</td>
+<td style="text-align:left;">
+4
+</td>
+<td style="text-align:left;">
+12102018
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+15061940
+</td>
+<td style="text-align:left;">
+478
+</td>
+<td style="text-align:left;">
+2018-10-12
+</td>
+<td style="text-align:left;">
+2018
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+45665…239513
+</td>
+<td style="text-align:left;">
+1016632
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+07112018
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+01092013
+</td>
+<td style="text-align:left;">
+405
+</td>
+<td style="text-align:left;">
+2018-11-07
+</td>
+<td style="text-align:left;">
+2018
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+47521…241369
+</td>
+<td style="text-align:left;">
+1168842
+</td>
+<td style="text-align:left;">
+4
+</td>
+<td style="text-align:left;">
+09112018
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+24101943
+</td>
+<td style="text-align:left;">
+475
+</td>
+<td style="text-align:left;">
+2018-11-09
+</td>
+<td style="text-align:left;">
+2018
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+54085…247933
+</td>
+<td style="text-align:left;">
+1175470
+</td>
+<td style="text-align:left;">
+2
+</td>
+<td style="text-align:left;">
+28112018
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+12112014
+</td>
+<td style="text-align:left;">
+404
+</td>
+<td style="text-align:left;">
+2018-11-28
+</td>
+<td style="text-align:left;">
+2018
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+55366…249214
+</td>
+<td style="text-align:left;">
+1176764
+</td>
+<td style="text-align:left;">
+1
+</td>
+<td style="text-align:left;">
+24092018
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+04091935
+</td>
+<td style="text-align:left;">
+483
+</td>
+<td style="text-align:left;">
+2018-09-24
+</td>
+<td style="text-align:left;">
+2018
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+60394…254242
+</td>
+<td style="text-align:left;">
+1181992
+</td>
+<td style="text-align:left;">
+1
+</td>
+<td style="text-align:left;">
+20122018
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+19111960
+</td>
+<td style="text-align:left;">
+458
+</td>
+<td style="text-align:left;">
+2018-12-20
+</td>
+<td style="text-align:left;">
+2018
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1407…257266
+</td>
+<td style="text-align:left;">
+29730
+</td>
+<td style="text-align:left;">
+1
+</td>
+<td style="text-align:left;">
+20112019
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+17052019
+</td>
+<td style="text-align:left;">
+306
+</td>
+<td style="text-align:left;">
+2019-11-20
+</td>
+<td style="text-align:left;">
+2019
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+3085…258944
+</td>
+<td style="text-align:left;">
+61090
+</td>
+<td style="text-align:left;">
+4
+</td>
+<td style="text-align:left;">
+15022019
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+10051939
+</td>
+<td style="text-align:left;">
+479
+</td>
+<td style="text-align:left;">
+2019-02-15
+</td>
+<td style="text-align:left;">
+2019
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+5400…261259
+</td>
+<td style="text-align:left;">
+108701
+</td>
+<td style="text-align:left;">
+4
+</td>
+<td style="text-align:left;">
+28022019
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+18022011
+</td>
+<td style="text-align:left;">
+408
+</td>
+<td style="text-align:left;">
+2019-02-28
+</td>
+<td style="text-align:left;">
+2019
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+5489…261348
+</td>
+<td style="text-align:left;">
+109511
+</td>
+<td style="text-align:left;">
+4
+</td>
+<td style="text-align:left;">
+10022019
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+30112012
+</td>
+<td style="text-align:left;">
+406
+</td>
+<td style="text-align:left;">
+2019-02-10
+</td>
+<td style="text-align:left;">
+2019
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+6838…262697
+</td>
+<td style="text-align:left;">
+136472
+</td>
+<td style="text-align:left;">
+4
+</td>
+<td style="text-align:left;">
+02012019
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+17021964
+</td>
+<td style="text-align:left;">
+454
+</td>
+<td style="text-align:left;">
+2019-01-02
+</td>
+<td style="text-align:left;">
+2019
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+9383…265242
+</td>
+<td style="text-align:left;">
+199238
+</td>
+<td style="text-align:left;">
+1
+</td>
+<td style="text-align:left;">
+23022019
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+29072010
+</td>
+<td style="text-align:left;">
+408
+</td>
+<td style="text-align:left;">
+2019-02-23
+</td>
+<td style="text-align:left;">
+2019
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+11470…267329
+</td>
+<td style="text-align:left;">
+252689
+</td>
+<td style="text-align:left;">
+4
+</td>
+<td style="text-align:left;">
+04042019
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+05042005
+</td>
+<td style="text-align:left;">
+413
+</td>
+<td style="text-align:left;">
+2019-04-04
+</td>
+<td style="text-align:left;">
+2019
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+17175…273034
+</td>
+<td style="text-align:left;">
+385533
+</td>
+<td style="text-align:left;">
+4
+</td>
+<td style="text-align:left;">
+26062019
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+17052011
+</td>
+<td style="text-align:left;">
+408
+</td>
+<td style="text-align:left;">
+2019-06-26
+</td>
+<td style="text-align:left;">
+2019
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+19920…275779
+</td>
+<td style="text-align:left;">
+445463
+</td>
+<td style="text-align:left;">
+4
+</td>
+<td style="text-align:left;">
+27032019
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+19061948
+</td>
+<td style="text-align:left;">
+470
+</td>
+<td style="text-align:left;">
+2019-03-27
+</td>
+<td style="text-align:left;">
+2019
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+23667…279526
+</td>
+<td style="text-align:left;">
+531546
+</td>
+<td style="text-align:left;">
+1
+</td>
+<td style="text-align:left;">
+18122019
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+27091974
+</td>
+<td style="text-align:left;">
+445
+</td>
+<td style="text-align:left;">
+2019-12-18
+</td>
+<td style="text-align:left;">
+2019
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+25895…281754
+</td>
+<td style="text-align:left;">
+577834
+</td>
+<td style="text-align:left;">
+1
+</td>
+<td style="text-align:left;">
+15122019
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+15041944
+</td>
+<td style="text-align:left;">
+475
+</td>
+<td style="text-align:left;">
+2019-12-15
+</td>
+<td style="text-align:left;">
+2019
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+34515…290374
+</td>
+<td style="text-align:left;">
+745090
+</td>
+<td style="text-align:left;">
+1
+</td>
+<td style="text-align:left;">
+17082019
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+04061944
+</td>
+<td style="text-align:left;">
+475
+</td>
+<td style="text-align:left;">
+2019-08-17
+</td>
+<td style="text-align:left;">
+2019
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+36083…291942
+</td>
+<td style="text-align:left;">
+774800
+</td>
+<td style="text-align:left;">
+4
+</td>
+<td style="text-align:left;">
+18112019
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+17011950
+</td>
+<td style="text-align:left;">
+469
+</td>
+<td style="text-align:left;">
+2019-11-18
+</td>
+<td style="text-align:left;">
+2019
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+38744…294603
+</td>
+<td style="text-align:left;">
+836847
+</td>
+<td style="text-align:left;">
+4
+</td>
+<td style="text-align:left;">
+26082019
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+15121979
+</td>
+<td style="text-align:left;">
+439
+</td>
+<td style="text-align:left;">
+2019-08-26
+</td>
+<td style="text-align:left;">
+2019
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+46033…301892
+</td>
+<td style="text-align:left;">
+1009182
+</td>
+<td style="text-align:left;">
+4
+</td>
+<td style="text-align:left;">
+25102019
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+28062017
+</td>
+<td style="text-align:left;">
+402
+</td>
+<td style="text-align:left;">
+2019-10-25
+</td>
+<td style="text-align:left;">
+2019
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+50798…306657
+</td>
+<td style="text-align:left;">
+1092819
+</td>
+<td style="text-align:left;">
+4
+</td>
+<td style="text-align:left;">
+14082019
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+04111988
+</td>
+<td style="text-align:left;">
+430
+</td>
+<td style="text-align:left;">
+2019-08-14
+</td>
+<td style="text-align:left;">
+2019
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+52268…308127
+</td>
+<td style="text-align:left;">
+1117440
+</td>
+<td style="text-align:left;">
+4
+</td>
+<td style="text-align:left;">
+02052019
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+27082013
+</td>
+<td style="text-align:left;">
+405
+</td>
+<td style="text-align:left;">
+2019-05-02
+</td>
+<td style="text-align:left;">
+2019
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+60439…316298
+</td>
+<td style="text-align:left;">
+1282266
+</td>
+<td style="text-align:left;">
+4
+</td>
+<td style="text-align:left;">
+04092019
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+05012019
+</td>
+<td style="text-align:left;">
+307
+</td>
+<td style="text-align:left;">
+2019-09-04
+</td>
+<td style="text-align:left;">
+2019
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+63095…318954
+</td>
+<td style="text-align:left;">
+1351169
+</td>
+<td style="text-align:left;">
+4
+</td>
+<td style="text-align:left;">
+07102019
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+21031983
+</td>
+<td style="text-align:left;">
+436
+</td>
+<td style="text-align:left;">
+2019-10-07
+</td>
+<td style="text-align:left;">
+2019
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+63647…319506
+</td>
+<td style="text-align:left;">
+1360689
+</td>
+<td style="text-align:left;">
+4
+</td>
+<td style="text-align:left;">
+30082019
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+05051938
+</td>
+<td style="text-align:left;">
+481
+</td>
+<td style="text-align:left;">
+2019-08-30
+</td>
+<td style="text-align:left;">
+2019
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+7914…328068
+</td>
+<td style="text-align:left;">
+128493
+</td>
+<td style="text-align:left;">
+4
+</td>
+<td style="text-align:left;">
+25022020
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+03051943
+</td>
+<td style="text-align:left;">
+476
+</td>
+<td style="text-align:left;">
+2020-02-25
+</td>
+<td style="text-align:left;">
+2020
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+8030…328184
+</td>
+<td style="text-align:left;">
+129320
+</td>
+<td style="text-align:left;">
+4
+</td>
+<td style="text-align:left;">
+28022020
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+06022015
+</td>
+<td style="text-align:left;">
+405
+</td>
+<td style="text-align:left;">
+2020-02-28
+</td>
+<td style="text-align:left;">
+2020
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+16013…336167
+</td>
+<td style="text-align:left;">
+313330
+</td>
+<td style="text-align:left;">
+1
+</td>
+<td style="text-align:left;">
+29022020
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+03031948
+</td>
+<td style="text-align:left;">
+471
+</td>
+<td style="text-align:left;">
+2020-02-29
+</td>
+<td style="text-align:left;">
+2020
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+24654…344808
+</td>
+<td style="text-align:left;">
+509721
+</td>
+<td style="text-align:left;">
+1
+</td>
+<td style="text-align:left;">
+23032020
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+05072013
+</td>
+<td style="text-align:left;">
+406
+</td>
+<td style="text-align:left;">
+2020-03-23
+</td>
+<td style="text-align:left;">
+2020
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+24843…344997
+</td>
+<td style="text-align:left;">
+513880
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+03062020
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+06111949
+</td>
+<td style="text-align:left;">
+470
+</td>
+<td style="text-align:left;">
+2020-06-03
+</td>
+<td style="text-align:left;">
+2020
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+39424…359578
+</td>
+<td style="text-align:left;">
+749059
+</td>
+<td style="text-align:left;">
+4
+</td>
+<td style="text-align:left;">
+24042020
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+27112015
+</td>
+<td style="text-align:left;">
+404
+</td>
+<td style="text-align:left;">
+2020-04-24
+</td>
+<td style="text-align:left;">
+2020
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+43141…363295
+</td>
+<td style="text-align:left;">
+832970
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+09072020
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+27112014
+</td>
+<td style="text-align:left;">
+405
+</td>
+<td style="text-align:left;">
+2020-07-09
+</td>
+<td style="text-align:left;">
+2020
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+43227…363381
+</td>
+<td style="text-align:left;">
+835095
+</td>
+<td style="text-align:left;">
+1
+</td>
+<td style="text-align:left;">
+15072020
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+09021979
+</td>
+<td style="text-align:left;">
+441
+</td>
+<td style="text-align:left;">
+2020-07-15
+</td>
+<td style="text-align:left;">
+2020
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+43242…363396
+</td>
+<td style="text-align:left;">
+835453
+</td>
+<td style="text-align:left;">
+1
+</td>
+<td style="text-align:left;">
+16072020
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+24082019
+</td>
+<td style="text-align:left;">
+310
+</td>
+<td style="text-align:left;">
+2020-07-16
+</td>
+<td style="text-align:left;">
+2020
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+44502…364656
+</td>
+<td style="text-align:left;">
+864776
+</td>
+<td style="text-align:left;">
+1
+</td>
+<td style="text-align:left;">
+12072020
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+08042017
+</td>
+<td style="text-align:left;">
+403
+</td>
+<td style="text-align:left;">
+2020-07-12
+</td>
+<td style="text-align:left;">
+2020
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+44542…364696
+</td>
+<td style="text-align:left;">
+865914
+</td>
+<td style="text-align:left;">
+4
+</td>
+<td style="text-align:left;">
+15072020
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+07102017
+</td>
+<td style="text-align:left;">
+402
+</td>
+<td style="text-align:left;">
+2020-07-15
+</td>
+<td style="text-align:left;">
+2020
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+50920…371074
+</td>
+<td style="text-align:left;">
+1006659
+</td>
+<td style="text-align:left;">
+1
+</td>
+<td style="text-align:left;">
+29082020
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+21062015
+</td>
+<td style="text-align:left;">
+405
+</td>
+<td style="text-align:left;">
+2020-08-29
+</td>
+<td style="text-align:left;">
+2020
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+54214…374368
+</td>
+<td style="text-align:left;">
+1079991
+</td>
+<td style="text-align:left;">
+1
+</td>
+<td style="text-align:left;">
+25072020
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+15102017
+</td>
+<td style="text-align:left;">
+402
+</td>
+<td style="text-align:left;">
+2020-07-25
+</td>
+<td style="text-align:left;">
+2020
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+54365…374519
+</td>
+<td style="text-align:left;">
+1083302
+</td>
+<td style="text-align:left;">
+4
+</td>
+<td style="text-align:left;">
+20082020
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+25031995
+</td>
+<td style="text-align:left;">
+425
+</td>
+<td style="text-align:left;">
+2020-08-20
+</td>
+<td style="text-align:left;">
+2020
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+61987…382141
+</td>
+<td style="text-align:left;">
+1253863
+</td>
+<td style="text-align:left;">
+4
+</td>
+<td style="text-align:left;">
+21102020
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+24072007
+</td>
+<td style="text-align:left;">
+413
+</td>
+<td style="text-align:left;">
+2020-10-21
+</td>
+<td style="text-align:left;">
+2020
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+11471…408199
+</td>
+<td style="text-align:left;">
+326310
+</td>
+<td style="text-align:left;">
+1
+</td>
+<td style="text-align:left;">
+01042021
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+11112016
+</td>
+<td style="text-align:left;">
+404
+</td>
+<td style="text-align:left;">
+2021-04-01
+</td>
+<td style="text-align:left;">
+2021
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+15790…412518
+</td>
+<td style="text-align:left;">
+417498
+</td>
+<td style="text-align:left;">
+2
+</td>
+<td style="text-align:left;">
+17042021
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+03021971
+</td>
+<td style="text-align:left;">
+450
+</td>
+<td style="text-align:left;">
+2021-04-17
+</td>
+<td style="text-align:left;">
+2021
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+22187…418915
+</td>
+<td style="text-align:left;">
+550821
+</td>
+<td style="text-align:left;">
+1
+</td>
+<td style="text-align:left;">
+16032021
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+14082016
+</td>
+<td style="text-align:left;">
+404
+</td>
+<td style="text-align:left;">
+2021-03-16
+</td>
+<td style="text-align:left;">
+2021
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+41681…438409
+</td>
+<td style="text-align:left;">
+973069
+</td>
+<td style="text-align:left;">
+1
+</td>
+<td style="text-align:left;">
+31032021
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+12071940
+</td>
+<td style="text-align:left;">
+480
+</td>
+<td style="text-align:left;">
+2021-03-31
+</td>
+<td style="text-align:left;">
+2021
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+43540…440268
+</td>
+<td style="text-align:left;">
+1011831
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+09032021
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+15051942
+</td>
+<td style="text-align:left;">
+478
+</td>
+<td style="text-align:left;">
+2021-03-09
+</td>
+<td style="text-align:left;">
+2021
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+48712…445440
+</td>
+<td style="text-align:left;">
+1131472
+</td>
+<td style="text-align:left;">
+4
+</td>
+<td style="text-align:left;">
+30072021
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+16052019
+</td>
+<td style="text-align:left;">
+402
+</td>
+<td style="text-align:left;">
+2021-07-30
+</td>
+<td style="text-align:left;">
+2021
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+51092…447820
+</td>
+<td style="text-align:left;">
+1195219
+</td>
+<td style="text-align:left;">
+4
+</td>
+<td style="text-align:left;">
+13082021
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+25101972
+</td>
+<td style="text-align:left;">
+448
+</td>
+<td style="text-align:left;">
+2021-08-13
+</td>
+<td style="text-align:left;">
+2021
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+53169…449897
+</td>
+<td style="text-align:left;">
+1247361
+</td>
+<td style="text-align:left;">
+1
+</td>
+<td style="text-align:left;">
+26102021
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+28101954
+</td>
+<td style="text-align:left;">
+466
+</td>
+<td style="text-align:left;">
+2021-10-26
+</td>
+<td style="text-align:left;">
+2021
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+56967…453695
+</td>
+<td style="text-align:left;">
+1336349
+</td>
+<td style="text-align:left;">
+4
+</td>
+<td style="text-align:left;">
+01102021
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+27031979
+</td>
+<td style="text-align:left;">
+442
+</td>
+<td style="text-align:left;">
+2021-10-01
+</td>
+<td style="text-align:left;">
+2021
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+68236…464964
+</td>
+<td style="text-align:left;">
+1566932
+</td>
+<td style="text-align:left;">
+4
+</td>
+<td style="text-align:left;">
+22112021
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+06072017
+</td>
+<td style="text-align:left;">
+404
+</td>
+<td style="text-align:left;">
+2021-11-22
+</td>
+<td style="text-align:left;">
+2021
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+70090…466818
+</td>
+<td style="text-align:left;">
+1605060
+</td>
+<td style="text-align:left;">
+4
+</td>
+<td style="text-align:left;">
+10122021
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+03021938
+</td>
+<td style="text-align:left;">
+483
+</td>
+<td style="text-align:left;">
+2021-12-10
+</td>
+<td style="text-align:left;">
+2021
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+74442…471170
+</td>
+<td style="text-align:left;">
+1698152
+</td>
+<td style="text-align:left;">
+4
+</td>
+<td style="text-align:left;">
+02122021
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+13102021
+</td>
+<td style="text-align:left;">
+301
+</td>
+<td style="text-align:left;">
+2021-12-02
+</td>
+<td style="text-align:left;">
+2021
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+75416…472144
+</td>
+<td style="text-align:left;">
+1712768
+</td>
+<td style="text-align:left;">
+1
+</td>
+<td style="text-align:left;">
+12122021
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+11091948
+</td>
+<td style="text-align:left;">
+473
+</td>
+<td style="text-align:left;">
+2021-12-12
+</td>
+<td style="text-align:left;">
+2021
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+7423…484868
+</td>
+<td style="text-align:left;">
+160530
+</td>
+<td style="text-align:left;">
+1
+</td>
+<td style="text-align:left;">
+11062022
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+14091968
+</td>
+<td style="text-align:left;">
+453
+</td>
+<td style="text-align:left;">
+2022-06-11
+</td>
+<td style="text-align:left;">
+2022
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+14616…492061
+</td>
+<td style="text-align:left;">
+342800
+</td>
+<td style="text-align:left;">
+4
+</td>
+<td style="text-align:left;">
+09052022
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+20111981
+</td>
+<td style="text-align:left;">
+440
+</td>
+<td style="text-align:left;">
+2022-05-09
+</td>
+<td style="text-align:left;">
+2022
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+18513…495958
+</td>
+<td style="text-align:left;">
+425115
+</td>
+<td style="text-align:left;">
+4
+</td>
+<td style="text-align:left;">
+12052022
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+23021976
+</td>
+<td style="text-align:left;">
+446
+</td>
+<td style="text-align:left;">
+2022-05-12
+</td>
+<td style="text-align:left;">
+2022
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+24503…501948
+</td>
+<td style="text-align:left;">
+575383
+</td>
+<td style="text-align:left;">
+1
+</td>
+<td style="text-align:left;">
+02042022
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+30041972
+</td>
+<td style="text-align:left;">
+449
+</td>
+<td style="text-align:left;">
+2022-04-02
+</td>
+<td style="text-align:left;">
+2022
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+27771…505216
+</td>
+<td style="text-align:left;">
+626280
+</td>
+<td style="text-align:left;">
+4
+</td>
+<td style="text-align:left;">
+01022022
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+29031992
+</td>
+<td style="text-align:left;">
+429
+</td>
+<td style="text-align:left;">
+2022-02-01
+</td>
+<td style="text-align:left;">
+2022
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+30741…508186
+</td>
+<td style="text-align:left;">
+667746
+</td>
+<td style="text-align:left;">
+4
+</td>
+<td style="text-align:left;">
+07032022
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+18052019
+</td>
+<td style="text-align:left;">
+402
+</td>
+<td style="text-align:left;">
+2022-03-07
+</td>
+<td style="text-align:left;">
+2022
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+31469…508914
+</td>
+<td style="text-align:left;">
+679860
+</td>
+<td style="text-align:left;">
+1
+</td>
+<td style="text-align:left;">
+26062022
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+01021951
+</td>
+<td style="text-align:left;">
+471
+</td>
+<td style="text-align:left;">
+2022-06-26
+</td>
+<td style="text-align:left;">
+2022
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+35614…513059
+</td>
+<td style="text-align:left;">
+778478
+</td>
+<td style="text-align:left;">
+4
+</td>
+<td style="text-align:left;">
+10052022
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+08121947
+</td>
+<td style="text-align:left;">
+474
+</td>
+<td style="text-align:left;">
+2022-05-10
+</td>
+<td style="text-align:left;">
+2022
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+39119…516564
+</td>
+<td style="text-align:left;">
+829919
+</td>
+<td style="text-align:left;">
+4
+</td>
+<td style="text-align:left;">
+21082022
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+07121959
+</td>
+<td style="text-align:left;">
+462
+</td>
+<td style="text-align:left;">
+2022-08-21
+</td>
+<td style="text-align:left;">
+2022
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+40755…518200
+</td>
+<td style="text-align:left;">
+859392
+</td>
+<td style="text-align:left;">
+4
+</td>
+<td style="text-align:left;">
+06112022
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+03062016
+</td>
+<td style="text-align:left;">
+406
+</td>
+<td style="text-align:left;">
+2022-11-06
+</td>
+<td style="text-align:left;">
+2022
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+46778…524223
+</td>
+<td style="text-align:left;">
+979997
+</td>
+<td style="text-align:left;">
+4
+</td>
+<td style="text-align:left;">
+01112022
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+27121964
+</td>
+<td style="text-align:left;">
+457
+</td>
+<td style="text-align:left;">
+2022-11-01
+</td>
+<td style="text-align:left;">
+2022
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+53273…530718
+</td>
+<td style="text-align:left;">
+1109760
+</td>
+<td style="text-align:left;">
+1
+</td>
+<td style="text-align:left;">
+01122022
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+19011949
+</td>
+<td style="text-align:left;">
+473
+</td>
+<td style="text-align:left;">
+2022-12-01
+</td>
+<td style="text-align:left;">
+2022
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+64209…541654
+</td>
+<td style="text-align:left;">
+1368826
+</td>
+<td style="text-align:left;">
+4
+</td>
+<td style="text-align:left;">
+07082022
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+31051990
+</td>
+<td style="text-align:left;">
+432
+</td>
+<td style="text-align:left;">
+2022-08-07
+</td>
+<td style="text-align:left;">
+2022
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1008…550464
+</td>
+<td style="text-align:left;">
+22267
+</td>
+<td style="text-align:left;">
+4
+</td>
+<td style="text-align:left;">
+06012023
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+04071951
+</td>
+<td style="text-align:left;">
+471
+</td>
+<td style="text-align:left;">
+2023-01-06
+</td>
+<td style="text-align:left;">
+2023
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1591…551047
+</td>
+<td style="text-align:left;">
+33734
+</td>
+<td style="text-align:left;">
+5
+</td>
+<td style="text-align:left;">
+09012023
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+06022019
+</td>
+<td style="text-align:left;">
+403
+</td>
+<td style="text-align:left;">
+2023-01-09
+</td>
+<td style="text-align:left;">
+2023
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+9964…559420
+</td>
+<td style="text-align:left;">
+211086
+</td>
+<td style="text-align:left;">
+4
+</td>
+<td style="text-align:left;">
+25022023
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+22071928
+</td>
+<td style="text-align:left;">
+494
+</td>
+<td style="text-align:left;">
+2023-02-25
+</td>
+<td style="text-align:left;">
+2023
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+20668…570124
+</td>
+<td style="text-align:left;">
+434422
+</td>
+<td style="text-align:left;">
+4
+</td>
+<td style="text-align:left;">
+23042023
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+18091950
+</td>
+<td style="text-align:left;">
+472
+</td>
+<td style="text-align:left;">
+2023-04-23
+</td>
+<td style="text-align:left;">
+2023
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+20751…570207
+</td>
+<td style="text-align:left;">
+436781
+</td>
+<td style="text-align:left;">
+4
+</td>
+<td style="text-align:left;">
+24042023
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+29032016
+</td>
+<td style="text-align:left;">
+407
+</td>
+<td style="text-align:left;">
+2023-04-24
+</td>
+<td style="text-align:left;">
+2023
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+21627…571083
+</td>
+<td style="text-align:left;">
+453031
+</td>
+<td style="text-align:left;">
+1
+</td>
+<td style="text-align:left;">
+28042023
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+31011956
+</td>
+<td style="text-align:left;">
+467
+</td>
+<td style="text-align:left;">
+2023-04-28
+</td>
+<td style="text-align:left;">
+2023
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+24742…574198
+</td>
+<td style="text-align:left;">
+521861
+</td>
+<td style="text-align:left;">
+1
+</td>
+<td style="text-align:left;">
+14052023
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+10101957
+</td>
+<td style="text-align:left;">
+465
+</td>
+<td style="text-align:left;">
+2023-05-14
+</td>
+<td style="text-align:left;">
+2023
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+27344…576800
+</td>
+<td style="text-align:left;">
+580047
+</td>
+<td style="text-align:left;">
+1
+</td>
+<td style="text-align:left;">
+28052023
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+16062015
+</td>
+<td style="text-align:left;">
+407
+</td>
+<td style="text-align:left;">
+2023-05-28
+</td>
+<td style="text-align:left;">
+2023
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+39917…589373
+</td>
+<td style="text-align:left;">
+855406
+</td>
+<td style="text-align:left;">
+1
+</td>
+<td style="text-align:left;">
+31072023
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+24011930
+</td>
+<td style="text-align:left;">
+493
+</td>
+<td style="text-align:left;">
+2023-07-31
+</td>
+<td style="text-align:left;">
+2023
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+41955…591411
+</td>
+<td style="text-align:left;">
+899030
+</td>
+<td style="text-align:left;">
+4
+</td>
+<td style="text-align:left;">
+11082023
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+07062023
+</td>
+<td style="text-align:left;">
+302
+</td>
+<td style="text-align:left;">
+2023-08-11
+</td>
+<td style="text-align:left;">
+2023
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+44461…593917
+</td>
+<td style="text-align:left;">
+953018
+</td>
+<td style="text-align:left;">
+4
+</td>
+<td style="text-align:left;">
+25082023
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+28041953
+</td>
+<td style="text-align:left;">
+470
+</td>
+<td style="text-align:left;">
+2023-08-25
+</td>
+<td style="text-align:left;">
+2023
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+50889…600345
+</td>
+<td style="text-align:left;">
+1092326
+</td>
+<td style="text-align:left;">
+4
+</td>
+<td style="text-align:left;">
+29092023
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+20011960
+</td>
+<td style="text-align:left;">
+463
+</td>
+<td style="text-align:left;">
+2023-09-29
+</td>
+<td style="text-align:left;">
+2023
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+56063…605519
+</td>
+<td style="text-align:left;">
+1201885
+</td>
+<td style="text-align:left;">
+4
+</td>
+<td style="text-align:left;">
+27102023
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+17082020
+</td>
+<td style="text-align:left;">
+403
+</td>
+<td style="text-align:left;">
+2023-10-27
+</td>
+<td style="text-align:left;">
+2023
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+58259…607715
+</td>
+<td style="text-align:left;">
+1246995
+</td>
+<td style="text-align:left;">
+4
+</td>
+<td style="text-align:left;">
+07112023
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+25042015
+</td>
+<td style="text-align:left;">
+408
+</td>
+<td style="text-align:left;">
+2023-11-07
+</td>
+<td style="text-align:left;">
+2023
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+3615…621598
+</td>
+<td style="text-align:left;">
+73590
+</td>
+<td style="text-align:left;">
+4
+</td>
+<td style="text-align:left;">
+19012024
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+19081978
+</td>
+<td style="text-align:left;">
+445
+</td>
+<td style="text-align:left;">
+2024-01-19
+</td>
+<td style="text-align:left;">
+2024
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+3638…621621
+</td>
+<td style="text-align:left;">
+73705
+</td>
+<td style="text-align:left;">
+1
+</td>
+<td style="text-align:left;">
+19012024
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+09082023
+</td>
+<td style="text-align:left;">
+305
+</td>
+<td style="text-align:left;">
+2024-01-19
+</td>
+<td style="text-align:left;">
+2024
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+16009…633992
+</td>
+<td style="text-align:left;">
+332215
+</td>
+<td style="text-align:left;">
+4
+</td>
+<td style="text-align:left;">
+23032024
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+08031958
+</td>
+<td style="text-align:left;">
+466
+</td>
+<td style="text-align:left;">
+2024-03-23
+</td>
+<td style="text-align:left;">
+2024
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+17127…635110
+</td>
+<td style="text-align:left;">
+356112
+</td>
+<td style="text-align:left;">
+4
+</td>
+<td style="text-align:left;">
+28032024
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+17102017
+</td>
+<td style="text-align:left;">
+406
+</td>
+<td style="text-align:left;">
+2024-03-28
+</td>
+<td style="text-align:left;">
+2024
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+27822…645805
+</td>
+<td style="text-align:left;">
+587910
+</td>
+<td style="text-align:left;">
+1
+</td>
+<td style="text-align:left;">
+19052024
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+04091943
+</td>
+<td style="text-align:left;">
+480
+</td>
+<td style="text-align:left;">
+2024-05-19
+</td>
+<td style="text-align:left;">
+2024
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+34532…652515
+</td>
+<td style="text-align:left;">
+741887
+</td>
+<td style="text-align:left;">
+1
+</td>
+<td style="text-align:left;">
+23062024
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+30031951
+</td>
+<td style="text-align:left;">
+473
+</td>
+<td style="text-align:left;">
+2024-06-23
+</td>
+<td style="text-align:left;">
+2024
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+38338…656321
+</td>
+<td style="text-align:left;">
+825076
+</td>
+<td style="text-align:left;">
+5
+</td>
+<td style="text-align:left;">
+12072024
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+15082022
+</td>
+<td style="text-align:left;">
+401
+</td>
+<td style="text-align:left;">
+2024-07-12
+</td>
+<td style="text-align:left;">
+2024
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+43285…661268
+</td>
+<td style="text-align:left;">
+937464
+</td>
+<td style="text-align:left;">
+1
+</td>
+<td style="text-align:left;">
+07082024
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+23092006
+</td>
+<td style="text-align:left;">
+417
+</td>
+<td style="text-align:left;">
+2024-08-07
+</td>
+<td style="text-align:left;">
+2024
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+50633…668616
+</td>
+<td style="text-align:left;">
+1102140
+</td>
+<td style="text-align:left;">
+1
+</td>
+<td style="text-align:left;">
+15092024
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+16031957
+</td>
+<td style="text-align:left;">
+467
+</td>
+<td style="text-align:left;">
+2024-09-15
+</td>
+<td style="text-align:left;">
+2024
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+51246…669229
+</td>
+<td style="text-align:left;">
+1114221
+</td>
+<td style="text-align:left;">
+1
+</td>
+<td style="text-align:left;">
+18092024
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+06071956
+</td>
+<td style="text-align:left;">
+468
+</td>
+<td style="text-align:left;">
+2024-09-18
+</td>
+<td style="text-align:left;">
+2024
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+59348…677331
+</td>
+<td style="text-align:left;">
+1286840
+</td>
+<td style="text-align:left;">
+1
+</td>
+<td style="text-align:left;">
+30102024
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+23091987
+</td>
+<td style="text-align:left;">
+437
+</td>
+<td style="text-align:left;">
+2024-10-30
+</td>
+<td style="text-align:left;">
+2024
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+68857…686840
+</td>
+<td style="text-align:left;">
+1490527
+</td>
+<td style="text-align:left;">
+4
+</td>
+<td style="text-align:left;">
+21122024
+</td>
+<td style="text-align:left;">
+C749
+</td>
+<td style="text-align:left;">
+18012022
+</td>
+<td style="text-align:left;">
+402
+</td>
+<td style="text-align:left;">
+2024-12-21
+</td>
+<td style="text-align:left;">
+2024
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<pre class="r"><code>dim(dados_nb)</code></pre>
+<pre><code>## [1] 161   8</code></pre>
+<pre class="r"><code>dados_nb_race_year_selcd &lt;- dados_nb %&gt;%
+  select(RACACOR, year)
+
+# dados_nb_race_2013_selcd &lt;- dados_estados_nb_2013 %&gt;%
+#   select(RACACOR, CAUSABAS)</code></pre>
+<p><br />
+</p>
+<p>use cast() to convert data frame from long to wide format</p>
+<pre class="r"><code>library(reshape2)
+wide_dados_nb_appended &lt;- dcast(dados_nb_race_year_selcd, year ~ RACACOR)</code></pre>
+<pre><code>## Warning in dcast(dados_nb_race_year_selcd, year ~ RACACOR): The dcast generic
+## in data.table has been passed a data.frame and will attempt to redirect to the
+## relevant reshape2 method; please note that reshape2 is superseded and is no
+## longer actively developed, and this redirection is now deprecated. Please do
+## this redirection yourself like reshape2::dcast(dados_nb_race_year_selcd). In
+## the next version, this warning will become an error.</code></pre>
+<pre><code>## Using &#39;year&#39; as value column. Use &#39;value.var&#39; to override</code></pre>
+<pre><code>## Aggregation function missing: defaulting to length</code></pre>
+<p><br />
+</p>
+<p>Melt the data frame</p>
+<p><br />
+</p>
+<pre class="r"><code>dados_nb_appended_melted &lt;- melt(wide_dados_nb_appended, id.vars = &quot;year&quot;)</code></pre>
+<pre><code>## Warning in melt.default(wide_dados_nb_appended, id.vars = &quot;year&quot;): The melt
+## generic in data.table has been passed a data.frame and will attempt to redirect
+## to the relevant reshape2 method; please note that reshape2 is superseded and is
+## no longer actively developed, and this redirection is now deprecated. To
+## continue using melt methods from reshape2 while both libraries are attached,
+## e.g. melt.list, you can prepend the namespace, i.e.
+## reshape2::melt(wide_dados_nb_appended). In the next version, this warning will
+## become an error.</code></pre>
+<p>Obter variável raça/cor como palavras descritivas ao invés de
+números.</p>
+<pre class="r"><code>dados_nb_appended_melted &lt;- dados_nb_appended_melted %&gt;%
+  dplyr::mutate(raca_cor_factor = ifelse(dados_nb_appended_melted$variable == &quot;1&quot;, &quot;branca&quot;, 
+                                         ifelse(dados_nb_appended_melted$variable == &quot;2&quot;, &quot;preta&quot;,
+                                                ifelse(dados_nb_appended_melted$variable == &quot;3&quot;, &quot;amarela&quot;,
+                                                       ifelse(dados_nb_appended_melted$variable == &quot;4&quot;, &quot;parda&quot;, 
+                                                              ifelse(dados_nb_appended_melted$variable == &quot;5&quot;, &quot;indígena&quot;,
+                                                                     ifelse(dados_nb_appended_melted$variable == &quot;9&quot;, &quot;ignorado&quot;,&quot;0&quot;)))))))</code></pre>
+<p><br />
+</p>
+<p>Remove NA in year</p>
+<pre class="r"><code>dados_nb_appended_melted &lt;- dados_nb_appended_melted[ which(
+  dados_nb_appended_melted$year != &quot;NA&quot;), ]</code></pre>
+<p><br />
+</p>
+<p>Remove 0 in raça/cor</p>
+<pre class="r"><code>dados_nb_appended_melted &lt;- dados_nb_appended_melted[ which(
+  dados_nb_appended_melted$raca_cor_factor != &quot;0&quot;), ]</code></pre>
+<p><br />
+</p>
+<p>Visualizar plot</p>
+<pre class="r"><code>ggplot(dados_nb_appended_melted, aes(x=year, y=value, group=raca_cor_factor, color=raca_cor_factor)) +
+  geom_line(aes(linetype=raca_cor_factor))+
+  geom_point()</code></pre>
+<p><img src="04-datasus_raca_cor_3_files/figure-html/unnamed-chunk-20-1.png" width="672" /></p>
+<p><br />
+</p>
+<p>Stacked Graph</p>
+<pre class="r"><code>ggplot(dados_nb_appended_melted, aes(fill=raca_cor_factor, y=value, x=year)) + 
+    geom_bar(position=&quot;stack&quot;, stat=&quot;identity&quot;)</code></pre>
+<p><img src="04-datasus_raca_cor_3_files/figure-html/unnamed-chunk-21-1.png" width="672" /></p>
+<p><br />
+</p>
+<p>Stacked + Graph</p>
+<pre class="r"><code>ggplot(dados_nb_appended_melted, aes(fill=raca_cor_factor, y=value, x=year)) + 
+    geom_bar(position=&quot;fill&quot;, stat=&quot;identity&quot;)</code></pre>
+<p><img src="04-datasus_raca_cor_3_files/figure-html/unnamed-chunk-22-1.png" width="672" /></p>
+<div id="refs" class="references csl-bib-body hanging-indent"
+entry-spacing="0">
+<div id="ref-STHTDA202408" class="csl-entry">
+STHDA. 2024. <em>Ggplot2 Line Plot : Quick Start Guide - r Software and
+Data Visualization</em>. <a
+href="http://www.sthda.com/english/wiki/ggplot2-line-plot-quick-start-guide-r-software-and-data-visualization">http://www.sthda.com/english/wiki/ggplot2-line-plot-quick-start-guide-r-software-and-data-visualization</a>.
+</div>
+</div>
+</div>
+</div>
+
+
+
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open');
+  });
+});
+</script>
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

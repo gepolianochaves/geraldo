@@ -1,0 +1,40 @@
+---
+title: "Accessing the Raça/Cor Variable in DATASUS try all states"
+author: "Gepoliano Chaves"
+date: "October 8th, 2025"
+output:
+  html_document:
+    df_print: paged
+    toc: true
+bibliography: references.bib
+---
+
+\
+
+## Load libraries
+
+\
+
+
+```{r load libraries, message=F, warning=F}
+library(microdatasus)
+library(dplyr)
+library(tidyverse)
+library(maditr)
+library(kableExtra)
+```
+
+\
+
+Download the data
+
+O código abaixo terminou com o seguinte erro: Error: vector memory limit of 16.0 Gb reached, see mem.maxVSize()
+
+```{r, eval=F}
+dados_2000_2015_todos_estados = fetch_datasus(year_start = 2000,
+                      year_end = 2015,
+                      #uf = c("MG", "BA", "PA", "RS", "GO"),
+                      information_system = "SIM-DO")
+
+#saveRDS(dados_2000_2015_one_State_per_Region, "./data/dados_2000_2015_one_State_per_Region.rds")
+```
